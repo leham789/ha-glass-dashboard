@@ -7,7 +7,7 @@ import { type HomeAssistant, type LovelaceCardConfig, navigate, registerCard } f
 import type { IconName } from '../../icons.js';
 import '../../elements/glass-icon.js';
 import './menu-editor.js';
-import { EASE, reducedMotion } from '../../motion.js';
+import { EASE, haptic, reducedMotion } from '../../motion.js';
 
 export interface MenuConfig extends LovelaceCardConfig {
   home_path?: string;
@@ -191,6 +191,7 @@ export class GlassMenu extends GlassElement {
     const lefts: Record<string, number> = {};
     for (const b of this.renderRoot.querySelectorAll<HTMLElement>('button')) lefts[b.dataset.key!] = b.offsetLeft;
     if (current) leaving = { pill: { left: current.offsetLeft, width: current.offsetWidth }, lefts, at: performance.now() };
+    haptic('selection');
     navigate(target);
   }
 
