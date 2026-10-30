@@ -208,20 +208,46 @@ export abstract class GlassSheet extends GlassElement {
         flex-direction: column;
         gap: 18px;
         touch-action: none; /* the drag is ours, not the page's scroll */
-        /* frosts in over the first 24px of scrolling, so at rest it's the sheet itself
-           (browsers without scroll timelines just keep it frosted) */
-        animation: frost linear both;
-        animation-timeline: scroll();
-        animation-range: 0 24px;
+        /* no band behind it: only the title and close float over what scrolls under,
+           and taps between them reach the content */
+        pointer-events: none;
       }
-      @keyframes frost {
-        from {
-          background-color: transparent;
+      .sheet-top > * {
+        pointer-events: auto;
+      }
+      .title,
+      .close {
+        backdrop-filter: blur(24px);
+        -webkit-backdrop-filter: blur(24px);
+      }
+      /* Once something scrolls under them (the first 24px of scrolling), the title and
+         close firm up and lift with a soft shadow, and the handle fades away. Only where
+         the browser can tie animation to scrolling; elsewhere they stay as they are. */
+      @supports (animation-timeline: scroll()) {
+        .handle,
+        .title,
+        .close {
+          animation: linear both;
+          animation-timeline: scroll();
+          animation-range: 0 24px;
         }
+        .handle {
+          animation-name: handle-away;
+        }
+        .title,
+        .close {
+          animation-name: lift;
+        }
+      }
+      @keyframes handle-away {
         to {
-          background-color: var(--glass-sheet);
-          backdrop-filter: blur(30px);
-          -webkit-backdrop-filter: blur(30px);
+          opacity: 0;
+        }
+      }
+      @keyframes lift {
+        to {
+          background-color: rgba(var(--glass-surface-rgb), 0.94);
+          box-shadow: 0 8px 24px rgba(20, 20, 40, 0.14);
         }
       }
       .handle {
