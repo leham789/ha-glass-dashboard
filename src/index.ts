@@ -29,4 +29,4 @@ import './cards/room-alert/room-alert.js';
 // Our own pop-ups in place of HA's more-info dialog.
 import './sheets/entity-sheets.js';
 
-console.info('%c GLASS DASHBOARD %c 0.17.2 ', 'background:#121316;color:#C6F432', 'background:#C6F432;color:#121316');
+console.info('%c GLASS DASHBOARD %c 0.17.3 ', 'background:#121316;color:#C6F432', 'background:#C6F432;color:#121316');

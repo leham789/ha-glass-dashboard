@@ -119,7 +119,7 @@ export abstract class GlassSheet extends GlassElement {
       >
         <!-- stays at the top, frosted, while the rest scrolls under it; drag it down to close -->
         <div
-          class="top"
+          class="sheet-top"
           @pointerdown=${this.onDragStart}
           @pointermove=${this.onDragMove}
           @pointerup=${this.onDragEnd}
@@ -197,7 +197,8 @@ export abstract class GlassSheet extends GlassElement {
           transition: none;
         }
       }
-      .top {
+      /* not ".top": sheets use that for their own rows */
+      .sheet-top {
         position: sticky;
         top: 0;
         z-index: 1;
