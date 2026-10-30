@@ -29,7 +29,7 @@ icon: lamp          # optional, any icon from the pack
 ### HACS (recommended)
 
 1. In HACS, open the **⋮** menu and choose **Custom repositories**.
-2. Add `https://github.com/<owner>/ha-glass-dashboard` with the type **Dashboard**.
+2. Add `https://github.com/leham789/ha-glass-dashboard` with the type **Dashboard**.
 3. Find **Glass Dashboard** in HACS, download it, then reload your browser.
 4. Edit a dashboard, choose **Add card** and search for **Glass**.
 
