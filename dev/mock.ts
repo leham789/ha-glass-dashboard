@@ -44,9 +44,9 @@ function inDays(n: number): string {
 
 const defs: Def[] = [
   // Living Room (downstairs)
-  ['light.ambient', 'on', { friendly_name: 'Ambient', color_mode: 'hs', rgb_color: [255, 168, 84], brightness: 112 }, 'living_room'],
-  ['light.tv_strip', 'on', { friendly_name: 'TV Strip', color_mode: 'color_temp', color_temp_kelvin: 2700, brightness: 145 }, 'living_room'],
-  ['light.christmas_tree', 'on', { friendly_name: 'Christmas Tree', color_mode: 'onoff' }, 'living_room'],
+  ['light.ambient', 'on', { friendly_name: 'Ambient', color_mode: 'hs', rgb_color: [255, 168, 84], hs_color: [30, 67], brightness: 112, supported_color_modes: ['color_temp', 'hs'], min_color_temp_kelvin: 2000, max_color_temp_kelvin: 6500, effect_list: ['Candle', 'Fireplace', 'Colorloop'], effect: 'off' }, 'living_room'],
+  ['light.tv_strip', 'on', { friendly_name: 'TV Strip', color_mode: 'color_temp', color_temp_kelvin: 2700, brightness: 145, supported_color_modes: ['color_temp'], min_color_temp_kelvin: 2200, max_color_temp_kelvin: 6500 }, 'living_room'],
+  ['light.christmas_tree', 'on', { friendly_name: 'Christmas Tree', color_mode: 'onoff', supported_color_modes: ['onoff'] }, 'living_room'],
   ['light.floor_lamp', 'off', { friendly_name: 'Floor Lamp', color_mode: null }, 'living_room'],
   ['light.ceiling_nook', 'unavailable', { friendly_name: 'Ceiling Nook' }, 'living_room'],
   ['light.living_room_hue', 'on', {
@@ -76,7 +76,27 @@ const defs: Def[] = [
     media_duration: 5400,
     media_position: 2052,
     media_position_updated_at: new Date().toISOString(),
+    // pause · volume set · mute · previous · next · play
+    supported_features: 1 | 4 | 8 | 16 | 32 | 16384,
+    volume_level: 0.3,
   }, 'living_room'],
+  ['media_player.spotify_alex', 'playing', {
+    friendly_name: 'Spotify Alex',
+    app_name: 'Spotify',
+    media_title: 'Night Drive',
+    media_artist: 'The Glass House',
+    media_duration: 204,
+    media_position: 71,
+    media_position_updated_at: new Date().toISOString(),
+    volume_level: 0.45,
+    is_volume_muted: false,
+    shuffle: false,
+    repeat: 'off',
+    source: 'Kitchen',
+    source_list: ["Alex's iPhone", 'Kitchen', 'Living Room', 'Bedroom Echo'],
+    // everything: seek, shuffle, repeat and choosing a speaker too
+    supported_features: 1 | 2 | 4 | 8 | 16 | 32 | 2048 | 16384 | 32768 | 262144,
+  }],
   // Office (upstairs): a room sensor plus a 3D printer's own temperatures
   ['light.office_hue', 'on', { friendly_name: 'Office Hue', color_mode: 'color_temp', color_temp_kelvin: 5000, brightness: 255 }, 'office'],
   ['light.blue_example', 'on', { friendly_name: 'Blue example', color_mode: 'xy', rgb_color: [110, 150, 255], brightness: 178 }, 'office'],
@@ -89,7 +109,7 @@ const defs: Def[] = [
   // Office power, a bulb whose wall switch is off, and the printer's camera and readings
   ['switch.office_pc', 'on', { friendly_name: 'Office PC' }, 'office', 'pc_plug'],
   ['sensor.office_pc_power', '2.2', { friendly_name: 'Office PC Power', device_class: 'power', unit_of_measurement: 'W' }, 'office', 'pc_plug'],
-  ['sensor.office_pc_energy', '3.69', { friendly_name: 'Office PC Energy', device_class: 'energy', unit_of_measurement: 'kWh' }, 'office', 'pc_plug'],
+  ['sensor.office_pc_energy', '3.69', { friendly_name: 'Office PC Energy', device_class: 'energy', state_class: 'total_increasing', unit_of_measurement: 'kWh' }, 'office', 'pc_plug'],
   ['switch.office_monitor_plug', 'off', { friendly_name: 'Office Monitor plug' }, 'office'],
   ['light.office_ceiling', 'unavailable', { friendly_name: 'Office Ceiling' }, 'office'],
   ['switch.office_ceiling_mains', 'off', { friendly_name: 'Office Ceiling mains' }, 'office'],
@@ -119,7 +139,7 @@ const defs: Def[] = [
   ['sensor.lr_remote_battery', '12', { friendly_name: 'Living Room Remote Battery', device_class: 'battery' }, 'living_room'],
   ['sensor.guest_remote_battery', '36', { friendly_name: 'Guest Remote Battery', device_class: 'battery' }],
   ['sensor.front_door_battery', '90', { friendly_name: 'Front Door Battery', device_class: 'battery' }, 'hallway'],
-  ['sensor.alex_phone_battery_level', '45', { friendly_name: "Alex's Phone Battery level", device_class: 'battery' }],
+  ['sensor.alex_phone_battery_level', '45', { friendly_name: "Alex's Phone Battery level", device_class: 'battery' }, undefined, 'alex_phone'],
   // A warm room and the weather, for the temperatures pop-up
   ['sensor.kitchen_temperature', '23.4', { friendly_name: 'Kitchen Temperature', device_class: 'temperature' }, 'kitchen'],
   ['weather.home', 'partlycloudy', { friendly_name: 'Home', temperature: 11.3, humidity: 90 }],
@@ -133,7 +153,8 @@ const defs: Def[] = [
   ['sensor.p1s_remaining_time', '72', { friendly_name: 'P1S Remaining time', unit_of_measurement: 'min' }],
   ['sensor.p1s_task_name', 'Plant-pot-plug', { friendly_name: 'P1S Task name' }],
   // Home header, favourites and the Heating & Energy tiles
-  ['person.alex', 'home', { friendly_name: 'Alex Morgan', user_id: 'user-1' }],
+  ['person.alex', 'home', { friendly_name: 'Alex Morgan', user_id: 'user-1', source: 'device_tracker.alex_phone' }],
+  ['device_tracker.alex_phone', 'home', { friendly_name: "Alex's iPhone" }, undefined, 'alex_phone'],
   ['scene.relax', 'unknown', { friendly_name: 'Relax' }],
   ['switch.bookshelf', 'on', { friendly_name: 'Bookshelf' }],
   ['climate.living_room', 'heat', {
@@ -142,6 +163,8 @@ const defs: Def[] = [
     current_temperature: 18.0,
     hvac_action: 'idle',
     hvac_modes: ['heat', 'off'],
+    preset_modes: ['comfort', 'eco', 'boost', 'away'],
+    preset_mode: 'comfort',
     min_temp: 10,
     max_temp: 30,
     target_temp_step: 0.5,
@@ -206,6 +229,7 @@ function makeHass(states: Record<string, HassEntity>): HomeAssistant {
       office_climate: { id: 'office_climate', name: 'Office Climate' },
       p1s: { id: 'p1s', name: 'P1S' },
       pc_plug: { id: 'pc_plug', name: 'Office PC plug' },
+      alex_phone: { id: 'alex_phone', name: "Alex's iPhone" },
       doorbell: { id: 'doorbell', name: 'Doorbell', config_entries: ['protect'] },
       turret: { id: 'turret', name: 'Garden Turret', config_entries: ['protect'] },
     },
@@ -224,7 +248,7 @@ function makeHass(states: Record<string, HassEntity>): HomeAssistant {
       if (msg.type === 'auth/sign_path') return { path: snapshot(msg.path as string) } as T;
       const id = (msg.entity_ids as string[])[0];
       const start = Date.parse(msg.start_time as string);
-      const points = [];
+      const points: { s: string; lu: number; a?: Record<string, unknown> }[] = [];
       if (id === 'sensor.electricity_today') {
         // kWh today: climbs through the day, busiest in the evening, resets at midnight.
         let kwh = 0;
@@ -236,6 +260,41 @@ function makeHass(states: Record<string, HassEntity>): HomeAssistant {
           kwh += (h >= 17 && h <= 21 ? 0.3 : h >= 7 ? 0.12 : 0.05) * (0.8 + Math.random() * 0.4);
           points.push({ s: kwh.toFixed(2), lu: t / 1000 });
         }
+        return { [id]: points } as T;
+      }
+      const now = hass.states[id];
+      const domain = id.split('.')[0];
+      if (['binary_sensor', 'switch', 'input_boolean', 'person', 'light'].includes(domain)) {
+        // A day of switching: on/open (or away) a few times, ending in the state it's in now.
+        const on = domain === 'person' ? 'not_home' : 'on';
+        const off = domain === 'person' ? 'home' : 'off';
+        const flips = [6.9, 7.2, 8.6, 12.4, 13.1, 17.0, 18.0];
+        let s = off;
+        points.push({ s, lu: start / 1000 });
+        for (let t = start; t < Date.now(); t += 3_600_000 / 4) {
+          const h = new Date(t).getHours() + new Date(t).getMinutes() / 60;
+          if (flips.some((f) => Math.abs(f - h) < 0.13)) points.push({ s: (s = s === on ? off : on), lu: t / 1000 });
+        }
+        if (now && now.state !== s) points.push({ s: now.state, lu: Date.parse(now.last_changed) / 1000 });
+        return { [id]: points } as T;
+      }
+      if (domain === 'climate') {
+        // Room temperature drifting down at night, heated morning and evening.
+        for (let t = start; t < Date.now(); t += 1_800_000) {
+          const h = new Date(t).getHours();
+          const target = h >= 6 && h < 9 ? 18 : h >= 17 && h < 22 ? 19 : 16;
+          const cur = 16.2 + (h >= 7 && h < 10 ? 1.8 : h >= 18 && h < 23 ? 2.2 : 0.4 * Math.sin(h));
+          points.push({ s: 'heat', lu: t / 1000, a: { current_temperature: +cur.toFixed(1), temperature: target, hvac_action: cur < target ? 'heating' : 'idle' } } as never);
+        }
+        return { [id]: points } as T;
+      }
+      const base = Number(now?.state);
+      if (Number.isFinite(base) && now?.attributes.device_class !== 'power') {
+        for (let t = start; t < Date.now(); t += 1_800_000) {
+          const h = new Date(t).getHours();
+          points.push({ s: String(+(base * (1 + 0.06 * Math.sin((h / 24) * Math.PI * 2))).toFixed(2)), lu: t / 1000 });
+        }
+        points.push({ s: now!.state, lu: Date.now() / 1000 });
         return { [id]: points } as T;
       }
       for (let t = start; t < Date.now(); t += 600_000) {
@@ -276,6 +335,30 @@ function makeHass(states: Record<string, HassEntity>): HomeAssistant {
         render();
         return;
       }
+      if (domain === 'media_player' && service !== 'media_play_pause') {
+        const id = targets[0];
+        const e = hass.states[id];
+        const change: Record<string, unknown> = {
+          shuffle_set: { shuffle: data?.shuffle },
+          repeat_set: { repeat: data?.repeat },
+          volume_set: { volume_level: data?.volume_level, is_volume_muted: false },
+          volume_mute: { is_volume_muted: data?.is_volume_muted },
+          select_source: { source: data?.source },
+          media_seek: { media_position: data?.seek_position, media_position_updated_at: new Date().toISOString() },
+        }[service] as Record<string, unknown>;
+        if (change) {
+          hass = makeHass({ ...hass.states, [id]: { ...e, attributes: { ...e.attributes, ...change } } });
+          render();
+          return;
+        }
+      }
+      if (domain === 'climate' && service === 'set_preset_mode') {
+        const id = targets[0];
+        const e = hass.states[id];
+        hass = makeHass({ ...hass.states, [id]: { ...e, attributes: { ...e.attributes, preset_mode: data!.preset_mode } } });
+        render();
+        return;
+      }
       if (domain === 'climate' && service === 'set_hvac_mode') {
         const id = targets[0];
         hass = makeHass({ ...hass.states, [id]: { ...hass.states[id], state: data!.hvac_mode as string } });
@@ -297,8 +380,8 @@ function makeHass(states: Record<string, HassEntity>): HomeAssistant {
       }
       if (domain !== 'light') return;
       // Like HA: switching a group switches its reachable members too.
-      const state = service === 'turn_on' ? 'on' : 'off';
       const next = { ...hass.states };
+      const state = service === 'toggle' ? (next[targets[0]]?.state === 'on' ? 'off' : 'on') : service === 'turn_on' ? 'on' : 'off';
       for (const id of targets) {
         for (const e of [id, ...((next[id]?.attributes.entity_id as string[] | undefined) ?? [])]) {
           if (next[e] && next[e].state !== 'unavailable') next[e] = { ...next[e], state };
@@ -307,6 +390,12 @@ function makeHass(states: Record<string, HassEntity>): HomeAssistant {
         const attrs: Record<string, unknown> = {};
         if (typeof data?.brightness_pct === 'number') attrs.brightness = Math.round((data.brightness_pct / 100) * 255);
         if (typeof data?.color_temp_kelvin === 'number') Object.assign(attrs, { color_mode: 'color_temp', color_temp_kelvin: data.color_temp_kelvin });
+        if (Array.isArray(data?.hs_color)) {
+          const [h] = data.hs_color as number[];
+          const f = (n: number) => Math.round(255 * (0.5 - 0.5 * Math.max(-1, Math.min((n + h / 30) % 12 - 3, 9 - ((n + h / 30) % 12), 1))));
+          Object.assign(attrs, { color_mode: 'hs', hs_color: data.hs_color, rgb_color: [f(0), f(8), f(4)] });
+        }
+        if (typeof data?.effect === 'string') attrs.effect = data.effect;
         if (next[id] && Object.keys(attrs).length) next[id] = { ...next[id], attributes: { ...next[id].attributes, ...attrs } };
       }
       hass = makeHass(next);

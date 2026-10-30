@@ -3,6 +3,7 @@ import { customElement, property, state } from 'lit/decorators.js';
 import { keyed } from 'lit/directives/keyed.js';
 import { GlassSheet } from '../elements/glass-sheet.js';
 import '../elements/glass-camera-live.js';
+import { GlassCameraFull } from '../elements/glass-camera-full.js';
 import { type HassEntity, isUnavailable, openMoreInfo } from '../ha.js';
 import { shortName } from '../rooms.js';
 import { eventSnapshot } from '../snapshots.js';
@@ -140,7 +141,7 @@ export class GlassCamerasSheet extends GlassSheet {
             : nothing}
           <span class="foot">
             <span class="last">${this.lastLine(c)}</span>
-            <button type="button" class="full" aria-label="Full screen" @click=${() => openMoreInfo(this, c.entity)}>
+            <button type="button" class="full" aria-label="Full screen" @click=${() => GlassCameraFull.open(hass, this.cameras, this.index)}>
               <glass-icon name="maximize-2" size="16" stroke="1.8"></glass-icon>
             </button>
           </span>
@@ -206,9 +207,8 @@ export class GlassCamerasSheet extends GlassSheet {
           </div>`
         : nothing}
 
-      <div class="actions">
-        ${light
-          ? html`<button
+      ${light
+        ? html`<div class="actions"><button
               type="button"
               class="light ${lightOn ? 'on' : ''}"
               aria-pressed=${lightOn ? 'true' : 'false'}
@@ -216,12 +216,8 @@ export class GlassCamerasSheet extends GlassSheet {
               @click=${() => hass.callService('homeassistant', lightOn ? 'turn_off' : 'turn_on', { entity_id: c.light })}
             >
               <glass-icon name="lightbulb" size="18" stroke="1.7"></glass-icon>${shortName(light, '')} · ${lightOn ? 'On' : 'Off'}
-            </button>`
-          : nothing}
-        <button type="button" class="primary" @click=${() => openMoreInfo(this, c.entity)}>
-          <glass-icon name="maximize-2" size="16" stroke="1.8"></glass-icon>Full screen
-        </button>
-      </div>
+            </button></div>`
+        : nothing}
     `;
   }
 

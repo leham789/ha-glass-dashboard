@@ -26,5 +26,7 @@ import './cards/title/title.js';
 import './cards/printer/printer-card.js';
 import './cards/switch-rows/switch-rows.js';
 import './cards/room-alert/room-alert.js';
+// Our own pop-ups in place of HA's more-info dialog.
+import './sheets/entity-sheets.js';
 
 console.info('%c GLASS DASHBOARD %c 0.16.0 ', 'background:#121316;color:#C6F432', 'background:#C6F432;color:#121316');

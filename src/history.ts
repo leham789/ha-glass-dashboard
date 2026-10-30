@@ -104,3 +104,70 @@ export async function hourlyAverages(hass: HomeAssistant, entityId: string, hour
   }
   return buckets;
 }
+
+/** One recorded state: its time (ms) and the state as HA reports it. */
+export interface StatePoint {
+  t: number;
+  s: string;
+}
+
+/** Every recorded state of an entity since `start`, oldest first. */
+export async function stateHistory(hass: HomeAssistant, entityId: string, start: Date): Promise<StatePoint[]> {
+  const result = await hass.callWS<Record<string, Point[]>>({
+    type: 'history/history_during_period',
+    start_time: start.toISOString(),
+    end_time: new Date().toISOString(),
+    entity_ids: [entityId],
+    minimal_response: true,
+    no_attributes: true,
+    significant_changes_only: false,
+  });
+  return (result[entityId] ?? []).map((p) => ({ t: p.lu * 1000, s: p.s }));
+}
+
+/**
+ * The stretches of time an entity spent in each state, as fractions (0–1) of
+ * the window from `start` to now. The state at `start` is the first point's.
+ */
+export function spans(points: StatePoint[], start: Date): { from: number; to: number; s: string }[] {
+  const t0 = start.getTime();
+  const span = Date.now() - t0;
+  return points.map((p, i) => ({
+    from: Math.max(0, (p.t - t0) / span),
+    to: Math.min(1, ((points[i + 1]?.t ?? Date.now()) - t0) / span),
+    s: p.s,
+  }));
+}
+
+/** Use on each of the last `days` days (today last), from a counting-up energy sensor. */
+export async function usageByDay(hass: HomeAssistant, entityId: string, days: number, now = new Date()): Promise<number[]> {
+  const midnight = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const start = new Date(midnight.getTime() - (days - 1) * 86_400_000 - 3_600_000);
+  const points = (await stateHistory(hass, entityId, start))
+    .map((p) => ({ t: p.t, v: Number(p.s) }))
+    .filter((p) => Number.isFinite(p.v));
+  return Array.from({ length: days }, (_, i) => {
+    const from = midnight.getTime() - (days - 1 - i) * 86_400_000;
+    return usageBetween(points, from, Math.min(from + 86_400_000, now.getTime()));
+  });
+}
+
+/** Every recorded state of an entity since `start`, with its attributes (for thermostats and the like). */
+export async function attributeHistory(
+  hass: HomeAssistant,
+  entityId: string,
+  start: Date,
+): Promise<{ t: number; s: string; a: Record<string, any> }[]> {
+  const result = await hass.callWS<Record<string, { s: string; a?: Record<string, any>; lu: number }[]>>({
+    type: 'history/history_during_period',
+    start_time: start.toISOString(),
+    end_time: new Date().toISOString(),
+    entity_ids: [entityId],
+    minimal_response: false,
+    no_attributes: false,
+    significant_changes_only: false,
+  });
+  let last: Record<string, any> = {};
+  // HA only repeats attributes when they change, so carry the last ones forward.
+  return (result[entityId] ?? []).map((p) => ({ t: p.lu * 1000, s: p.s, a: (last = p.a ?? last) }));
+}

@@ -1,7 +1,7 @@
 import { css, html, nothing, type CSSResultGroup } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { GlassSheet } from '../elements/glass-sheet.js';
-import { isUnavailable, navigate } from '../ha.js';
+import { isUnavailable } from '../ha.js';
 import { brightnessPct } from '../light-colour.js';
 import { type IconName } from '../icons.js';
 import { LOW_BATTERY, batteries } from '../batteries.js';
@@ -112,10 +112,6 @@ export class GlassRoomOptionsSheet extends GlassSheet {
               <span class="devices">${devices.join(' · ')}</span>
             </div>`
           : nothing}
-        <button type="button" class="row link" @click=${() => this.openArea()}>
-          <span class="n">Open area in Home Assistant</span>
-          <glass-icon name="arrow-up-right" size="16" stroke="1.8"></glass-icon>
-        </button>
       </section>
     `;
   }
@@ -162,10 +158,6 @@ export class GlassRoomOptionsSheet extends GlassSheet {
       .slice(0, 4);
   }
 
-  private openArea() {
-    this.close();
-    navigate(`/config/areas/area/${this.area}`);
-  }
 
   static styles: CSSResultGroup = [
     GlassSheet.styles,

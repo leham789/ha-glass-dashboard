@@ -1,5 +1,5 @@
 import { css, html, type CSSResultGroup, type TemplateResult } from 'lit';
-import { GlassElement } from '../glass-element.js';
+import { GlassElement, openOverlays } from '../glass-element.js';
 import { property, state } from 'lit/decorators.js';
 import { tokens } from '../tokens.js';
 import type { HomeAssistant } from '../ha.js';
@@ -19,9 +19,20 @@ export abstract class GlassSheet extends GlassElement {
   @state() private shown = false;
 
   protected abstract sheetTitle: string;
+  /** A second line under the title, e.g. the room. */
+  protected get sheetSubtitle(): string {
+    return '';
+  }
   protected abstract sheetIcon: IconName;
   protected sheetIconBg = 'var(--glass-accent)';
   protected abstract renderBody(): TemplateResult;
+
+  /** The round icon in the title pill. A sheet can draw its own (a person's picture). */
+  protected renderIcon(): TemplateResult {
+    return html`<span class="icon" style="background: ${this.sheetIconBg}">
+      <glass-icon name=${this.sheetIcon} size="20" stroke="1.7"></glass-icon>
+    </span>`;
+  }
 
   static open<T extends GlassSheet>(tag: string, hass: HomeAssistant): T {
     const sheet = document.createElement(tag) as T;
@@ -32,6 +43,7 @@ export abstract class GlassSheet extends GlassElement {
 
   connectedCallback(): void {
     super.connectedCallback();
+    openOverlays.add(this);
     document.addEventListener('keydown', this.onKey);
     document.documentElement.style.overflow = 'hidden';
     requestAnimationFrame(() => {
@@ -43,6 +55,7 @@ export abstract class GlassSheet extends GlassElement {
   }
 
   disconnectedCallback(): void {
+    openOverlays.delete(this);
     document.removeEventListener('keydown', this.onKey);
     document.documentElement.style.overflow = '';
     super.disconnectedCallback();
@@ -70,10 +83,11 @@ export abstract class GlassSheet extends GlassElement {
         <span class="handle" aria-hidden="true"></span>
         <header>
           <span class="title">
-            <span class="icon" style="background: ${this.sheetIconBg}">
-              <glass-icon name=${this.sheetIcon} size="20" stroke="1.7"></glass-icon>
+            ${this.renderIcon()}
+            <span class="names">
+              <h1 id="title">${this.sheetTitle}</h1>
+              ${this.sheetSubtitle ? html`<span class="subtitle">${this.sheetSubtitle}</span>` : ''}
             </span>
-            <h1 id="title">${this.sheetTitle}</h1>
           </span>
           <button type="button" class="close" aria-label="Close" @click=${() => this.close()}>
             <glass-icon name="x" size="22" stroke="1.8"></glass-icon>
@@ -151,6 +165,7 @@ export abstract class GlassSheet extends GlassElement {
       }
       .title {
         flex: 1;
+        min-width: 0;
         height: 64px;
         box-sizing: border-box;
         padding: 0 8px;
@@ -161,6 +176,7 @@ export abstract class GlassSheet extends GlassElement {
         gap: 12px;
       }
       .icon {
+        flex: none;
         width: 48px;
         height: 48px;
         border-radius: 50%;
@@ -169,10 +185,23 @@ export abstract class GlassSheet extends GlassElement {
         align-items: center;
         justify-content: center;
       }
+      .names {
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        line-height: 1.2;
+      }
       h1 {
         margin: 0;
         font-size: 20px;
         font-weight: 400;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .subtitle {
+        font-size: var(--glass-text-small);
+        color: var(--glass-text-muted);
       }
       .close {
         all: unset;

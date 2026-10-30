@@ -93,8 +93,26 @@ export function reportVisibility(card: HTMLElement, visible: boolean): void {
   fireEvent(card, 'card-visibility-changed', { value: visible });
 }
 
-/** Opens HA's built-in more-info dialog for an entity. */
+type EntityOpener = (node: HTMLElement, entityId: string) => boolean;
+let entityOpener: EntityOpener | undefined;
+
+/** Set once by sheets/entity-sheets.ts, so ha.ts doesn't import every sheet. */
+export function setEntityOpener(opener: EntityOpener): void {
+  entityOpener = opener;
+}
+
+/**
+ * Opens the details for an entity: our own sheet when there is one for its
+ * kind (media, light, thermostat, camera, sensor, person, switch), otherwise
+ * Home Assistant's built-in more-info dialog.
+ */
 export function openMoreInfo(node: HTMLElement, entityId: string): void {
+  if (entityOpener?.(node, entityId)) return;
+  openHaMoreInfo(node, entityId);
+}
+
+/** Home Assistant's own more-info dialog, for everything we don't have a sheet for. */
+export function openHaMoreInfo(node: HTMLElement, entityId: string): void {
   fireEvent(node, 'hass-more-info', { entityId });
 }
 

@@ -253,6 +253,7 @@ The big thermostat: a half-circle dial. Drag the knob, use − and +, or the arr
 ```yaml
 type: custom:glass-thermostat-dial
 entity: climate.living_room
+show_presets: true   # optional: the thermostat's presets (Comfort, Eco…) under the controls, when it has any
 ```
 
 ### Temperature by room · `custom:glass-room-temps`
@@ -309,7 +310,8 @@ The expand button opens the **cameras pop-up**:
 - **< >** or a swipe to go round every camera card on the screen, looping back to the first
 - **Cycle cameras** (on by default) moves to the next camera every 10 seconds, with a progress line
 - **Recent**: the camera's latest detections (person, vehicle, ring, motion…) from its event entities, each with its snapshot when the camera is UniFi Protect
-- the camera's light (e.g. the porch light), and **Full screen** for Home Assistant's live view
+- the camera's light (e.g. the porch light)
+- the expand button on the picture opens our **full-screen view**: black, edge to edge, turning with the phone, with < > to switch cameras and the light at the bottom
 
 ```yaml
 type: custom:glass-camera
@@ -352,6 +354,20 @@ icon: lamp          # optional, any icon from the pack
 ### Manual
 
 Download `ha-glass-dashboard.js` from the latest release, put it in `/config/www/`, and add it as a dashboard resource: `/local/ha-glass-dashboard.js`, type **JavaScript module**.
+
+## Pop-ups in place of Home Assistant's
+
+Tapping something on a card opens our own pop-up instead of Home Assistant's more-info dialog, in the same glass style, light and dark:
+
+- **Media players:** artwork, seek bar, shuffle · previous · play / pause · next · repeat, volume, and the speakers it can play on. Only the controls the player supports show.
+- **Lights:** brightness, White (colour temperature) and Colour for the modes the bulb supports, its effects, and for a group the lights inside it.
+- **Thermostats:** the dial with presets, and the last 24 hours of room temperature, target and when the heating ran.
+- **Sensors** (temperature, energy, batteries, bins, doors and windows): the reading, its history for 24 hours or 7 days, and three facts from it.
+- **People:** home, a zone or away, since when, today's timeline and the phone's battery.
+- **Switches and plugs:** on / off, what a plug is using now and today, and today's timeline.
+- **Cameras:** the full-screen view.
+
+Anything else (scenes, scripts, covers, locks…) still opens Home Assistant's own dialog, as do pop-ups opened from outside these cards (HA's search, the logbook).
 
 ## Theming
 

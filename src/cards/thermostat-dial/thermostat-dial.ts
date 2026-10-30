@@ -9,6 +9,8 @@ import './thermostat-dial-editor.js';
 export interface ThermostatDialConfig extends LovelaceCardConfig {
   entity: string;
   name?: string;
+  /** Show the thermostat's presets (Comfort, Eco…) under the controls, when it has any. Off by default. */
+  show_presets?: boolean;
 }
 
 const SEND_AFTER_MS = 800;
@@ -152,6 +154,20 @@ export class GlassThermostatDial extends GlassElement {
           : nothing}
         <button type="button" class="plus" aria-label="Raise target" ?disabled=${off} @click=${() => this.step(1)}>+</button>
       </span>
+      ${this.config.show_presets && Array.isArray(a.preset_modes) && a.preset_modes.length
+        ? html`<span class="presets ${isUnavailable(e) ? 'faded' : ''}" role="group" aria-label="Preset">
+            ${(a.preset_modes as string[]).map(
+              (p) => html`<button
+                type="button"
+                class=${p === a.preset_mode ? 'on' : ''}
+                aria-pressed=${p === a.preset_mode ? 'true' : 'false'}
+                @click=${() => this.hass!.callService('climate', 'set_preset_mode', { entity_id: e.entity_id, preset_mode: p })}
+              >
+                ${presetName(p)}
+              </button>`,
+            )}
+          </span>`
+        : nothing}
     </section>`;
   }
 
@@ -340,12 +356,43 @@ export class GlassThermostatDial extends GlassElement {
       .modes button.current {
         background: var(--glass-raised);
       }
+      .presets {
+        width: 100%;
+        display: flex;
+        gap: var(--glass-space-chip);
+      }
+      .presets button {
+        all: unset;
+        box-sizing: border-box;
+        flex: 1;
+        height: 40px;
+        border-radius: 20px;
+        border: 1px solid var(--glass-surface-border);
+        background: rgba(var(--glass-surface-rgb), 0.7);
+        font-size: var(--glass-text-chip);
+        text-align: center;
+        cursor: pointer;
+      }
+      .presets button.on {
+        background: var(--glass-ink);
+        border-color: var(--glass-ink);
+        color: var(--glass-on-ink);
+      }
+      .presets.faded {
+        opacity: 0.5;
+        pointer-events: none;
+      }
       button:focus-visible {
         outline: 2px solid var(--glass-ink);
         outline-offset: 2px;
       }
     `,
   ];
+}
+
+/** HA's preset ids as words: "comfort" → "Comfort", "boost" → "Boost". */
+function presetName(p: string): string {
+  return p === 'none' ? 'None' : p.charAt(0).toUpperCase() + p.slice(1).replace(/_/g, ' ');
 }
 
 const fmt = (t: number) => (Number.isInteger(t) ? String(t) : t.toFixed(1));
