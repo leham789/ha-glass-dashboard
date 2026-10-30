@@ -15,7 +15,7 @@ import './glass-icon.js';
  * HA's layout can clip them. Use `GlassSheet.open(tag, hass)` to show one;
  * the opener keeps its `hass` current until it closes.
  *
- * Drag it down by its top (handle and title) to close: past 120 px, or a
+ * Drag it down by its top bar (handle and title) to close: past 120 px, or a
  * quick flick, closes it; anything less goes back.
  */
 export abstract class GlassSheet extends GlassElement {
@@ -117,8 +117,9 @@ export abstract class GlassSheet extends GlassElement {
         tabindex="-1"
         aria-labelledby="title"
       >
+        <!-- stays at the top, frosted, while the rest scrolls under it; drag it down to close -->
         <div
-          class="grab"
+          class="top"
           @pointerdown=${this.onDragStart}
           @pointermove=${this.onDragMove}
           @pointerup=${this.onDragEnd}
@@ -171,7 +172,7 @@ export abstract class GlassSheet extends GlassElement {
         max-height: calc(100% - 54px);
         overflow-y: auto;
         overscroll-behavior: contain;
-        padding: 10px var(--glass-space-edge) calc(40px + env(safe-area-inset-bottom, 0px));
+        padding: 0 var(--glass-space-edge) calc(40px + env(safe-area-inset-bottom, 0px));
         border-radius: var(--glass-radius-sheet) var(--glass-radius-sheet) 0 0;
         background: var(--glass-sheet);
         border-top: 1px solid var(--glass-surface-border);
@@ -196,11 +197,31 @@ export abstract class GlassSheet extends GlassElement {
           transition: none;
         }
       }
-      .grab {
+      .top {
+        position: sticky;
+        top: 0;
+        z-index: 1;
+        margin: 0 calc(-1 * var(--glass-space-edge)) -12px;
+        padding: 10px var(--glass-space-edge) 12px;
         display: flex;
         flex-direction: column;
         gap: 18px;
         touch-action: none; /* the drag is ours, not the page's scroll */
+        /* frosts in over the first 24px of scrolling, so at rest it's the sheet itself
+           (browsers without scroll timelines just keep it frosted) */
+        animation: frost linear both;
+        animation-timeline: scroll();
+        animation-range: 0 24px;
+      }
+      @keyframes frost {
+        from {
+          background-color: transparent;
+        }
+        to {
+          background-color: var(--glass-sheet);
+          backdrop-filter: blur(30px);
+          -webkit-backdrop-filter: blur(30px);
+        }
       }
       .handle {
         align-self: center;
