@@ -207,6 +207,53 @@ buttons: [media_player.living_room_tv, media_player.living_room_ps5]
 style: dark   # or light
 ```
 
+## Heating & Energy screen cards
+
+### Screen title · `custom:glass-title`
+
+A screen's title in the pack's style ("Heating & Energy").
+
+### Thermostat dial · `custom:glass-thermostat-dial`
+
+The big thermostat: a half-circle dial. Drag the knob, use − and +, or the arrow keys. The target is in the middle with "Now 18.0° · warming up", and the heating modes (Heat / Off) are underneath. Quick changes are sent together.
+
+```yaml
+type: custom:glass-thermostat-dial
+entity: climate.living_room
+```
+
+### Temperature by room · `custom:glass-room-temps`
+
+Every room with a temperature sensor as a row: its humidity, a cold → comfort → warm scale with a marker, and the temperature.
+
+### Electricity today · `custom:glass-electricity`
+
+Today's cost in big type, the kWh used, how that compares with yesterday by the same time, and a 24-hour dot chart. The chart fills up to now and stays faint after, using Home Assistant's history of your energy sensor (kWh today, or a meter total).
+
+```yaml
+type: custom:glass-electricity
+energy: sensor.electricity_today
+cost: sensor.electricity_cost_today   # optional
+```
+
+### Stat tiles · `custom:glass-stat-tiles`
+
+Small number tiles, three across, worded the way you'd say them: "£1.36", "20.4p per kWh", "612". Make one dark to stand out.
+
+```yaml
+type: custom:glass-stat-tiles
+tiles:
+  - entity: sensor.gas_cost_today
+    name: Gas
+    secondary: sensor.gas_today
+    icon: flame
+  - entity: sensor.electricity_rate
+    icon: zap
+  - entity: sensor.octoplus_points
+    icon: gift
+    dark: true
+```
+
 ## Security screen cards
 
 ### Doors · `custom:glass-doors`

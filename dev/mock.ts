@@ -109,7 +109,20 @@ const defs: Def[] = [
   ['person.alex', 'home', { friendly_name: 'Alex Morgan', user_id: 'user-1' }],
   ['scene.relax', 'unknown', { friendly_name: 'Relax' }],
   ['switch.bookshelf', 'on', { friendly_name: 'Bookshelf' }],
-  ['climate.living_room', 'heat', { friendly_name: 'Thermostat', temperature: 17, current_temperature: 18.0, hvac_action: 'idle' }, 'living_room'],
+  ['climate.living_room', 'heat', {
+    friendly_name: 'Living Room thermostat',
+    temperature: 17,
+    current_temperature: 18.0,
+    hvac_action: 'idle',
+    hvac_modes: ['heat', 'off'],
+    min_temp: 10,
+    max_temp: 30,
+    target_temp_step: 0.5,
+  }, 'living_room'],
+  ['sensor.electricity_today', '15.3', { friendly_name: 'Electricity today', device_class: 'energy', unit_of_measurement: 'kWh' }],
+  ['sensor.gas_today', '20.3', { friendly_name: 'Gas today', device_class: 'energy', unit_of_measurement: 'kWh' }],
+  ['sensor.electricity_rate', '0.204', { friendly_name: 'Electricity rate', unit_of_measurement: 'GBP/kWh' }],
+  ['sensor.octoplus_points', '612', { friendly_name: 'Octoplus points' }],
   ['sensor.house_power', '408', { friendly_name: 'House power', device_class: 'power', unit_of_measurement: 'W' }],
   ['sensor.electricity_cost_today', '3.59', { friendly_name: 'Electricity cost today', unit_of_measurement: 'GBP' }],
   ['sensor.gas_cost_today', '1.36', { friendly_name: 'Gas cost today', unit_of_measurement: 'GBP' }],
@@ -167,6 +180,19 @@ function makeHass(states: Record<string, HassEntity>): HomeAssistant {
       const id = (msg.entity_ids as string[])[0];
       const start = Date.parse(msg.start_time as string);
       const points = [];
+      if (id === 'sensor.electricity_today') {
+        // kWh today: climbs through the day, busiest in the evening, resets at midnight.
+        let kwh = 0;
+        let day = new Date(start).getDate();
+        for (let t = start; t < Date.now(); t += 900_000) {
+          const d = new Date(t);
+          if (d.getDate() !== day) (kwh = 0), (day = d.getDate());
+          const h = d.getHours();
+          kwh += (h >= 17 && h <= 21 ? 0.3 : h >= 7 ? 0.12 : 0.05) * (0.8 + Math.random() * 0.4);
+          points.push({ s: kwh.toFixed(2), lu: t / 1000 });
+        }
+        return { [id]: points } as T;
+      }
       for (let t = start; t < Date.now(); t += 600_000) {
         const hour = new Date(t).getHours();
         points.push({ s: String(150 + (hour >= 17 && hour <= 21 ? 900 : 200) * Math.random()), lu: t / 1000 });
@@ -192,6 +218,12 @@ function makeHass(states: Record<string, HassEntity>): HomeAssistant {
       if (domain === 'scene') {
         const id = targets[0];
         hass = makeHass({ ...hass.states, [id]: { ...hass.states[id], state: new Date().toISOString() } });
+        render();
+        return;
+      }
+      if (domain === 'climate' && service === 'set_hvac_mode') {
+        const id = targets[0];
+        hass = makeHass({ ...hass.states, [id]: { ...hass.states[id], state: data!.hvac_mode as string } });
         render();
         return;
       }
