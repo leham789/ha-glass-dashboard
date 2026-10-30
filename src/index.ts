@@ -27,4 +27,4 @@ import './cards/printer/printer-card.js';
 import './cards/switch-rows/switch-rows.js';
 import './cards/room-alert/room-alert.js';
 
-console.info('%c GLASS DASHBOARD %c 0.12.0 ', 'background:#121316;color:#C6F432', 'background:#C6F432;color:#121316');
+console.info('%c GLASS DASHBOARD %c 0.13.0 ', 'background:#121316;color:#C6F432', 'background:#C6F432;color:#121316');

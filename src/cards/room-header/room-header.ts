@@ -4,6 +4,11 @@ import { tokens } from '../../tokens.js';
 import { ensureFonts } from '../../fonts.js';
 import { type HomeAssistant, type LovelaceCardConfig, navigate, registerCard } from '../../ha.js';
 import { areaEntityIds, roomSummary, shortName } from '../../rooms.js';
+import { loadPrefs, onPrefsChange, prefs } from '../../prefs.js';
+import { GlassSheet } from '../../elements/glass-sheet.js';
+import type { GlassRoomOptionsSheet } from '../../sheets/room-options-sheet.js';
+import '../../sheets/room-options-sheet.js';
+import '../../elements/glass-icon.js';
 import './room-header-editor.js';
 
 export interface RoomHeaderConfig extends LovelaceCardConfig {
@@ -26,6 +31,8 @@ export class GlassRoomHeader extends LitElement {
   @property({ attribute: false }) hass?: HomeAssistant;
   @state() private config?: RoomHeaderConfig;
   private watched: string[] = [];
+  private sheet?: GlassSheet;
+  private stopPrefs?: () => void;
 
   static getConfigElement() {
     return document.createElement('glass-room-header-editor');
@@ -53,9 +60,19 @@ export class GlassRoomHeader extends LitElement {
   connectedCallback(): void {
     super.connectedCallback();
     ensureFonts();
+    this.stopPrefs = onPrefsChange(() => this.requestUpdate());
+  }
+
+  disconnectedCallback(): void {
+    this.stopPrefs?.();
+    this.sheet?.close();
+    super.disconnectedCallback();
   }
 
   protected shouldUpdate(changed: PropertyValues): boolean {
+    if (this.hass) loadPrefs(this.hass);
+    // Keep an open Room options sheet current.
+    if (this.sheet?.isConnected && this.hass) this.sheet.hass = this.hass;
     if (!changed.has('hass') || changed.size > 1 || !this.config) return true;
     const old = changed.get('hass') as HomeAssistant | undefined;
     if (!old || old.areas !== this.hass!.areas) return true;
@@ -76,14 +93,17 @@ export class GlassRoomHeader extends LitElement {
     const c = this.config!;
     const exclude = c.exclude_areas ?? [];
     const all = Object.values(this.hass!.areas ?? {}).filter((a) => !exclude.includes(a.area_id));
-    const pinned = (c.pinned ?? []).map((id) => all.find((a) => a.area_id === id)).filter((a) => !!a);
+    // Pinned in the card first, then rooms pinned from Room options.
+    const order = [...new Set([...(c.pinned ?? []), ...prefs().pinned])];
+    const pinned = order.map((id) => all.find((a) => a.area_id === id)).filter((a) => !!a);
     return [...pinned, ...all.filter((a) => !pinned.includes(a))];
   }
 
   render() {
     if (!this.config || !this.hass) return nothing;
     const hass = this.hass;
-    const room = roomSummary(hass, this.config.area);
+    // Lights hidden in Room options don't count on the room screen.
+    const room = roomSummary(hass, this.config.area, prefs().hidden[this.config.area]);
     const playing = this.mediaLine();
     this.watched = room.watch;
 
@@ -109,7 +129,9 @@ export class GlassRoomHeader extends LitElement {
       </nav>
       <section aria-label="Room summary">
         <span class="left">
-          <span class="name">${room.name}</span>
+          <button type="button" class="name" aria-label="${room.name} options" @click=${() => this.openOptions()}>
+            ${room.name}<glass-icon name="chevron-down" size="14" stroke="1.8"></glass-icon>
+          </button>
           ${room.lights.length
             ? html`<span class="big"><span class="n">${room.onCount}</span><span class="of">/${room.lights.length} on</span></span>`
             : html`<span class="big"><span class="n none">No lights</span></span>`}
@@ -132,6 +154,13 @@ export class GlassRoomHeader extends LitElement {
       .filter((e) => ['on', 'playing', 'paused'].includes(e.state))
       .map((e) => `${shortName(e, area?.name ?? '')} ${e.state}`)
       .join(' · ');
+  }
+
+  private openOptions() {
+    if (this.sheet?.isConnected) return;
+    const sheet = GlassSheet.open<GlassRoomOptionsSheet>('glass-room-options-sheet', this.hass!);
+    sheet.area = this.config!.area;
+    this.sheet = sheet;
   }
 
   private go(e: Event, areaId: string) {
@@ -203,8 +232,19 @@ export class GlassRoomHeader extends LitElement {
         text-align: right;
       }
       .name {
+        all: unset;
+        align-self: flex-start;
+        display: flex;
+        align-items: center;
+        gap: 4px;
         font-size: var(--glass-text-body);
         color: var(--glass-text-muted);
+        cursor: pointer;
+      }
+      .name:focus-visible {
+        outline: 2px solid var(--glass-ink);
+        outline-offset: 2px;
+        border-radius: 4px;
       }
       .big {
         display: flex;

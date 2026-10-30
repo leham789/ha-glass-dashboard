@@ -4,6 +4,7 @@ import { tokens } from '../../tokens.js';
 import { ensureFonts } from '../../fonts.js';
 import { type AreaRegistryEntry, type HomeAssistant, type LovelaceCardConfig, navigate, registerCard } from '../../ha.js';
 import { roomSummary } from '../../rooms.js';
+import { loadPrefs, onPrefsChange, prefs } from '../../prefs.js';
 import { renderRoomTile, roomTileStyles, toggleRoomLights } from '../room-tile/room-tile.js';
 import './rooms-editor.js';
 
@@ -34,6 +35,7 @@ export class GlassRooms extends LitElement {
   @state() private floor?: string = readStoredFloor();
 
   private watched: string[] = [];
+  private stopPrefs?: () => void;
 
   static getConfigElement() {
     return document.createElement('glass-rooms-editor');
@@ -58,9 +60,16 @@ export class GlassRooms extends LitElement {
   connectedCallback(): void {
     super.connectedCallback();
     ensureFonts();
+    this.stopPrefs = onPrefsChange(() => this.requestUpdate());
+  }
+
+  disconnectedCallback(): void {
+    this.stopPrefs?.();
+    super.disconnectedCallback();
   }
 
   protected shouldUpdate(changed: PropertyValues): boolean {
+    if (this.hass) loadPrefs(this.hass);
     if (changed.has('config') || changed.has('floor') || !this.config) return true;
     const old = changed.get('hass') as HomeAssistant | undefined;
     if (!old || !this.hass) return true;
@@ -74,7 +83,12 @@ export class GlassRooms extends LitElement {
     const tabs = floorTabs(hass, this.config.exclude_areas ?? []);
     if (!tabs.length) return html`<p class="empty">No areas yet. Add some in Settings › Areas.</p>`;
     const current = tabs.find((t) => t.id === this.floor) ?? tabs[0];
-    const rooms = current.areas.map((a) => roomSummary(hass, a.area_id));
+    // Rooms pinned from Room options come first.
+    const pinned = prefs().pinned;
+    const areas = [...current.areas].sort(
+      (a, b) => Number(pinned.includes(b.area_id)) - Number(pinned.includes(a.area_id)),
+    );
+    const rooms = areas.map((a) => roomSummary(hass, a.area_id, prefs().hidden[a.area_id]));
     this.watched = rooms.flatMap((r) => r.watch);
     const path = this.config.room_path;
 

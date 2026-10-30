@@ -2,7 +2,7 @@
 
 A frosted-glass, mobile-first card pack for Home Assistant. Every card has a visual editor, so nothing needs YAML.
 
-> Early days: more cards are on the way.
+> Every screen from the design is now covered: Home, rooms, Heating & Energy and Security.
 
 ## Cards
 
@@ -157,6 +157,16 @@ area: living_room
 room_path: /glass/{area}
 pinned: [living_room, bedroom, office]   # optional
 ```
+
+**Room options:** tap the room's name to open it. It has:
+
+- quick actions for the room's lights (All off, Dim to 30%, Warm white)
+- **Show on this screen**: a switch per light, to hide ones you never use from the room screen
+- **Pin to Home**: shows the room first on Home and in the switcher
+- the room's devices, with any low battery flagged
+- a link to the area in Home Assistant
+
+Your choices are saved in Home Assistant against your user, so they follow you across devices.
 
 ### Brightness · `custom:glass-brightness`
 

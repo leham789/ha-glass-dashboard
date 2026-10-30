@@ -4,6 +4,7 @@ import { tokens } from '../../tokens.js';
 import { ensureFonts } from '../../fonts.js';
 import { type HomeAssistant, type LovelaceCardConfig, registerCard } from '../../ha.js';
 import { roomSummary } from '../../rooms.js';
+import { loadPrefs, onPrefsChange, prefs } from '../../prefs.js';
 import type { GlassLightTile } from '../light-tile/light-tile.js';
 import '../light-tile/light-tile.js';
 import './room-lights-editor.js';
@@ -24,6 +25,7 @@ export class GlassRoomLights extends LitElement {
   @state() private config?: RoomLightsConfig;
   private tiles = new Map<string, GlassLightTile>();
   private watched: string[] = [];
+  private stopPrefs?: () => void;
 
   static getConfigElement() {
     return document.createElement('glass-room-lights-editor');
@@ -49,9 +51,16 @@ export class GlassRoomLights extends LitElement {
   connectedCallback(): void {
     super.connectedCallback();
     ensureFonts();
+    this.stopPrefs = onPrefsChange(() => this.requestUpdate());
+  }
+
+  disconnectedCallback(): void {
+    this.stopPrefs?.();
+    super.disconnectedCallback();
   }
 
   protected shouldUpdate(changed: PropertyValues): boolean {
+    if (this.hass) loadPrefs(this.hass);
     if (!changed.has('hass') || changed.size > 1 || !this.config) return true;
     const old = changed.get('hass') as HomeAssistant | undefined;
     if (!old || old.entities !== this.hass!.entities) return true;
@@ -60,7 +69,9 @@ export class GlassRoomLights extends LitElement {
 
   render() {
     if (!this.config || !this.hass) return nothing;
-    const room = roomSummary(this.hass, this.config.area, this.config.exclude_entities);
+    // Leave out lights hidden here in the card or from Room options.
+    const hidden = [...(this.config.exclude_entities ?? []), ...(prefs().hidden[this.config.area] ?? [])];
+    const room = roomSummary(this.hass, this.config.area, hidden);
     this.watched = room.watch;
     if (!room.lights.length) return nothing;
     return html`<section aria-labelledby="h">

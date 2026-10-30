@@ -25,6 +25,9 @@ export interface EntityRegistryEntry {
 export interface DeviceRegistryEntry {
   id: string;
   area_id?: string | null;
+  name?: string | null;
+  /** The name you gave it in HA, if any. */
+  name_by_user?: string | null;
 }
 
 export interface AreaRegistryEntry {

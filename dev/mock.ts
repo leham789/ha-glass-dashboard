@@ -174,18 +174,31 @@ const areas = {
   back: area('back', 'Back', 'outside'),
 };
 
+const userData: Record<string, unknown> = {};
+
 let hass: HomeAssistant = makeHass(states);
 
 function makeHass(states: Record<string, HassEntity>): HomeAssistant {
   return {
     states,
     entities,
-    devices: {},
+    devices: {
+      lr_climate: { id: 'lr_climate', name: 'Living Room Thermometer' },
+      office_climate: { id: 'office_climate', name: 'Office Climate' },
+      p1s: { id: 'p1s', name: 'P1S' },
+      pc_plug: { id: 'pc_plug', name: 'Office PC plug' },
+    },
     areas,
     floors,
     user: { id: 'user-1', name: 'Alex' },
     // History for the energy chart: a reading every 10 minutes, busier in the evening.
     async callWS<T>(msg: Record<string, unknown>) {
+      // HA's per-user storage, kept in memory here.
+      if (msg.type === 'frontend/get_user_data') return { value: userData[msg.key as string] ?? null } as T;
+      if (msg.type === 'frontend/set_user_data') {
+        userData[msg.key as string] = msg.value;
+        return {} as T;
+      }
       const id = (msg.entity_ids as string[])[0];
       const start = Date.parse(msg.start_time as string);
       const points = [];
