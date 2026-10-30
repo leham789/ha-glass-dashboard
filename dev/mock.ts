@@ -128,6 +128,7 @@ const defs: Def[] = [
   ['event.doorbell_doorbell', minsAgo(95), { event_id: 'ev-ring', friendly_name: 'Doorbell Doorbell', event_type: 'ring' }, 'front', 'doorbell'],
   ['event.doorbell_sound', 'unknown', { friendly_name: 'Doorbell Sound detection', event_type: null }, 'front', 'doorbell'],
   ['light.front_porch', 'off', { friendly_name: 'Porch light' }, 'front'],
+  ['light.garden_lights', 'off', { friendly_name: 'Garden lights' }, 'garden'],
   ['binary_sensor.doorbell_motion', 'off', { friendly_name: 'Doorbell Motion', device_class: 'motion' }, 'front'],
   ['binary_sensor.doorbell_ding', 'off', { friendly_name: 'Doorbell Ding', device_class: 'occupancy' }, 'front'],
   ['camera.garden_turret', 'idle', { friendly_name: 'Garden Turret', entity_picture: CAMERA_PICTURE }, 'garden', 'turret'],

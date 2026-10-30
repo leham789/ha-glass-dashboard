@@ -134,7 +134,14 @@ export class GlassPrinterSheet extends GlassEntitySheet {
                   <glass-icon name="lightbulb" size="16" stroke="1.7"></glass-icon>Light · ${lightOn ? 'On' : 'Off'}
                 </button>`
               : nothing}
-            <button type="button" class="expand" aria-label="Full screen" @click=${() => GlassCameraFull.open(hass, [{ entity: camera.entity_id, name: this.sheetTitle, light: light?.entity_id }])}>
+            <button type="button" class="expand" aria-label="Full screen" @click=${() => GlassCameraFull.open(hass, [
+                  {
+                    entity: camera.entity_id,
+                    name: `${this.sheetTitle} chamber`,
+                    light: light?.entity_id,
+                    caption: active ? [PILL[p.phase].text, `${Math.round(pct)}%`, layers > 0 ? `layer ${layer || 0} of ${layers}` : ''].filter(Boolean).join(' · ') : '',
+                  },
+                ])}>
               <glass-icon name="maximize-2" size="16" stroke="1.8"></glass-icon>
             </button>
           </div>`

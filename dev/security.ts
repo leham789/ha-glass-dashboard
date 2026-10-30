@@ -12,7 +12,11 @@ add('doorbell', 'glass-camera', {
   light: 'light.front_porch',
   heading: 'Cameras',
 });
-add('turret', 'glass-camera', { entity: 'camera.garden_turret', motion_entity: 'binary_sensor.garden_turret_motion' });
+add('turret', 'glass-camera', {
+  entity: 'camera.garden_turret',
+  motion_entity: 'binary_sensor.garden_turret_motion',
+  light: 'light.garden_lights',
+});
 add('menu', 'glass-menu', {
   home_path: '/dev/index.html',
   rooms_path: '/dev/room.html',
