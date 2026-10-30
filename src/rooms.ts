@@ -203,6 +203,24 @@ export function shortName(entity: HassEntity | undefined, areaName: string): str
   return name || full;
 }
 
+/** An entity's name without its own room's name: "Living Room TV" in the Living Room → "TV". */
+export function nameInRoom(hass: HomeAssistant, entity: HassEntity): string {
+  const area = areaOf(hass, entity.entity_id);
+  return shortName(entity, area ? (hass.areas?.[area]?.name ?? '') : '');
+}
+
+/**
+ * Names for a set of things shown together, without the words they all start
+ * with: ["Living Room Relax", "Living Room Read"] → ["Relax", "Read"].
+ */
+export function distinctNames(names: string[]): string[] {
+  if (names.length < 2) return names;
+  const words = names.map((n) => n.split(' '));
+  let common = 0;
+  while (words.every((w) => w.length > common + 1 && w[common] === words[0][common])) common++;
+  return words.map((w) => w.slice(common).join(' '));
+}
+
 /** "Back Door" → "Back door". */
 function sentence(text: string): string {
   return text.charAt(0).toUpperCase() + text.slice(1).toLowerCase();

@@ -143,6 +143,72 @@ navigation_path: /glass/living   # optional
 exclude_entities: [light.p1s_chamber_light]  # optional
 ```
 
+## Room screen cards
+
+Put these on one view per room. The room header's switcher moves between them.
+
+### Room header · `custom:glass-room-header`
+
+A full-width switcher of every room: pinned ones first, then the rest. It scrolls sideways and fades at the edge. Below it are the room's name, a big "4/6 on", its temperature and humidity, and what's on ("TV on · Apple TV playing").
+
+```yaml
+type: custom:glass-room-header
+area: living_room
+room_path: /glass/{area}
+pinned: [living_room, bedroom, office]   # optional
+```
+
+### Brightness · `custom:glass-brightness`
+
+A big slider for a light or group (drag to 0 to switch off), with Warm / Neutral / Cool / Colour presets for lights that support them. Colour opens Home Assistant's colour picker.
+
+```yaml
+type: custom:glass-brightness
+entity: light.living_room_hue
+```
+
+### Room lights · `custom:glass-room-lights`
+
+Every light in the room as a light tile, two across. New lights appear on their own.
+
+```yaml
+type: custom:glass-room-lights
+area: living_room
+exclude_entities: [light.p1s_chamber_light]   # optional
+```
+
+### Scenes · `custom:glass-scenes`
+
+Scene tiles three across, coloured by name (Energise, Read, Relax, Nightlight…). The one you ran last is ringed. Words every scene shares, such as the room's name, are dropped.
+
+```yaml
+type: custom:glass-scenes
+title: Hue scenes
+entities: [scene.living_room_energise, scene.living_room_read, scene.living_room_relax]
+```
+
+### Thermostat row · `custom:glass-thermostat-row`
+
+A room's heating target with − and + buttons. Quick taps are sent together.
+
+```yaml
+type: custom:glass-thermostat-row
+entity: climate.living_room
+```
+
+### Media · `custom:glass-media`
+
+A room's player with play/pause, and its other devices as buttons ("TV · On", "PS5 · Off"). Dark for a TV, light for music.
+
+```yaml
+type: custom:glass-media
+entity: media_player.living_room_apple_tv
+buttons: [media_player.living_room_tv, media_player.living_room_ps5]
+style: dark   # or light
+```
+
+## Building blocks
+
 ### Light tile · `custom:glass-light-tile`
 
 One light. Its tile shows the light's real colour:

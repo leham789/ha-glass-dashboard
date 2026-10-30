@@ -10,5 +10,11 @@ import './cards/around/around.js';
 import './cards/home-header/home-header.js';
 import './cards/favourites/favourites.js';
 import './cards/energy-tiles/energy-tiles.js';
+import './cards/room-header/room-header.js';
+import './cards/brightness/brightness.js';
+import './cards/room-lights/room-lights.js';
+import './cards/scenes/scenes.js';
+import './cards/thermostat-row/thermostat-row.js';
+import './cards/media/media.js';
 
-console.info('%c GLASS DASHBOARD %c 0.8.0 ', 'background:#121316;color:#C6F432', 'background:#C6F432;color:#121316');
+console.info('%c GLASS DASHBOARD %c 0.9.0 ', 'background:#121316;color:#C6F432', 'background:#C6F432;color:#121316');
