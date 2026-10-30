@@ -6,6 +6,8 @@ A frosted-glass, mobile-first card pack for Home Assistant. Every card has a vis
 
 ## Cards
 
+A card with one main action does it when you tap anywhere on it (a room tile opens its room, a camera opens the cameras pop-up). Cards with several different buttons, like the thermostat or media player, keep them separate.
+
 ### Home header · `custom:glass-home-header`
 
 The top of Home. It has today's date, "Good evening, Alex" and your avatar with a dot that's green when you're home. Below that, one room's temperature is the big number (the decimal is greyed), with chips for the room, the temperature outside and the humidity.
@@ -257,11 +259,11 @@ show_presets: true   # optional: the thermostat's presets (Comfort, Eco…) unde
 
 ### Temperature by room · `custom:glass-room-temps`
 
-Every room with a temperature sensor as a row: its humidity, a cold → comfort → warm scale with a marker, and the temperature.
+Every room with a temperature sensor as a row: its humidity, a cold → comfort → warm scale with a marker, and the temperature. Tap anywhere on it for the room temperatures pop-up.
 
 ### Electricity today · `custom:glass-electricity`
 
-Today's cost in big type, the kWh used, how that compares with yesterday by the same time, and a 24-hour dot chart. The chart fills up to now and stays faint after, using Home Assistant's history of your energy sensor (kWh today, or a meter total).
+Today's cost in big type, the kWh used, how that compares with yesterday by the same time, and a 24-hour dot chart. The chart fills up to now and stays faint after, using Home Assistant's history of your energy sensor (kWh today, or a meter total). Tap anywhere on it for the details.
 
 ```yaml
 type: custom:glass-electricity
@@ -303,7 +305,7 @@ entities: [binary_sensor.front_door_contact, binary_sensor.back_door_contact]   
 
 A camera picture that refreshes every 10 seconds, with a Recording / Live badge. Underneath are its name, when it last saw motion and when the doorbell last rang, and a Motion / Clear pill. Stack one per camera.
 
-The expand button opens the **cameras pop-up**:
+Tap anywhere on the card to open the **cameras pop-up**:
 
 - one camera big, as live video (WebRTC, or HLS where the browser plays it) when Home Assistant can stream it, otherwise a picture refreshing every 2 seconds
 - **< >** or a swipe to go round every camera card on the screen, looping back to the first
