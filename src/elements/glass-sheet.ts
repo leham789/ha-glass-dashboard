@@ -80,19 +80,22 @@ export abstract class GlassSheet extends GlassElement {
         tabindex="-1"
         aria-labelledby="title"
       >
-        <span class="handle" aria-hidden="true"></span>
-        <header>
-          <span class="title">
-            ${this.renderIcon()}
-            <span class="names">
-              <h1 id="title">${this.sheetTitle}</h1>
-              ${this.sheetSubtitle ? html`<span class="subtitle">${this.sheetSubtitle}</span>` : ''}
+        <!-- stays at the top, frosted, while the rest scrolls under it -->
+        <div class="top">
+          <span class="handle" aria-hidden="true"></span>
+          <header>
+            <span class="title">
+              ${this.renderIcon()}
+              <span class="names">
+                <h1 id="title">${this.sheetTitle}</h1>
+                ${this.sheetSubtitle ? html`<span class="subtitle">${this.sheetSubtitle}</span>` : ''}
+              </span>
             </span>
-          </span>
-          <button type="button" class="close" aria-label="Close" @click=${() => this.close()}>
-            <glass-icon name="x" size="22" stroke="1.8"></glass-icon>
-          </button>
-        </header>
+            <button type="button" class="close" aria-label="Close" @click=${() => this.close()}>
+              <glass-icon name="x" size="22" stroke="1.8"></glass-icon>
+            </button>
+          </header>
+        </div>
         ${this.renderBody()}
       </section>
     `;
@@ -126,7 +129,7 @@ export abstract class GlassSheet extends GlassElement {
         max-height: calc(100% - 54px);
         overflow-y: auto;
         overscroll-behavior: contain;
-        padding: 10px var(--glass-space-edge) calc(40px + env(safe-area-inset-bottom, 0px));
+        padding: 0 var(--glass-space-edge) calc(40px + env(safe-area-inset-bottom, 0px));
         border-radius: var(--glass-radius-sheet) var(--glass-radius-sheet) 0 0;
         background: var(--glass-sheet);
         border-top: 1px solid var(--glass-surface-border);
@@ -149,6 +152,31 @@ export abstract class GlassSheet extends GlassElement {
         .sheet,
         .backdrop {
           transition: none;
+        }
+      }
+      .top {
+        position: sticky;
+        top: 0;
+        z-index: 1;
+        margin: 0 calc(-1 * var(--glass-space-edge)) -12px;
+        padding: 10px var(--glass-space-edge) 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+        /* frosts in over the first 24px of scrolling, so at rest it's the sheet itself
+           (browsers without scroll timelines just keep it frosted) */
+        animation: frost linear both;
+        animation-timeline: scroll();
+        animation-range: 0 24px;
+      }
+      @keyframes frost {
+        from {
+          background-color: transparent;
+        }
+        to {
+          background-color: var(--glass-sheet);
+          backdrop-filter: blur(30px);
+          -webkit-backdrop-filter: blur(30px);
         }
       }
       .handle {
