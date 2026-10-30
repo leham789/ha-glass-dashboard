@@ -117,7 +117,7 @@ export abstract class GlassSheet extends GlassElement {
         tabindex="-1"
         aria-labelledby="title"
       >
-        <!-- stays at the top, frosted, while the rest scrolls under it; drag it down to close -->
+        <!-- stays at the top while the rest scrolls under it; drag it down to close -->
         <div
           class="sheet-top"
           @pointerdown=${this.onDragStart}
@@ -139,7 +139,7 @@ export abstract class GlassSheet extends GlassElement {
             </button>
           </header>
         </div>
-        ${this.renderBody()}
+        <div class="scroll">${this.renderBody()}</div>
       </section>
     `;
   }
@@ -170,9 +170,7 @@ export abstract class GlassSheet extends GlassElement {
         width: 100%;
         max-width: 480px;
         max-height: calc(100% - 54px);
-        overflow-y: auto;
-        overscroll-behavior: contain;
-        padding: 0 var(--glass-space-edge) calc(40px + env(safe-area-inset-bottom, 0px));
+        overflow: hidden;
         border-radius: var(--glass-radius-sheet) var(--glass-radius-sheet) 0 0;
         background: var(--glass-sheet);
         border-top: 1px solid var(--glass-surface-border);
@@ -181,7 +179,8 @@ export abstract class GlassSheet extends GlassElement {
         -webkit-backdrop-filter: blur(30px);
         display: flex;
         flex-direction: column;
-        gap: 18px;
+        /* the top bar's height: handle (10 + 5) + gap 18 + title 64 */
+        --bar: 97px;
         transform: translate(-50%, 100%);
         transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
       }
@@ -199,11 +198,12 @@ export abstract class GlassSheet extends GlassElement {
       }
       /* not ".top": sheets use that for their own rows */
       .sheet-top {
-        position: sticky;
+        position: absolute;
         top: 0;
+        left: 0;
+        right: 0;
         z-index: 1;
-        margin: 0 calc(-1 * var(--glass-space-edge)) -12px;
-        padding: 10px var(--glass-space-edge) 12px;
+        padding: 10px var(--glass-space-edge) 0;
         display: flex;
         flex-direction: column;
         gap: 18px;
@@ -212,63 +212,30 @@ export abstract class GlassSheet extends GlassElement {
            and taps between them reach the content */
         pointer-events: none;
       }
-      /* Apple's soft scroll edge: behind the controls, the sheet's own colour fading
-         smoothly to clear about 24px below them, so content scrolling under them softens
-         away with no hard line. (No blur: a blur can't fade out, it stops at an edge.)
-         Invisible at rest; it eases in over the first 24px of scrolling (browsers that
-         can't tie it to scrolling just keep it on). */
-      .sheet-top::before {
-        content: '';
-        position: absolute;
-        inset: 0 0 -24px;
-        z-index: -1;
-        pointer-events: none;
-        background: linear-gradient(
-          to bottom,
-          rgb(var(--glass-sheet-rgb)) 0%,
-          rgb(var(--glass-sheet-rgb)) 50%,
-          rgba(var(--glass-sheet-rgb), 0.7) 70%,
-          rgba(var(--glass-sheet-rgb), 0.3) 85%,
-          rgba(var(--glass-sheet-rgb), 0) 100%
-        );
-      }
       .sheet-top > * {
         pointer-events: auto;
+      }
+      /* Everything below the top bar scrolls here, starting just under it. Apple's soft
+         scroll edge: content fades out as it scrolls up towards the title and close, so
+         the sheet itself shows behind them; nothing is painted over it, so nothing behind
+         the bar changes. At rest the content starts below the fade. */
+      .scroll {
+        flex: 1 1 auto;
+        min-height: 0;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        box-sizing: border-box;
+        padding: calc(var(--bar) + 18px) var(--glass-space-edge) calc(40px + env(safe-area-inset-bottom, 0px));
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+        -webkit-mask-image: linear-gradient(to bottom, transparent calc(var(--bar) - 12px), #000 calc(var(--bar) + 18px));
+        mask-image: linear-gradient(to bottom, transparent calc(var(--bar) - 12px), #000 calc(var(--bar) + 18px));
       }
       .title,
       .close {
         backdrop-filter: blur(24px);
         -webkit-backdrop-filter: blur(24px);
-      }
-      /* Once something scrolls under them (the first 24px of scrolling), the soft edge
-         eases in and the title and close firm up and lift with a soft shadow. Only where
-         the browser can tie animation to scrolling. */
-      @supports (animation-timeline: scroll()) {
-        .sheet-top::before,
-        .title,
-        .close {
-          animation: linear both;
-          animation-timeline: scroll();
-          animation-range: 0 24px;
-        }
-        .sheet-top::before {
-          animation-name: edge-in;
-        }
-        .title,
-        .close {
-          animation-name: lift;
-        }
-      }
-      @keyframes edge-in {
-        from {
-          opacity: 0;
-        }
-      }
-      @keyframes lift {
-        to {
-          background-color: rgba(var(--glass-surface-rgb), 0.94);
-          box-shadow: 0 8px 24px rgba(20, 20, 40, 0.14);
-        }
       }
       .handle {
         align-self: center;

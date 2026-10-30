@@ -19,7 +19,6 @@ export const tokens = css`
     --glass-solid: #fff; /* opaque card, row or button */
     --glass-raised: #fff; /* the selected option in a segmented control */
     --glass-sheet: rgba(248, 248, 250, 0.86);
-    --glass-sheet-rgb: 248, 248, 250; /* the sheet's colour, solid, for fades (soft scroll edge) */
     --glass-neutral-tint: #f1f1f4;
     --glass-on-ink: #fff; /* text and icons on an ink button */
     --glass-surface-rgb: 255, 255, 255; /* rgba(var(--glass-surface-rgb), a) surfaces */
@@ -98,7 +97,6 @@ export const tokens = css`
     --glass-solid: #26282e;
     --glass-raised: rgba(255, 255, 255, 0.16);
     --glass-sheet: rgba(28, 30, 34, 0.94);
-    --glass-sheet-rgb: 28, 30, 34;
     --glass-neutral-tint: rgba(255, 255, 255, 0.08);
     --glass-on-ink: #121316;
     --glass-surface-rgb: 40, 42, 48;

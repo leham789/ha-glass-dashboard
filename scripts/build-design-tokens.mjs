@@ -35,7 +35,6 @@ const NAMES = [
   ['solid', 'solid'],
   ['raised', 'raised'],
   ['sheet', 'sheet'],
-  ['sheet-rgb', 'sheet-rgb'],
   ['neutral-tint', 'neutral-tint'],
   ['on-ink', 'on-ink'],
   ['glass-rgb', 'surface-rgb'],
