@@ -102,13 +102,14 @@ export class GlassPrinter extends LitElement {
     if (!p) return nothing;
     const title = `3D printer${this.config.name ? ` · ${this.config.name}` : ''}`;
     if (!p.showFull && !this.expanded) {
-      // An idle printer went idle when its last print finished.
-      const last = p.phase === 'idle' ? `last print ${ago(p.status.last_changed)}` : '';
+      // Bambu printers keep saying "finish" until the next print, so a print
+      // that ended over two hours ago reads as idle, with when it ended.
+      const sub = p.phase === 'failed' ? `Last print failed ${ago(p.status.last_changed)}` : `Idle · last print ${ago(p.status.last_changed)}`;
       return html`<button type="button" class="compact" aria-label="Show 3D printer details" @click=${() => (this.expanded = true)}>
         <span class="round"><glass-icon name="printer" size="22"></glass-icon></span>
         <span class="text">
           <span class="t">${title}</span>
-          <span class="sub">${[PILL[p.phase].text, last].filter(Boolean).join(' · ')}</span>
+          <span class="sub">${sub}</span>
         </span>
         <glass-icon name="chevron-right" size="18" stroke="1.8"></glass-icon>
       </button>`;

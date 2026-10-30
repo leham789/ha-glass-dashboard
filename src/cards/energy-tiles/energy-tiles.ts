@@ -110,7 +110,8 @@ export class GlassEnergyTiles extends LitElement {
     const off = e.state === 'off' || isUnavailable(e);
     const target = typeof a.temperature === 'number' ? `${Math.round(a.temperature * 2) / 2}°` : '–';
     const room = typeof a.current_temperature === 'number' ? `Room is ${a.current_temperature.toFixed(1)}°` : '';
-    const action = a.hvac_action ? String(a.hvac_action).replace('_', ' ') : e.state;
+    // Only what it's actually doing (heating, idle); the mode alone ("heat") doesn't say.
+    const action = a.hvac_action ? String(a.hvac_action).replace('_', ' ') : '';
     return html`<button type="button" class="tile heating" @click=${() => this.open(id)}>
       <span class="top">
         <span class="ring"><glass-icon name="thermometer" size="18"></glass-icon></span>

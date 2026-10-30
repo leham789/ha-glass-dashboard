@@ -88,7 +88,11 @@ export class GlassThermostatDial extends LitElement {
     const th = Math.PI * (1 - frac);
     const kx = CX + R * Math.cos(th);
     const ky = CY - R * Math.sin(th);
-    const modes: string[] = (a.hvac_modes ?? []).filter((m: string) => ['heat', 'off', 'auto', 'cool', 'heat_cool'].includes(m));
+    // Always Heat first and Off last, whatever order the thermostat lists them in.
+    const order = ['heat', 'auto', 'heat_cool', 'cool', 'off'];
+    const modes: string[] = (a.hvac_modes ?? [])
+      .filter((m: string) => order.includes(m))
+      .sort((x: string, y: string) => order.indexOf(x) - order.indexOf(y));
 
     return html`<section aria-label="Thermostat">
       <span class="head">
