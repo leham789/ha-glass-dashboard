@@ -6,6 +6,33 @@ A frosted-glass, mobile-first card pack for Home Assistant. Every card has a vis
 
 ## Cards
 
+### Status chips · `custom:glass-status-chips`
+
+One scrolling row of chips that sum up the house:
+
+- **an open door or window** (first, in peach, only while something is open). It opens your Security view.
+- **lights on**. It opens the **Lights** pop-up: how many are on, *All off* (then *Undo*), On / All / Offline filters, and every light by room. Tap a light to switch it.
+- **room temperatures**, from coldest to warmest room ("Rooms 15–23°")
+- **low batteries**: any battery under 40%
+
+```yaml
+type: custom:glass-status-chips
+security_path: /glass/security   # optional
+exclude_areas: [server_room]     # optional
+```
+
+### Menu · `custom:glass-menu`
+
+The bottom menu: Home, Rooms, Energy and Security. The screen you're on is the dark pill with its name, and the others are icons. It floats over the bottom of the screen. Any view in the same dashboard that isn't Home, Energy or Security counts as a room, and **Rooms** reopens the last room you viewed on that device. Leave out a path to hide that item.
+
+```yaml
+type: custom:glass-menu
+home_path: /glass/home
+rooms_path: /glass/living_room
+energy_path: /glass/energy
+security_path: /glass/security
+```
+
 ### Rooms · `custom:glass-rooms`
 
 Every area in your home as a room tile, grouped by floor with a Down / Up / Outside style switcher. It reads your Home Assistant areas and floors, so new rooms appear on their own. There's nothing to set up.
@@ -83,4 +110,4 @@ npm run build   # writes dist/ha-glass-dashboard.js
 
 ## Credits
 
-Icons are from [Lucide](https://lucide.dev) (ISC licence). The font is [Outfit](https://fonts.google.com/specimen/Outfit) (SIL Open Font License).
+Icons are from [Lucide](https://lucide.dev) (ISC licence). The font is [Outfit](https://fonts.google.com/specimen/Outfit) (SIL Open Font License). It's bundled into the pack, so nothing is loaded from Google.

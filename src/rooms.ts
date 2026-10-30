@@ -20,6 +20,8 @@ export interface RoomSummary {
   meta: string;
   /** Something needs attention (a door or window is open). */
   alert: boolean;
+  /** The room's temperature in °, when it has a sensor. */
+  temperature?: number;
   /** Every entity this summary read, so a card only re-renders when one changes. */
   watch: string[];
 }
@@ -55,8 +57,43 @@ export function roomSummary(hass: HomeAssistant, areaId: string, exclude: string
     lights,
     onCount: lights.filter((l) => l.on).length,
     ...roomMeta(hass, ids, name, area?.temperature_entity_id, area?.humidity_entity_id),
+    temperature: numberState(hass.states[area?.temperature_entity_id ?? pickSensor(hass, ids, 'temperature') ?? '']),
     watch: [...ids, ...members, ...chosen],
   };
+}
+
+export interface LightGroup {
+  name: string;
+  lights: RoomLight[];
+}
+
+/**
+ * Every light in the home, grouped by area in HA's area order (lights with no
+ * area last, as "Other"), each counted once as in roomSummary.
+ */
+export function lightsByArea(hass: HomeAssistant, excludeAreas: string[] = []): LightGroup[] {
+  const groups: LightGroup[] = Object.values(hass.areas ?? {})
+    .filter((a) => !excludeAreas.includes(a.area_id))
+    .map((a) => ({ name: a.name, lights: roomSummary(hass, a.area_id).lights }))
+    .filter((g) => g.lights.length);
+
+  const placed = new Set(groups.flatMap((g) => g.lights.map((l) => l.id)));
+  const loose = Object.keys(hass.states).filter((id) => {
+    if (!id.startsWith('light.') || placed.has(id) || hass.entities?.[id]?.hidden) return false;
+    const area = areaOf(hass, id);
+    return !area || !excludeAreas.includes(area);
+  });
+  // Leave out groups whose lights are already listed.
+  const others = loose.filter(
+    (id) => !(groupMembers(hass.states[id]) ?? []).some((m) => placed.has(m) || loose.includes(m)),
+  );
+  if (others.length) {
+    groups.push({
+      name: 'Other',
+      lights: others.map((id) => ({ id, name: shortName(hass.states[id], ''), on: isLightOn(hass.states[id], hass.states) })),
+    });
+  }
+  return groups;
 }
 
 /**
@@ -127,12 +164,23 @@ function pickSensor(hass: HomeAssistant, ids: string[], deviceClass: string): st
       hass.states[id].attributes.device_class === deviceClass &&
       numberState(hass.states[id]) !== undefined,
   );
-  const deviceSize = (id: string) => {
-    const device = hass.entities[id]?.device_id;
-    if (!device) return Infinity;
-    return Object.values(hass.entities).filter((e) => e.device_id === device).length;
-  };
+  const sizes = deviceSizes(hass);
+  const deviceSize = (id: string) => sizes.get(hass.entities[id]?.device_id ?? '') ?? Infinity;
   return candidates.sort((a, b) => deviceSize(a) - deviceSize(b))[0];
+}
+
+// Entities per device, worked out once per entity registry (it rarely changes).
+const deviceSizeCache = new WeakMap<object, Map<string, number>>();
+function deviceSizes(hass: HomeAssistant): Map<string, number> {
+  let sizes = deviceSizeCache.get(hass.entities);
+  if (!sizes) {
+    sizes = new Map();
+    for (const e of Object.values(hass.entities ?? {})) {
+      if (e.device_id) sizes.set(e.device_id, (sizes.get(e.device_id) ?? 0) + 1);
+    }
+    deviceSizeCache.set(hass.entities, sizes);
+  }
+  return sizes;
 }
 
 function numberState(entity?: HassEntity): number | undefined {

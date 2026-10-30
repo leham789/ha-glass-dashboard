@@ -41,6 +41,10 @@ const defs: Def[] = [
   // Outside
   ['light.garden_fence', 'on', { friendly_name: 'Garden Fence', color_mode: 'onoff' }, 'garden'],
   ['binary_sensor.back_door_contact', 'on', { friendly_name: 'Back Door Contact', device_class: 'door' }, 'back'],
+  // Batteries (diagnostic entities, as Zigbee devices report them)
+  ['sensor.lr_remote_battery', '12', { friendly_name: 'Living Room Remote Battery', device_class: 'battery' }, 'living_room'],
+  ['sensor.guest_remote_battery', '36', { friendly_name: 'Guest Remote Battery', device_class: 'battery' }],
+  ['sensor.front_door_battery', '90', { friendly_name: 'Front Door Battery', device_class: 'battery' }, 'hallway'],
   // Not in a room: light-tile states only
   ['light.office_group', 'on', {
     friendly_name: 'Office Hue Group',
@@ -112,7 +116,14 @@ function add(containerId: string, type: string, config: Record<string, unknown>)
   cards.push(card);
 }
 
+add('chips', 'glass-status-chips', { security_path: '/dev/security' });
 add('rooms', 'glass-rooms', {});
+add('menu', 'glass-menu', {
+  home_path: location.pathname,
+  rooms_path: '/dev/living_room',
+  energy_path: '/dev/energy',
+  security_path: '/dev/security',
+});
 for (const id of ['ambient', 'blue_example', 'tv_strip', 'office_hue', 'christmas_tree', 'living_room_hue', 'office_group', 'floor_lamp', 'ceiling_nook']) {
   add('tiles', 'glass-light-tile', { entity: `light.${id}` });
 }

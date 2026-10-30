@@ -2,5 +2,7 @@
 import './cards/light-tile/light-tile.js';
 import './cards/room-tile/room-tile.js';
 import './cards/rooms/rooms.js';
+import './cards/status-chips/status-chips.js';
+import './cards/menu/menu.js';
 
-console.info('%c GLASS DASHBOARD %c 0.2.1 ', 'background:#121316;color:#C6F432', 'background:#C6F432;color:#121316');
+console.info('%c GLASS DASHBOARD %c 0.3.0 ', 'background:#121316;color:#C6F432', 'background:#C6F432;color:#121316');
