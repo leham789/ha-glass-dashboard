@@ -18,9 +18,10 @@ export const daysUntil = (date: Date, now = new Date()) => Math.round((date.getT
 /**
  * Upcoming collections from bin sensors, earliest first. Understands the usual
  * Waste Collection Schedule set-ups:
+ * - an `upcoming` attribute listing { date, type } for each collection
+ * - attributes that are dates mapping to bin names ("upcoming" details format)
+ * - a `daysTo` attribute, with the bins named in the state ("Red Bin, Blue Bin in 3 days")
  * - one sensor per bin whose state is a date or a number of days ("2", "in 2 days")
- * - a sensor with `daysTo` (and optionally `types`) attributes
- * - a sensor whose attributes are dates mapping to bin names ("upcoming" details)
  */
 export function collections(entities: HassEntity[], now = new Date()): Collection[] {
   const byDay = new Map<number, Set<string>>();
@@ -37,13 +38,22 @@ export function collections(entities: HassEntity[], now = new Date()): Collectio
     const a = e.attributes;
     const name = binName(a.friendly_name ?? e.entity_id);
 
+    const upcoming = Array.isArray(a.upcoming)
+      ? a.upcoming.filter((u: unknown) => u && typeof u === 'object' && ISO_DATE.test(String((u as any).date)))
+      : [];
+    if (upcoming.length) {
+      for (const u of upcoming) add(parseDay(u.date), [binName(u.type ?? name)]);
+      continue;
+    }
     const dated = Object.entries(a).filter(([k, v]) => ISO_DATE.test(k) && typeof v === 'string');
     if (dated.length) {
       for (const [k, v] of dated) add(parseDay(k), splitTypes(v as string));
       continue;
     }
+    // "Red Bin, Blue Bin in 3 days": the bins are named before when.
+    const when = e.state.match(/^(.*?)\s*(?:\bin\s+(\d+)\s+days?|\b(today)|\b(tomorrow))\s*$/i);
     if (typeof a.daysTo === 'number') {
-      add(addDays(today(now), a.daysTo), Array.isArray(a.types) ? a.types.map(binName) : [name]);
+      add(addDays(today(now), a.daysTo), when?.[1] ? splitTypes(when[1]) : [name]);
       continue;
     }
     const day = ISO_DATE.test(e.state.slice(0, 10)) ? parseDay(e.state.slice(0, 10)) : undefined;
@@ -51,8 +61,8 @@ export function collections(entities: HassEntity[], now = new Date()): Collectio
       add(day, [name]);
       continue;
     }
-    const n = /today/i.test(e.state) ? 0 : /tomorrow/i.test(e.state) ? 1 : Number(e.state.match(/\d+/)?.[0]);
-    if (Number.isFinite(n)) add(addDays(today(now), n), [name]);
+    const n = when ? (when[3] ? 0 : when[4] ? 1 : Number(when[2])) : /^\d+$/.test(e.state.trim()) ? Number(e.state) : NaN;
+    if (Number.isFinite(n)) add(addDays(today(now), n), when?.[1] ? splitTypes(when[1]) : [name]);
   }
 
   return [...byDay.entries()].sort(([a], [b]) => a - b).map(([t, bins]) => ({ date: new Date(t), bins: [...bins] }));
@@ -69,14 +79,22 @@ export function binColour(name: string): string {
   return '#8A8D94';
 }
 
-/** "Green Bin Collection" → "Green". */
+const COLOURS = /\b(green|red|grey|gray|black|blue|brown|yellow|purple)\b/i;
+
+/**
+ * A bin's short name: its colour when it has one ("140L Food & Garden (Green
+ * Lid)" → "Green", "Red Bin" → "Red"), otherwise without "bin"/"collection".
+ */
 function binName(text: string): string {
+  const colour = String(text).match(COLOURS)?.[1];
+  if (colour) return colour.charAt(0).toUpperCase() + colour.slice(1).toLowerCase();
   const name = String(text).replace(/\b(bins?|collection|waste)\b/gi, '').replace(/\s+/g, ' ').trim();
   return name || String(text);
 }
 
+/** Bin names separated by commas (not "&", which appears inside names like "Food & Garden"). */
 function splitTypes(text: string): string[] {
-  return text.split(/\s*(?:,|&|\band\b)\s*/i).filter(Boolean).map(binName);
+  return text.split(/\s*,\s*/).filter(Boolean).map(binName);
 }
 
 function parseDay(iso: string): Date {
