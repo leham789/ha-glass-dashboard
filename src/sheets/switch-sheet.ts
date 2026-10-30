@@ -6,7 +6,7 @@ import '../elements/glass-history-chart.js';
 import type { HassEntity } from '../ha.js';
 import { dailyUsage, spans, stateHistory } from '../history.js';
 import type { IconName } from '../icons.js';
-import { clock, duration } from '../time.js';
+import { clock, duration, hoursMinutes, todayLabels } from '../time.js';
 
 /**
  * Replaces HA's pop-up for switches and smart plugs (switch, input_boolean):
@@ -116,9 +116,9 @@ export class GlassSwitchSheet extends GlassEntitySheet {
       <div class="card">
         <div class="card-head">
           <h2>Today</h2>
-          <span class="note">On ${duration(new Date(Date.now() - this.onToday).toISOString())}</span>
+          <span class="note">On ${hoursMinutes(this.onToday)}</span>
         </div>
-        <glass-history-chart kind="timeline" .bands=${this.bands} .xLabels=${['00:00', '12:00'] as [string, string]} label="When ${this.sheetTitle} was on today"></glass-history-chart>
+        <glass-history-chart kind="timeline" .bands=${this.bands} .xLabels=${todayLabels()} label="When ${this.sheetTitle} was on today"></glass-history-chart>
         <div class="legend">
           <span><i style="background: rgba(47, 180, 87, 0.6)"></i>On</span>
           <span><i style="background: rgba(var(--glass-line-rgb), 0.06)"></i>Off</span>

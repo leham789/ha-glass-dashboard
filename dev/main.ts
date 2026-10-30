@@ -10,7 +10,14 @@ add('energy', 'glass-energy-tiles', {
   cost_label: 'elec + gas',
   navigation_path: '/dev/energy',
 });
-add('chips', 'glass-status-chips', { security_path: '/dev/security', energy_path: '/dev/energy' });
+add('chips', 'glass-status-chips', {
+  security_path: '/dev/security',
+  energy_path: '/dev/energy',
+  printer_status: 'sensor.p1s_print_status',
+  printer_progress: 'sensor.p1s_print_progress',
+  printer_remaining: 'sensor.p1s_remaining_time',
+  printer_name: 'P1S',
+});
 add('goodnight', 'glass-goodnight', { areas: ['living_room', 'hallway', 'kitchen', 'office'], always_show: true });
 add('playing', 'glass-now-playing', {});
 add('around', 'glass-around', {

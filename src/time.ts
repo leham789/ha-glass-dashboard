@@ -20,6 +20,22 @@ export function duration(iso: string, now = new Date()): string {
   return d === 1 ? '1 day' : `${d} days`;
 }
 
+/** A length of time in the short form charts use: "12 h 40 m", "35 m". */
+export function hoursMinutes(ms: number): string {
+  const mins = Math.max(0, Math.round(ms / 60_000));
+  const h = Math.floor(mins / 60);
+  return h ? `${h} h${mins % 60 ? ` ${mins % 60} m` : ''}` : `${mins} m`;
+}
+
+/** Midnight, the middle of today so far (to the hour) — the left and middle labels of a "today" chart. */
+export function todayLabels(now = new Date()): [string, string] {
+  const midnight = new Date(now);
+  midnight.setHours(0, 0, 0, 0);
+  const middle = new Date((midnight.getTime() + now.getTime()) / 2);
+  middle.setMinutes(0, 0, 0);
+  return ['00:00', clock(middle.toISOString(), now)];
+}
+
 /** "18:05" today, otherwise "Tue 18:05", or a date beyond a week. */
 export function clock(iso: string, now = new Date()): string {
   const d = new Date(iso);

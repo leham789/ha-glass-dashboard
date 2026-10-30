@@ -6,6 +6,7 @@ import { ensureFonts } from '../../fonts.js';
 import { type HomeAssistant, type LovelaceCardConfig, navigate, registerCard } from '../../ha.js';
 import { areaEntityIds, roomSummary, shortName } from '../../rooms.js';
 import { loadPrefs, onPrefsChange, prefs } from '../../prefs.js';
+import { clock } from '../../time.js';
 import { GlassSheet } from '../../elements/glass-sheet.js';
 import type { GlassRoomOptionsSheet } from '../../sheets/room-options-sheet.js';
 import '../../sheets/room-options-sheet.js';
@@ -25,7 +26,8 @@ export interface RoomHeaderConfig extends LovelaceCardConfig {
 /**
  * The top of a room screen: a full-width switcher of every room (pinned
  * first, scrolls sideways, fades at the edge), then the room's name over a
- * big "4/6 on", with its climate and what's playing on the right.
+ * big "4/6 on", with its climate and a status line on the right: what's
+ * playing, else "Coldest room" or "Warmest room", else when a remote was last used.
  */
 @customElement('glass-room-header')
 export class GlassRoomHeader extends GlassElement {
@@ -105,8 +107,9 @@ export class GlassRoomHeader extends GlassElement {
     const hass = this.hass;
     // Lights hidden in Room options don't count on the room screen.
     const room = roomSummary(hass, this.config.area, prefs().hidden[this.config.area]);
-    const playing = this.mediaLine();
-    this.watched = room.watch;
+    const extremes = this.extremes();
+    const playing = this.mediaLine() || extremes.line || this.remoteLine();
+    this.watched = [...room.watch, ...extremes.watch];
 
     const climate = [
       room.temperature !== undefined ? `${room.temperature.toFixed(1)}°` : '',
@@ -143,6 +146,33 @@ export class GlassRoomHeader extends GlassElement {
         </span>
       </section>
     `;
+  }
+
+  /** "Coldest room" or "Warmest room", when at least three rooms have a temperature. */
+  private extremes(): { line: string; watch: string[] } {
+    const hass = this.hass!;
+    const rooms = Object.keys(hass.areas ?? {})
+      .map((id) => ({ id, s: roomSummary(hass, id) }))
+      .filter((r) => r.s.temperature !== undefined);
+    const watch = rooms.flatMap((r) => r.s.watch.filter((id) => hass.states[id]?.attributes.device_class === 'temperature'));
+    if (rooms.length < 3) return { line: '', watch };
+    const sorted = [...rooms].sort((a, b) => a.s.temperature! - b.s.temperature!);
+    const here = this.config!.area;
+    const line = sorted[0].id === here ? 'Coldest room' : sorted[sorted.length - 1].id === here ? 'Warmest room' : '';
+    return { line, watch };
+  }
+
+  /** "Remote used 01:37": the last press today of a button or remote in the room (its event entity). */
+  private remoteLine(): string {
+    const hass = this.hass!;
+    const midnight = new Date();
+    midnight.setHours(0, 0, 0, 0);
+    const last = areaEntityIds(hass, this.config!.area)
+      .filter((id) => id.startsWith('event.') && hass.states[id]?.attributes.device_class === 'button')
+      .map((id) => Date.parse(hass.states[id].state))
+      .filter((t) => t >= midnight.getTime())
+      .sort((a, b) => b - a)[0];
+    return last ? `Remote used ${clock(new Date(last).toISOString())}` : '';
   }
 
   /** "TV on · Apple TV playing" from the room's media players. */

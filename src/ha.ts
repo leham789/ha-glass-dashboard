@@ -59,7 +59,11 @@ export interface HomeAssistant {
   /** The websocket itself, for messages that keep coming (e.g. a camera's live video set-up). */
   connection?: {
     subscribeMessage<T>(callback: (msg: T) => void, msg: Record<string, unknown>): Promise<() => Promise<void>>;
+    /** Reconnect now rather than on HA's own schedule. */
+    reconnect?(force?: boolean): void;
   };
+  /** False while the websocket is down (HA restarting, the network dropping). */
+  connected?: boolean;
   /** The signed-in HA user. */
   user?: { id: string; name: string };
   locale?: { language: string };

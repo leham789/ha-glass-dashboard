@@ -4,11 +4,23 @@ import { GlassEntitySheet, type Tone } from './entity-sheet.js';
 import type { ChartBand } from '../elements/glass-history-chart.js';
 import '../elements/glass-history-chart.js';
 import { spans, stateHistory } from '../history.js';
-import { clock, duration } from '../time.js';
+import { clock, hoursMinutes as hm, todayLabels } from '../time.js';
 
 const HOME = '#2FB457';
 const ZONE = '#3B7DD8';
 const AWAY = '#8A8D94';
+
+/** What today's history says: when they left and got back, time in the current place, where they were before. */
+interface Today {
+  left?: number;
+  back?: number;
+  /** Time spent today in the state they're in now. */
+  inState: number;
+  /** The place before this one ('home' or a zone's name), skipping time away. */
+  before?: string;
+  /** Zones visited today, for the legend. */
+  zones: string[];
+}
 
 /**
  * Replaces HA's person pop-up (from the avatar on Home): where someone is
@@ -18,7 +30,7 @@ const AWAY = '#8A8D94';
 @customElement('glass-person-sheet')
 export class GlassPersonSheet extends GlassEntitySheet {
   @state() private bands: ChartBand[] = [];
-  @state() private today: { left?: number; back?: number; homeMs: number } = { homeMs: 0 };
+  @state() private today: Today = { inState: 0, zones: [] };
   private loadedFor = '';
 
   protected get sheetSubtitle(): string {
@@ -64,8 +76,14 @@ export class GlassPersonSheet extends GlassEntitySheet {
     const left = points.find((p, i) => i > 0 && p.s !== 'home' && points[i - 1].s === 'home');
     const back = [...points].reverse().find((p, i, arr) => p.s === 'home' && arr[i + 1] && arr[i + 1].s !== 'home');
     const span = Date.now() - midnight.getTime();
-    const homeMs = s.filter((sp) => sp.s === 'home').reduce((n, sp) => n + (sp.to - sp.from) * span, 0);
-    this.today = { left: left?.t, back: back?.t, homeMs };
+    const now = this.entity!.state;
+    const inState = s.filter((sp) => sp.s === now).reduce((n, sp) => n + (sp.to - sp.from) * span, 0);
+    // the last place (home or a zone) before the current stretch began
+    const places = points.map((p) => p.s).filter((st) => !['not_home', 'unknown', 'unavailable'].includes(st));
+    let i = places.length - 1;
+    while (i >= 0 && places[i] === now) i--;
+    const zones = [...new Set(places.filter((st) => st !== 'home'))];
+    this.today = { left: left?.t, back: back?.t, inState, before: i >= 0 ? places[i] : undefined, zones };
   }
 
   /** The phone that tracks this person, e.g. "iPhone". */
@@ -98,27 +116,55 @@ export class GlassPersonSheet extends GlassEntitySheet {
     if (!e) return html``;
     const { word } = this.where();
     const t = this.today;
-    const caption = word ? `Since ${clock(e.last_changed)}` : `Phone not reporting since ${clock(e.last_changed)}`;
     const at = (ms?: number) => (ms ? clock(new Date(ms).toISOString()) : '—');
+    const place = (st?: string) => (st === 'home' ? 'home' : st);
+    // "Since 17:42 · arrived from Work", "Since 08:36 · left home 08:10", "Since 18:05 · left Work"
+    const how =
+      e.state === 'home'
+        ? t.before
+          ? `arrived from ${t.before}`
+          : ''
+        : e.state === 'not_home'
+          ? t.before
+            ? `left ${place(t.before)}`
+            : ''
+          : t.left
+            ? `left home ${at(t.left)}`
+            : '';
+    const caption = word ? [`Since ${clock(e.last_changed)}`, how].filter(Boolean).join(' · ') : `Phone not reporting since ${clock(e.last_changed)}`;
+    const note = !word ? `Last seen ${clock(e.last_changed)}` : e.state === 'home' ? `Home ${hm(t.inState)}` : e.state === 'not_home' ? `Away ${hm(t.inState)}` : `At ${word} ${hm(t.inState)}`;
+    const since = clock(e.last_changed);
+    const facts =
+      !word || e.state === 'home'
+        ? [
+            { label: 'Left', value: at(t.left) },
+            { label: 'Back', value: at(t.back) },
+          ]
+        : e.state === 'not_home'
+          ? [
+              { label: 'Left home', value: at(t.left) },
+              t.before && t.before !== 'home' ? { label: `Left ${t.before}`, value: since } : { label: 'Back', value: at(t.back) },
+            ]
+          : [
+              { label: 'Left home', value: at(t.left) },
+              { label: `At ${word}`, value: since },
+            ];
+    const legendZones = t.zones.length ? t.zones : e.state !== 'home' && e.state !== 'not_home' && word ? [word] : [];
     return html`
       ${this.renderReading(word, '', caption, word ? undefined : { text: 'Unknown', tone: 'neutral' })}
       <div class="card">
         <div class="card-head">
           <h2>Today</h2>
-          <span class="note">Home ${duration(new Date(Date.now() - t.homeMs).toISOString())}</span>
+          <span class="note">${note}</span>
         </div>
-        <glass-history-chart kind="timeline" .bands=${this.bands} .xLabels=${['00:00', '12:00'] as [string, string]} label="Where ${this.sheetTitle} was today"></glass-history-chart>
+        <glass-history-chart kind="timeline" .bands=${this.bands} .xLabels=${todayLabels()} label="Where ${this.sheetTitle} was today"></glass-history-chart>
         <div class="legend">
           <span><i style="background: rgba(47, 180, 87, 0.6)"></i>Home</span>
-          <span><i style="background: rgba(59, 125, 216, 0.55)"></i>A zone</span>
+          ${legendZones.map((z) => html`<span><i style="background: rgba(59, 125, 216, 0.55)"></i>${z}</span>`)}
           <span><i style="background: rgba(138, 141, 148, 0.35)"></i>Away</span>
         </div>
       </div>
-      ${this.renderFacts([
-        { label: 'Left', value: at(t.left) },
-        { label: 'Back', value: at(t.back) },
-        { label: 'Phone', value: this.phoneBattery() },
-      ])}
+      ${this.renderFacts([...facts, { label: 'Phone', value: this.phoneBattery() }])}
     `;
   }
 

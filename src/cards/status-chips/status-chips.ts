@@ -11,13 +11,18 @@ import type { GlassLightsSheet } from '../../sheets/lights-sheet.js';
 import type { GlassTempsSheet } from '../../sheets/temps-sheet.js';
 import { LOW_BATTERY, batteries } from '../../batteries.js';
 import { batteryIcon } from '../../climate.js';
+import { type PrinterEntities, printerState } from '../../printer.js';
+import type { GlassPrinterSheet } from '../../sheets/printer-sheet.js';
+import '../../sheets/printer-sheet.js';
 import '../../sheets/lights-sheet.js';
 import '../../sheets/temps-sheet.js';
 import '../../sheets/batteries-sheet.js';
 import '../../elements/glass-icon.js';
 import './status-chips-editor.js';
 
-export interface StatusChipsConfig extends LovelaceCardConfig {
+export interface StatusChipsConfig extends LovelaceCardConfig, PrinterEntities {
+  /** The printer's short name for its chip, e.g. "P1S". */
+  printer_name?: string;
   /** Where an open-door chip goes, e.g. the Security view. */
   security_path?: string;
   /** Where the temperatures pop-up's "Go to Heating & Energy" goes. */
@@ -39,7 +44,8 @@ const OPENINGS = new Set(['door', 'window', 'garage_door', 'opening']);
 /**
  * Home's row of status chips, each a summary that opens more detail:
  * an open door (first, in peach, only while something is open), lights on,
- * the spread of room temperatures, and low batteries. One line; scrolls sideways.
+ * the spread of room temperatures, low batteries, and a 3D printer while it
+ * prints and for two hours after. One line; scrolls sideways.
  */
 @customElement('glass-status-chips')
 export class GlassStatusChips extends GlassElement {
@@ -169,6 +175,25 @@ export class GlassStatusChips extends GlassElement {
         icon: batteryIcon(all[0].level),
         iconBg: '#CDB8F5',
         onTap: () => this.openSheet('glass-batteries-sheet'),
+      });
+    }
+
+    const p = this.config?.printer_status ? printerState(hass, this.config) : undefined;
+    if (p?.showFull) {
+      const name = this.config!.printer_name ?? '3D printer';
+      const active = p.phase === 'printing' || p.phase === 'paused';
+      chips.push({
+        key: 'printer',
+        label: active
+          ? [name, p.progress !== undefined ? `${Math.round(p.progress)}%` : '', p.phase === 'paused' ? 'paused' : p.left].filter(Boolean).join(' · ')
+          : `${name} ${p.phase === 'failed' ? 'failed' : 'done'}`,
+        icon: 'printer',
+        iconBg: active ? '#9CC3F2' : p.phase === 'failed' ? '#F7C2A4' : '#9FE3B0',
+        onTap: () =>
+          this.openSheet<GlassPrinterSheet>('glass-printer-sheet', (s) => {
+            s.printer = this.config!;
+            s.entityId = this.config!.printer_status!;
+          }),
       });
     }
 

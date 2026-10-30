@@ -129,7 +129,7 @@ export class GlassThermostatDial extends GlassElement {
           ${off
             ? nothing
             : svg`<path d="M 40 170 A 120 120 0 0 1 ${kx.toFixed(1)} ${ky.toFixed(1)}" stroke="url(#heat)" stroke-width="14" stroke-linecap="round" fill="none"></path>
-                  <circle cx=${kx.toFixed(1)} cy=${ky.toFixed(1)} r="11" fill="#FFFFFF" stroke="#121316" stroke-width="2"></circle>`}
+                  <circle cx=${kx.toFixed(1)} cy=${ky.toFixed(1)} r="11" fill="var(--glass-ink)" stroke="var(--glass-ink)" stroke-width="2"></circle>`}
         </svg>
         <span class="centre">
           <span class="target">${off ? 'Off' : `${fmt(target)}°`}</span>
