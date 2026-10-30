@@ -6,5 +6,6 @@ import './cards/status-chips/status-chips.js';
 import './cards/menu/menu.js';
 import './cards/goodnight/goodnight.js';
 import './cards/now-playing/now-playing.js';
+import './cards/around/around.js';
 
-console.info('%c GLASS DASHBOARD %c 0.6.0 ', 'background:#121316;color:#C6F432', 'background:#C6F432;color:#121316');
+console.info('%c GLASS DASHBOARD %c 0.7.0 ', 'background:#121316;color:#C6F432', 'background:#C6F432;color:#121316');

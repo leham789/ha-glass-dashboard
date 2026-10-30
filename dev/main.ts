@@ -5,6 +5,13 @@ import type { EntityRegistryEntry, HassEntity, HomeAssistant } from '../src/ha.j
 
 type Def = [id: string, state: string, attrs?: Record<string, unknown>, area?: string, device?: string];
 
+/** A date n days from today, as "YYYY-MM-DD". */
+function inDays(n: number): string {
+  const d = new Date();
+  d.setDate(d.getDate() + n);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
 const defs: Def[] = [
   // Living Room (downstairs)
   ['light.ambient', 'on', { friendly_name: 'Ambient', color_mode: 'hs', rgb_color: [255, 168, 84], brightness: 112 }, 'living_room'],
@@ -57,6 +64,15 @@ const defs: Def[] = [
   // A warm room and the weather, for the temperatures pop-up
   ['sensor.kitchen_temperature', '23.4', { friendly_name: 'Kitchen Temperature', device_class: 'temperature' }, 'kitchen'],
   ['weather.home', 'partlycloudy', { friendly_name: 'Home', temperature: 11.3, humidity: 90 }],
+  // Bins (one Waste Collection Schedule sensor per bin) and a 3D printer
+  ['sensor.green_bin', inDays(2), { friendly_name: 'Green Bin' }],
+  ['sensor.red_bin', inDays(2), { friendly_name: 'Red Bin' }],
+  ['sensor.grey_bin', inDays(2), { friendly_name: 'Grey Bin' }],
+  ['sensor.blue_bin', inDays(9), { friendly_name: 'Blue Bin' }],
+  ['sensor.p1s_print_status', 'running', { friendly_name: 'P1S Print status' }],
+  ['sensor.p1s_print_progress', '42', { friendly_name: 'P1S Print progress', unit_of_measurement: '%' }],
+  ['sensor.p1s_remaining_time', '72', { friendly_name: 'P1S Remaining time', unit_of_measurement: 'min' }],
+  ['sensor.p1s_task_name', 'Plant-pot-plug', { friendly_name: 'P1S Task name' }],
   // Not in a room: light-tile states only
   ['light.office_group', 'on', {
     friendly_name: 'Office Hue Group',
@@ -141,6 +157,14 @@ function add(containerId: string, type: string, config: Record<string, unknown>)
 add('chips', 'glass-status-chips', { security_path: '/dev/security', energy_path: '/dev/energy' });
 add('goodnight', 'glass-goodnight', { areas: ['living_room', 'hallway', 'kitchen', 'office'], always_show: true });
 add('playing', 'glass-now-playing', {});
+add('around', 'glass-around', {
+  bins: ['sensor.green_bin', 'sensor.red_bin', 'sensor.grey_bin', 'sensor.blue_bin'],
+  printer_status: 'sensor.p1s_print_status',
+  printer_progress: 'sensor.p1s_print_progress',
+  printer_remaining: 'sensor.p1s_remaining_time',
+  printer_task: 'sensor.p1s_task_name',
+  printer_name: 'P1S',
+});
 add('rooms', 'glass-rooms', {});
 add('menu', 'glass-menu', {
   home_path: location.pathname,

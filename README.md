@@ -49,6 +49,26 @@ entities: [media_player.living_room_apple_tv, media_player.sonos_living_room]  #
 room_path: /glass/{area}                                                       # optional
 ```
 
+### Around the house · `custom:glass-around`
+
+Things that only matter for a while:
+
+- **Bins** show from two days before collection until noon on the day. The tile has the day, a coloured dot per bin, "2 days / Tomorrow / Today", and when the next other bin is due. It works with one Waste Collection Schedule sensor per bin, or one sensor with the upcoming dates.
+- **3D printer** shows while printing (progress, time left, print name) and for two hours after ("Done").
+
+The two tiles share the row. One on its own spans the row, and with neither the card hides.
+
+```yaml
+type: custom:glass-around
+bins: [sensor.green_bin, sensor.red_bin, sensor.grey_bin, sensor.blue_bin]
+printer_status: sensor.p1s_print_status
+printer_progress: sensor.p1s_print_progress
+printer_remaining: sensor.p1s_remaining_time
+printer_task: sensor.p1s_task_name
+printer_name: P1S
+printer_path: /glass/office   # optional
+```
+
 ### Menu · `custom:glass-menu`
 
 The bottom menu: Home, Rooms, Energy and Security. The screen you're on is the dark pill with its name, and the others are icons. It floats over the bottom of the screen. Any view in the same dashboard that isn't Home, Energy or Security counts as a room, and **Rooms** reopens the last room you viewed on that device. Leave out a path to hide that item.
