@@ -25,11 +25,18 @@ const entities: HassEntity[] = [
   light('lr_2', 'LR 2', 'on'),
   light('lr_3', 'LR 3', 'on'),
   light('lr_4', 'LR 4', 'off'),
+  // Hue room the bridge still calls "on", though its bulbs are off or offline.
+  light('office_group', 'Office Hue Group', 'on', {
+    color_mode: 'color_temp',
+    color_temp_kelvin: 4500,
+    brightness: 255,
+    entity_id: ['light.ceiling_nook', 'light.floor_lamp'],
+  }),
   light('floor_lamp', 'Floor Lamp', 'off', { color_mode: null }),
   light('ceiling_nook', 'Ceiling Nook', 'unavailable'),
 ];
 
-const tiles = ['ambient', 'blue_example', 'tv_strip', 'office_hue', 'christmas_tree', 'living_room_hue', 'floor_lamp', 'ceiling_nook'];
+const tiles = ['ambient', 'blue_example', 'tv_strip', 'office_hue', 'christmas_tree', 'living_room_hue', 'office_group', 'floor_lamp', 'ceiling_nook'];
 
 let hass: HomeAssistant = makeHass(Object.fromEntries(entities.map((e) => [e.entity_id, e])));
 
@@ -40,9 +47,13 @@ function makeHass(states: Record<string, HassEntity>): HomeAssistant {
       log(`${domain}.${service} → ${data?.entity_id}`);
       const id = data?.entity_id as string;
       const cur = hass.states[id];
-      if (domain === 'light' && service === 'toggle' && cur) {
-        const next = { ...cur, state: cur.state === 'on' ? 'off' : 'on' };
-        hass = makeHass({ ...hass.states, [id]: next });
+      if (domain === 'light' && cur) {
+        // Like HA: switching a group switches its reachable members too.
+        const state = service === 'turn_on' ? 'on' : 'off';
+        const ids = [id, ...((cur.attributes.entity_id as string[] | undefined) ?? [])];
+        const states = { ...hass.states };
+        for (const e of ids) if (states[e] && states[e].state !== 'unavailable') states[e] = { ...states[e], state };
+        hass = makeHass(states);
         render();
       }
       return undefined;

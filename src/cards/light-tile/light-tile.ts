@@ -4,7 +4,7 @@ import { styleMap } from 'lit/directives/style-map.js';
 import { tokens } from '../../tokens.js';
 import { ensureFonts } from '../../fonts.js';
 import { type HomeAssistant, type LovelaceCardConfig, isUnavailable, openMoreInfo, registerCard } from '../../ha.js';
-import { brightnessPct, lightLook } from '../../light-colour.js';
+import { brightnessPct, groupMembers, isLightOn, lightLook } from '../../light-colour.js';
 import type { IconName } from '../../icons.js';
 import '../../elements/glass-icon.js';
 import './light-tile-editor.js';
@@ -65,7 +65,7 @@ export class GlassLightTile extends LitElement {
     if (!old) return true;
     const id = this.config.entity;
     if (old.states[id] !== this.hass?.states[id]) return true;
-    const members: string[] = this.hass?.states[id]?.attributes.entity_id ?? [];
+    const members = groupMembers(this.hass?.states[id]) ?? [];
     return members.some((m) => old.states[m] !== this.hass?.states[m]);
   }
 
@@ -73,8 +73,8 @@ export class GlassLightTile extends LitElement {
     if (!this.config || !this.hass) return nothing;
     const entity = this.hass.states[this.config.entity];
     const offline = isUnavailable(entity);
-    const on = entity?.state === 'on';
-    const look = lightLook(entity);
+    const on = isLightOn(entity, this.hass.states);
+    const look = lightLook(entity, on);
     const name = this.config.name ?? entity?.attributes.friendly_name ?? this.config.entity;
 
     return html`
@@ -104,10 +104,10 @@ export class GlassLightTile extends LitElement {
   private stateText(): string {
     const entity = this.hass?.states[this.config!.entity];
     if (isUnavailable(entity)) return 'Offline';
-    if (entity!.state !== 'on') return 'Off';
+    if (!isLightOn(entity, this.hass!.states)) return 'Off';
     const pct = brightnessPct(entity);
-    const members: string[] | undefined = entity!.attributes.entity_id;
-    if (Array.isArray(members)) {
+    const members = groupMembers(entity);
+    if (members) {
       const onCount = members.filter((m) => this.hass!.states[m]?.state === 'on').length;
       return pct === undefined ? `${onCount} on` : `${onCount} on · ${pct}%`;
     }
@@ -133,7 +133,11 @@ export class GlassLightTile extends LitElement {
       this.held = false;
       return;
     }
-    this.hass?.callService('light', 'toggle', { entity_id: this.config!.entity });
+    // Not light.toggle: a group that says "on" with no lights on shows as off,
+    // so tapping it must turn it on.
+    const entity = this.hass?.states[this.config!.entity];
+    const service = isLightOn(entity, this.hass!.states) ? 'turn_off' : 'turn_on';
+    this.hass?.callService('light', service, { entity_id: this.config!.entity });
   }
 
   static styles = [
