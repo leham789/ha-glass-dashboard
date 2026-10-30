@@ -15,13 +15,19 @@ import './glass-icon.js';
  * HA's layout can clip them. Use `GlassSheet.open(tag, hass)` to show one;
  * the opener keeps its `hass` current until it closes.
  *
- * Drag it down by its top bar (handle and title) to close: past 120 px, or a
- * quick flick, closes it; anything less goes back.
+ * Swipe it away like an iOS sheet: drag down by the top bar, or anywhere on
+ * it while its content is scrolled to the top (a pull-down past the top turns
+ * into closing). It follows the finger and the dim behind it lightens as it
+ * goes; let go past a quarter of its height, or with a downward flick, and it
+ * closes, otherwise it settles back. Dragged up, it gives a little and returns.
  */
 export abstract class GlassSheet extends GlassElement {
   @property({ attribute: false }) hass?: HomeAssistant;
   @state() private shown = false;
-  private dragFrom?: { y: number; t: number };
+  /** A drag in progress: where it started, and recent finger positions for the flick speed. */
+  private drag?: { from: number; at: { y: number; t: number }[] };
+  /** A touch on the content that may become a drag once it's clearly a pull down from the top. */
+  private pull?: { x: number; y: number };
 
   protected abstract sheetTitle: string;
   /** A second line under the title, e.g. the room. */
@@ -80,32 +86,113 @@ export abstract class GlassSheet extends GlassElement {
     return this.renderRoot.querySelector<HTMLElement>('.sheet');
   }
 
+  private get backdropEl(): HTMLElement | null {
+    return this.renderRoot.querySelector<HTMLElement>('.backdrop');
+  }
+
+  protected firstUpdated(): void {
+    // Touch listeners on the content, not passive, so a pull down from the top can stop
+    // the content scrolling and move the sheet instead.
+    const scroll = this.renderRoot.querySelector<HTMLElement>('.scroll')!;
+    scroll.addEventListener('touchstart', this.onPullStart, { passive: true });
+    scroll.addEventListener('touchmove', this.onPullMove, { passive: false });
+    scroll.addEventListener('touchend', this.onPullEnd);
+    scroll.addEventListener('touchcancel', this.onPullEnd);
+  }
+
+  private dragBegin(y: number) {
+    this.drag = { from: y, at: [{ y, t: performance.now() }] };
+  }
+
+  /** The sheet follows the finger with no easing; the dim lightens as it goes down. */
+  private dragTo(y: number) {
+    const sheet = this.sheetEl;
+    const drag = this.drag;
+    if (!sheet || !drag) return;
+    const now = performance.now();
+    drag.at.push({ y, t: now });
+    while (drag.at.length > 2 && now - drag.at[0].t > 100) drag.at.shift();
+    const dy = y - drag.from;
+    // Up, it gives a little (at most 20px) and resists the further you go.
+    const offset = dy >= 0 ? dy : -Math.min(20, Math.sqrt(-dy) * 2);
+    sheet.style.transition = 'none';
+    sheet.style.transform = `translate(-50%, ${offset}px)`;
+    const backdrop = this.backdropEl;
+    if (backdrop) {
+      backdrop.style.transition = 'none';
+      backdrop.style.opacity = String(1 - Math.min(1, Math.max(0, offset) / sheet.offsetHeight));
+    }
+  }
+
+  private dragEnd() {
+    const sheet = this.sheetEl;
+    const drag = this.drag;
+    this.drag = undefined;
+    if (!sheet || !drag) return;
+    const last = drag.at[drag.at.length - 1];
+    const first = drag.at[0];
+    const dy = last.y - drag.from;
+    // How fast the finger was going at the end, in px per ms (down is positive).
+    const speed = (last.y - first.y) / Math.max(1, last.t - first.t);
+    // Hand back to the stylesheet, which eases on from here: closed, or back in place.
+    sheet.style.transition = '';
+    sheet.style.transform = '';
+    const backdrop = this.backdropEl;
+    if (backdrop) {
+      backdrop.style.transition = '';
+      backdrop.style.opacity = '';
+    }
+    if (dy > sheet.offsetHeight / 4 || (dy > 10 && speed > 0.5)) this.close();
+  }
+
+  // The top bar: a drag from anywhere on it but the close button.
   private onDragStart(e: PointerEvent) {
     if (e.button !== 0 || (e.target as Element).closest('button')) return;
-    this.dragFrom = { y: e.clientY, t: performance.now() };
+    this.dragBegin(e.clientY);
     (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
   }
 
   private onDragMove(e: PointerEvent) {
-    const sheet = this.sheetEl;
-    if (!this.dragFrom || !sheet) return;
-    // Follows the finger with no easing; it can't be pulled above where it sits.
-    const dy = Math.max(0, e.clientY - this.dragFrom.y);
-    sheet.style.transition = 'none';
-    sheet.style.transform = `translate(-50%, ${dy}px)`;
+    if (this.drag) this.dragTo(e.clientY);
   }
 
-  private onDragEnd(e: PointerEvent) {
-    const sheet = this.sheetEl;
-    if (!this.dragFrom || !sheet) return;
-    const dy = Math.max(0, e.clientY - this.dragFrom.y);
-    const speed = dy / Math.max(1, performance.now() - this.dragFrom.t);
-    this.dragFrom = undefined;
-    // Hand back to the stylesheet, which eases on from here: closed, or back in place.
-    sheet.style.transition = '';
-    sheet.style.transform = '';
-    if (dy > 120 || (dy > 24 && speed > 0.6)) this.close();
+  private onDragEnd() {
+    if (this.drag) this.dragEnd();
   }
+
+  // The content: a touch becomes a drag once it's clearly heading down while the
+  // content is at its top. Sideways, upwards, or on a slider, it's left alone.
+  private onPullStart = (e: TouchEvent) => {
+    const t = e.touches[0];
+    const onSlider = (e.target as Element).closest?.('input[type="range"]');
+    this.pull = e.touches.length === 1 && !onSlider ? { x: t.clientX, y: t.clientY } : undefined;
+  };
+
+  private onPullMove = (e: TouchEvent) => {
+    const t = e.touches[0];
+    if (this.drag) {
+      e.preventDefault();
+      this.dragTo(t.clientY);
+      return;
+    }
+    const pull = this.pull;
+    if (!pull) return;
+    const dx = t.clientX - pull.x;
+    const dy = t.clientY - pull.y;
+    const atTop = (e.currentTarget as HTMLElement).scrollTop <= 0;
+    if (dy > 6 && dy > Math.abs(dx) && atTop) {
+      e.preventDefault();
+      this.pull = undefined;
+      this.dragBegin(t.clientY);
+    } else if (Math.abs(dx) > 6 || dy < -6) {
+      this.pull = undefined;
+    }
+  };
+
+  private onPullEnd = () => {
+    this.pull = undefined;
+    if (this.drag) this.dragEnd();
+  };
 
   render() {
     return html`
