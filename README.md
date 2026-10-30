@@ -377,7 +377,7 @@ The cards move a little, always to show what changed, never for decoration. Noth
 - **Pressing:** whatever you press shrinks slightly and comes back.
 - **Lights:** turning one on spreads its colour out from where you tapped; off fades it away.
 - **Thermostats:** the target rolls up or down to its new value.
-- **Pop-ups:** slide up; drag one down by its top, or flick it, to close.
+- **Pop-ups:** slide up, and swipe away like an iOS sheet: pull down anywhere on one while it's scrolled to the top (or by its top bar), and let go past a quarter of the way or with a flick.
 - **Things to notice:** Motion, an open door and a finished print glow softly at the edge for about 30 seconds, then rest.
 
 If your phone or computer is set to reduce motion, all of this becomes plain fades.
