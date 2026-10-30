@@ -6,6 +6,41 @@ A frosted-glass, mobile-first card pack for Home Assistant. Every card has a vis
 
 ## Cards
 
+### Home header · `custom:glass-home-header`
+
+The top of Home. It has today's date, "Good evening, Alex" and your avatar with a dot that's green when you're home. Below that, one room's temperature is the big number (the decimal is greyed), with chips for the room, the temperature outside and the humidity.
+
+```yaml
+type: custom:glass-home-header
+area: living_room        # optional, default the first room with a sensor
+person: person.alex      # optional, default the signed-in user
+```
+
+### Favourites · `custom:glass-favourites`
+
+A row of chips for the things you reach for most, dark while on. Tap to switch them, or to run a scene or script. Hold for Home Assistant's own controls.
+
+```yaml
+type: custom:glass-favourites
+entities: [light.living_room_hue, light.living_room_bookshelf, scene.relax]
+```
+
+### Heating & Energy tiles · `custom:glass-energy-tiles`
+
+Two tiles side by side:
+
+- **Heating:** what the thermostat is set to, how warm the room is and what it's doing.
+- **Energy:** power right now, a dot chart of the last 12 hours (from Home Assistant's history) and what today has cost.
+
+```yaml
+type: custom:glass-energy-tiles
+climate: climate.living_room
+power: sensor.house_power
+cost_entities: [sensor.electricity_cost_today, sensor.gas_cost_today]   # optional
+cost_label: elec + gas                                                  # optional
+navigation_path: /glass/energy                                          # optional
+```
+
 ### Status chips · `custom:glass-status-chips`
 
 One scrolling row of chips that sum up the house:

@@ -73,6 +73,14 @@ const defs: Def[] = [
   ['sensor.p1s_print_progress', '42', { friendly_name: 'P1S Print progress', unit_of_measurement: '%' }],
   ['sensor.p1s_remaining_time', '72', { friendly_name: 'P1S Remaining time', unit_of_measurement: 'min' }],
   ['sensor.p1s_task_name', 'Plant-pot-plug', { friendly_name: 'P1S Task name' }],
+  // Home header, favourites and the Heating & Energy tiles
+  ['person.alex', 'home', { friendly_name: 'Alex Morgan', user_id: 'user-1' }],
+  ['scene.relax', 'unknown', { friendly_name: 'Relax' }],
+  ['switch.bookshelf', 'on', { friendly_name: 'Bookshelf' }],
+  ['climate.living_room', 'heat', { friendly_name: 'Thermostat', temperature: 17, current_temperature: 18.0, hvac_action: 'idle' }, 'living_room'],
+  ['sensor.house_power', '408', { friendly_name: 'House power', device_class: 'power', unit_of_measurement: 'W' }],
+  ['sensor.electricity_cost_today', '3.59', { friendly_name: 'Electricity cost today', unit_of_measurement: 'GBP' }],
+  ['sensor.gas_cost_today', '1.36', { friendly_name: 'Gas cost today', unit_of_measurement: 'GBP' }],
   // Not in a room: light-tile states only
   ['light.office_group', 'on', {
     friendly_name: 'Office Hue Group',
@@ -120,6 +128,18 @@ function makeHass(states: Record<string, HassEntity>): HomeAssistant {
     devices: {},
     areas,
     floors,
+    user: { id: 'user-1', name: 'Alex' },
+    // History for the energy chart: a reading every 10 minutes, busier in the evening.
+    async callWS<T>(msg: Record<string, unknown>) {
+      const id = (msg.entity_ids as string[])[0];
+      const start = Date.parse(msg.start_time as string);
+      const points = [];
+      for (let t = start; t < Date.now(); t += 600_000) {
+        const hour = new Date(t).getHours();
+        points.push({ s: String(150 + (hour >= 17 && hour <= 21 ? 900 : 200) * Math.random()), lu: t / 1000 });
+      }
+      return { [id]: points } as T;
+    },
     async callService(domain, service, data) {
       const targets = [data?.entity_id].flat() as string[];
       log(`${domain}.${service} → ${targets.join(', ')}`);
@@ -127,6 +147,12 @@ function makeHass(states: Record<string, HassEntity>): HomeAssistant {
         const p = hass.states[targets[0]];
         const state = p.state === 'playing' ? 'paused' : 'playing';
         hass = makeHass({ ...hass.states, [p.entity_id]: { ...p, state, last_changed: new Date().toISOString() } });
+        render();
+        return;
+      }
+      if (domain === 'homeassistant') {
+        const id = targets[0];
+        hass = makeHass({ ...hass.states, [id]: { ...hass.states[id], state: service === 'turn_on' ? 'on' : 'off' } });
         render();
         return;
       }
@@ -154,6 +180,15 @@ function add(containerId: string, type: string, config: Record<string, unknown>)
   cards.push(card);
 }
 
+add('header', 'glass-home-header', { area: 'living_room' });
+add('favourites', 'glass-favourites', { entities: ['light.living_room_hue', 'switch.bookshelf', 'light.floor_lamp', 'scene.relax'] });
+add('energy', 'glass-energy-tiles', {
+  climate: 'climate.living_room',
+  power: 'sensor.house_power',
+  cost_entities: ['sensor.electricity_cost_today', 'sensor.gas_cost_today'],
+  cost_label: 'elec + gas',
+  navigation_path: '/dev/energy',
+});
 add('chips', 'glass-status-chips', { security_path: '/dev/security', energy_path: '/dev/energy' });
 add('goodnight', 'glass-goodnight', { areas: ['living_room', 'hallway', 'kitchen', 'office'], always_show: true });
 add('playing', 'glass-now-playing', {});

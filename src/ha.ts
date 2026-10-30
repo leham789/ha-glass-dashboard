@@ -49,6 +49,10 @@ export interface HomeAssistant {
   areas: Record<string, AreaRegistryEntry>;
   floors: Record<string, FloorRegistryEntry>;
   callService(domain: string, service: string, data?: Record<string, unknown>): Promise<unknown>;
+  /** HA's websocket API, e.g. for history. */
+  callWS<T>(msg: Record<string, unknown>): Promise<T>;
+  /** The signed-in HA user. */
+  user?: { id: string; name: string };
   locale?: { language: string };
 }
 

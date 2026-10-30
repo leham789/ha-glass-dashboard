@@ -1,6 +1,6 @@
 {
   "name": "ha-glass-dashboard",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "description": "Frosted-glass, mobile-first Home Assistant dashboard",
   "type": "module",
   "private": true,
