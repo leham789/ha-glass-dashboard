@@ -301,13 +301,22 @@ entities: [binary_sensor.front_door_contact, binary_sensor.back_door_contact]   
 
 ### Camera · `custom:glass-camera`
 
-A camera picture that refreshes every 10 seconds, with a Recording / Live badge and an expand button for Home Assistant's live view. Underneath are its name, when it last saw motion and when the doorbell last rang, and a Motion / Clear pill. Stack one per camera.
+A camera picture that refreshes every 10 seconds, with a Recording / Live badge. Underneath are its name, when it last saw motion and when the doorbell last rang, and a Motion / Clear pill. Stack one per camera.
+
+The expand button opens the **cameras pop-up**:
+
+- one camera big, refreshing every 2 seconds
+- **< >** or a swipe to go round every camera card on the screen, looping back to the first
+- **Cycle cameras** (on by default) moves to the next camera every 10 seconds, with a progress line
+- **Recent**: the camera's latest detections (person, vehicle, ring, motion…) from its event entities
+- the camera's light (e.g. the porch light), and **Full screen** for Home Assistant's live view
 
 ```yaml
 type: custom:glass-camera
 entity: camera.doorbell
 motion_entity: binary_sensor.doorbell_motion   # optional
 ding_entity: binary_sensor.doorbell_ding       # optional
+light: light.front_porch                       # optional, switchable from the pop-up
 heading: Cameras                               # optional, on the first one
 ```
 

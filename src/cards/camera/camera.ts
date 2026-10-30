@@ -5,16 +5,13 @@ import { ensureFonts } from '../../fonts.js';
 import { type HomeAssistant, type LovelaceCardConfig, isUnavailable, openMoreInfo, registerCard } from '../../ha.js';
 import { shortName } from '../../rooms.js';
 import { ago, clock } from '../../time.js';
+import { GlassSheet } from '../../elements/glass-sheet.js';
+import type { GlassCamerasSheet, SheetCamera } from '../../sheets/cameras-sheet.js';
+import '../../sheets/cameras-sheet.js';
 import '../../elements/glass-icon.js';
 import './camera-editor.js';
 
-export interface CameraConfig extends LovelaceCardConfig {
-  entity: string;
-  name?: string;
-  /** Motion sensor for "Motion 4 min ago" and the Motion / Clear pill. */
-  motion_entity?: string;
-  /** Doorbell press sensor for "rang 18:02". */
-  ding_entity?: string;
+export interface CameraConfig extends LovelaceCardConfig, SheetCamera {
   /** A heading above the card, e.g. "Cameras" on the first one. */
   heading?: string;
 }
@@ -24,7 +21,8 @@ const RECENT_MOTION_MS = 5 * 60_000;
 
 /**
  * One camera: a picture that refreshes every 10 seconds, a Recording / Live
- * badge, and an expand button for Home Assistant's own live view. Underneath,
+ * badge, and an expand button for the cameras pop-up, which loops round every
+ * camera card on the screen, starting with this one. Underneath,
  * its name, when it last saw motion (and the doorbell last rang), and a
  * Motion / Clear pill.
  */
@@ -34,6 +32,7 @@ export class GlassCamera extends LitElement {
   @state() private config?: CameraConfig;
   @state() private tick = Date.now();
   private timer?: number;
+  private sheet?: GlassSheet;
 
   static getConfigElement() {
     return document.createElement('glass-camera-editor');
@@ -67,10 +66,13 @@ export class GlassCamera extends LitElement {
 
   disconnectedCallback(): void {
     window.clearInterval(this.timer);
+    this.sheet?.close();
     super.disconnectedCallback();
   }
 
   protected shouldUpdate(changed: PropertyValues): boolean {
+    // Keep an open cameras pop-up current.
+    if (this.sheet?.isConnected && this.hass) this.sheet.hass = this.hass;
     if (!changed.has('hass') || changed.size > 1 || !this.config) return true;
     const old = changed.get('hass') as HomeAssistant | undefined;
     const ids = [this.config.entity, this.config.motion_entity, this.config.ding_entity].filter(Boolean) as string[];
@@ -107,7 +109,7 @@ export class GlassCamera extends LitElement {
         <div class="view">
           ${src && !offline ? html`<img src=${src} alt="" loading="lazy" />` : html`<span class="none">${offline ? 'Camera offline' : 'No picture'}</span>`}
           <span class="badge"><span class="dot ${recording ? 'rec' : offline ? 'off' : 'live'}"></span>${offline ? 'Offline' : recording ? 'Recording' : 'Live'}</span>
-          <button type="button" class="expand" aria-label="Open live view" @click=${() => openMoreInfo(this, c.entity)}>
+          <button type="button" class="expand" aria-label="Open cameras" @click=${() => this.openCameras()}>
             <glass-icon name="maximize-2" size="16" stroke="1.8"></glass-icon>
           </button>
         </div>
@@ -120,6 +122,17 @@ export class GlassCamera extends LitElement {
         </div>
       </section>
     `;
+  }
+
+  /** Opens the cameras pop-up on this camera, with every camera card on the screen to loop through. */
+  private openCameras() {
+    if (this.sheet?.isConnected) return;
+    const cards = allCameraCards();
+    const cameras = cards.map((card) => card.config!).filter(Boolean);
+    const sheet = GlassSheet.open<GlassCamerasSheet>('glass-cameras-sheet', this.hass!);
+    sheet.cameras = cameras.length ? cameras : [this.config!];
+    sheet.index = Math.max(0, cards.indexOf(this));
+    this.sheet = sheet;
   }
 
   static styles = [
@@ -252,6 +265,15 @@ export class GlassCamera extends LitElement {
       }
     `,
   ];
+}
+
+/** Every camera card on the page, in screen order (cards sit inside HA's shadow roots). */
+function allCameraCards(root: Document | ShadowRoot = document, found: GlassCamera[] = []): GlassCamera[] {
+  for (const el of root.querySelectorAll('*')) {
+    if (el instanceof GlassCamera) found.push(el);
+    if (el.shadowRoot) allCameraCards(el.shadowRoot, found);
+  }
+  return found;
 }
 
 registerCard({

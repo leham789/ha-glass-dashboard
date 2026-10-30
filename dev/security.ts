@@ -8,7 +8,8 @@ add('doors', 'glass-doors', {
 add('doorbell', 'glass-camera', {
   entity: 'camera.doorbell',
   motion_entity: 'binary_sensor.doorbell_motion',
-  ding_entity: 'binary_sensor.doorbell_ding',
+  ding_entity: 'event.doorbell_doorbell',
+  light: 'light.front_porch',
   heading: 'Cameras',
 });
 add('turret', 'glass-camera', { entity: 'camera.garden_turret', motion_entity: 'binary_sensor.garden_turret_motion' });

@@ -10,6 +10,7 @@ export class GlassCameraEditor extends GlassFormEditor<CameraConfig> {
       { name: 'name', label: 'Name (optional)', selector: { text: {} } },
       { name: 'motion_entity', label: 'Motion sensor (optional)', selector: { entity: { domain: 'binary_sensor' } } },
       { name: 'ding_entity', label: 'Doorbell press sensor (optional)', selector: { entity: { domain: ['binary_sensor', 'event'] } } },
+      { name: 'light', label: 'A light to switch from the cameras pop-up, e.g. the porch light (optional)', selector: { entity: { domain: ['light', 'switch'] } } },
       { name: 'heading', label: 'Heading above, e.g. Cameras (optional)', selector: { text: {} } },
     ];
   }
