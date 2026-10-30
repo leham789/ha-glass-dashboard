@@ -11,7 +11,7 @@ import type { GlassRoomOptionsSheet } from '../../sheets/room-options-sheet.js';
 import '../../sheets/room-options-sheet.js';
 import '../../elements/glass-icon.js';
 import './room-header-editor.js';
-import { EASE, arriveFrom, haptic, reducedMotion } from '../../motion.js';
+import { EASE, haptic, reducedMotion } from '../../motion.js';
 
 /** Where the highlight was in the switcher as you left a room, so the next room's switcher slides it on. */
 let leaving: { left: number; width: number; at: number } | undefined;
@@ -33,7 +33,6 @@ export interface RoomHeaderConfig extends LovelaceCardConfig {
  */
 @customElement('glass-room-header')
 export class GlassRoomHeader extends GlassElement {
-  protected static arriveAs = 'fade' as const;
   @property({ attribute: false }) hass?: HomeAssistant;
   @state() private config?: RoomHeaderConfig;
   private watched: string[] = [];
@@ -212,11 +211,8 @@ export class GlassRoomHeader extends GlassElement {
   private go(e: Event, areaId: string) {
     e.preventDefault();
     if (areaId === this.config!.area) return;
-    const ids = this.rooms().map((a) => a.area_id);
     const current = this.renderRoot.querySelector<HTMLElement>('[aria-current="page"]');
     if (current) leaving = { left: current.offsetLeft, width: current.offsetWidth, at: performance.now() };
-    // The next room comes in from the side you're heading.
-    arriveFrom(ids.indexOf(areaId) > ids.indexOf(this.config!.area) ? 1 : -1);
     haptic('selection');
     navigate(this.config!.room_path.replace('{area}', areaId));
   }

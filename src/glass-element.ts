@@ -1,6 +1,6 @@
 import { LitElement, type PropertyValues } from 'lit';
 import type { HomeAssistant } from './ha.js';
-import { arrive, press, sliderHaptic, sliderStart } from './motion.js';
+import { press, sliderHaptic, sliderStart } from './motion.js';
 
 /**
  * Sheets and full-screen views that are open right now. They live in <body>,
@@ -14,15 +14,11 @@ export const openOverlays = new Set<{ hass?: HomeAssistant }>();
  * mode: when HA's dark theme is on, the host gets a `dark` attribute and the
  * tokens in tokens.ts switch to their dark values.
  *
- * Cards also arrive as their view opens (motion.ts): headers fade in, the
- * rest rise in turn. That plays each time the card is put on the page, never
- * when HA updates it. In cards and sheets alike, what you press shrinks a
- * little and sliders tick every tenth.
+ * In cards and sheets alike, what you press shrinks a little and sliders
+ * tick every tenth (motion.ts). Views themselves appear at once: no
+ * animation on opening a page, so moving around stays snappy.
  */
 export class GlassElement extends LitElement {
-  /** How a card arrives when its view opens. Headers set 'fade'. */
-  protected static arriveAs: 'rise' | 'fade' | 'none' = 'rise';
-
   constructor() {
     super();
     // Buttons and links shrink a little while pressed; sliders tick as they move (motion.ts).
@@ -30,13 +26,6 @@ export class GlassElement extends LitElement {
     this.addEventListener('pointerdown', sliderStart);
     this.addEventListener('focusin', sliderStart);
     this.addEventListener('input', sliderHaptic);
-  }
-
-  connectedCallback(): void {
-    super.connectedCallback();
-    // Cards only (they have setConfig); sheets slide in their own way.
-    const kind = (this.constructor as typeof GlassElement).arriveAs;
-    if (kind !== 'none' && 'setConfig' in this) arrive(this, kind);
   }
 
   protected update(changed: PropertyValues): void {

@@ -373,12 +373,12 @@ Anything else (scenes, scripts, covers, locks…) still opens Home Assistant's o
 
 The cards move a little, always to show what changed, never for decoration. Nothing bounces.
 
-- **Opening a view:** headers fade in and the cards rise into place in turn. Switching room, they come in from the side you're heading.
+- **Moving around:** pages change at once, so it stays snappy. In the menu the dark pill slides to the tab you tap; in the room switcher the highlight slides to the room.
 - **Pressing:** whatever you press shrinks slightly and comes back.
 - **Lights:** turning one on spreads its colour out from where you tapped; off fades it away.
 - **Thermostats:** the target rolls up or down to its new value.
 - **Pop-ups:** slide up; drag one down by its top, or flick it, to close.
-- **Things to notice:** Motion, an open door and a finished print ring softly for about 30 seconds, then rest.
+- **Things to notice:** Motion, an open door and a finished print glow softly at the edge for about 30 seconds, then rest.
 
 If your phone or computer is set to reduce motion, all of this becomes plain fades.
 

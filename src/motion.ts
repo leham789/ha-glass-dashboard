@@ -10,44 +10,6 @@ export const EASE = 'cubic-bezier(0.2, 0.8, 0.2, 1)';
 
 export const reducedMotion = (): boolean => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
 
-// ── Arrive: cards rising in, in turn, as a view opens ─────────────────────
-
-const ARRIVE_MS = 360;
-const STAGGER_MS = 35;
-const FIRST_CARD_MS = 60;
-/** Cards connecting within this long of each other count as one view opening. */
-const SAME_VIEW_MS = 150;
-
-let batch = { at: -Infinity, n: 0 };
-let direction: { dx: number; at: number } | undefined;
-
-/** Called by the room switcher: the next view slides in from this side (1 = from the right). */
-export function arriveFrom(dx: 1 | -1): void {
-  direction = { dx, at: performance.now() };
-}
-
-/**
- * Plays a card's arrival. Headers just fade; other cards rise 12 px (or shift
- * 8 px sideways after switching room) and fade, the first eight 35 ms apart.
- */
-export function arrive(el: HTMLElement, kind: 'rise' | 'fade'): void {
-  if (!el.animate) return;
-  const now = performance.now();
-  if (now - batch.at > SAME_VIEW_MS) batch = { at: now, n: 0 };
-  batch.at = now;
-  const reduced = reducedMotion();
-  const sideways = direction && now - direction.at < 1500 ? direction.dx : 0;
-  let delay = 0;
-  if (kind === 'rise') delay = FIRST_CARD_MS + Math.min(batch.n++, 7) * STAGGER_MS;
-  const from = reduced || kind === 'fade' ? 'none' : sideways ? `translateX(${8 * sideways}px)` : 'translateY(12px)';
-  el.animate([{ opacity: 0, transform: from }, { opacity: 1, transform: 'none' }], {
-    duration: reduced ? 200 : ARRIVE_MS,
-    delay: reduced ? 0 : delay,
-    easing: EASE,
-    fill: 'backwards',
-  });
-}
-
 // ── Press: whatever you press shrinks to 97% ──────────────────────────────
 
 /**
@@ -140,33 +102,32 @@ export function sliderStart(e: Event): void {
   if (el instanceof HTMLInputElement && el.type === 'range') sliderAt.set(el, Number(el.value));
 }
 
-// ── Attention: a soft ring for 30 seconds ─────────────────────────────────
+// ── Attention: a soft glow for 30 seconds ─────────────────────────────────
 
 /**
- * Put `ringing` on a pill or chip that needs noticing (Motion, a door
- * open). It rings softly for about 30 seconds from when it appears, then
- * rests. Give the element a border-radius; it needs position: relative.
+ * Put `ringing` on a pill or chip that needs noticing (Motion, a door open).
+ * A ring just inside its edge glows and fades for about 30 seconds from when
+ * it appears, then rests. Only opacity animates, so it stays smooth on a
+ * phone, and the ring sits inside the pill, so a scrolling row can't clip it.
  */
 export const attentionStyles = css`
-  .ringing {
+  /* Doubled class: beats a card's own "all: unset" on the same element. */
+  .ringing.ringing {
     position: relative;
   }
   .ringing::after {
     content: '';
     position: absolute;
-    inset: 0;
+    inset: -1px; /* over the pill's own border */
     border-radius: inherit;
+    box-shadow: inset 0 0 0 2px var(--glass-attention);
     pointer-events: none;
-    animation: glass-attention 1.6s ease-out 19;
+    opacity: 0;
+    animation: glass-attention 1.6s ease-in-out 19;
   }
   @keyframes glass-attention {
-    from {
-      box-shadow: 0 0 0 0 var(--glass-attention-edge);
-      opacity: 1;
-    }
-    to {
-      box-shadow: 0 0 0 10px var(--glass-attention-edge);
-      opacity: 0;
+    50% {
+      opacity: 0.8;
     }
   }
   @media (prefers-reduced-motion: reduce) {

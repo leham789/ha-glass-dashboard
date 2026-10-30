@@ -7,6 +7,7 @@ import { type HomeAssistant, type LovelaceCardConfig, navigate, registerCard } f
 import type { IconName } from '../../icons.js';
 import '../../elements/glass-icon.js';
 import './menu-editor.js';
+import { EASE, reducedMotion } from '../../motion.js';
 
 export interface MenuConfig extends LovelaceCardConfig {
   home_path?: string;
@@ -27,15 +28,25 @@ interface Item {
 const LAST_ROOM_KEY = 'glass-menu-last-room';
 
 /**
+ * Where the pill and each item were as you left a page. Every view has its
+ * own menu, so the next page's menu reads this to slide from there.
+ */
+let leaving: { pill: { left: number; width: number }; lefts: Record<string, number>; at: number } | undefined;
+
+/**
  * The bottom menu: Home, Rooms, Energy, Security. The current screen is the
  * dark pill with its name; the others are icons. Any other view in the same
  * dashboard counts as a room, so Rooms reopens the last room you viewed.
+ * Tapping another item slides the pill over to it.
  */
 @customElement('glass-menu')
 export class GlassMenu extends GlassElement {
   @property({ attribute: false }) hass?: HomeAssistant;
   @state() private config?: MenuConfig;
   @state() private path = location.pathname;
+  /** Re-fits the pill if the current item changes size (e.g. once the font loads). */
+  private fit = new ResizeObserver(() => this.placePill());
+  private fitted?: HTMLElement;
 
   static getConfigElement() {
     return document.createElement('glass-menu-editor');
@@ -64,17 +75,61 @@ export class GlassMenu extends GlassElement {
     window.addEventListener('location-changed', this.onLocation);
     window.addEventListener('popstate', this.onLocation);
     this.onLocation();
+    // HA keeps views it has shown: coming back to one puts this menu back without re-rendering it.
+    if (this.hasUpdated) this.updateComplete.then(() => this.placePill());
   }
 
   disconnectedCallback(): void {
     window.removeEventListener('location-changed', this.onLocation);
     window.removeEventListener('popstate', this.onLocation);
+    this.fit.disconnect();
+    this.fitted = undefined;
     super.disconnectedCallback();
   }
 
   // Never re-render on HA state changes; only when the page changes.
   protected shouldUpdate(changed: Map<string, unknown>): boolean {
     return changed.has('config') || changed.has('path');
+  }
+
+  protected updated(): void {
+    this.placePill();
+  }
+
+  /** Puts the pill under the current item; just after a tap, slides it (and the items) over from the last page. */
+  private placePill() {
+    const pill = this.renderRoot.querySelector<HTMLElement>('.pill');
+    const current = this.renderRoot.querySelector<HTMLElement>('button.current');
+    if (!pill) return;
+    pill.hidden = !current;
+    if (current !== this.fitted) {
+      this.fit.disconnect();
+      if (current) this.fit.observe(current);
+      this.fitted = current ?? undefined;
+    }
+    if (!current) return;
+    const to = { left: current.offsetLeft, width: current.offsetWidth };
+    pill.style.transform = `translateX(${to.left}px)`;
+    pill.style.width = `${to.width}px`;
+    const from = leaving;
+    if (!from || performance.now() - from.at > 1500 || reducedMotion()) return;
+    leaving = undefined;
+    const timing = { duration: 250, easing: EASE };
+    pill.animate(
+      [
+        { transform: `translateX(${from.pill.left}px)`, width: `${from.pill.width}px` },
+        { transform: `translateX(${to.left}px)`, width: `${to.width}px` },
+      ],
+      timing,
+    );
+    // Each item glides from where it was; the new name fades in once the pill is under it.
+    for (const b of this.renderRoot.querySelectorAll<HTMLElement>('button')) {
+      const was = from.lefts[b.dataset.key!];
+      if (was !== undefined && was !== b.offsetLeft) b.animate([{ transform: `translateX(${was - b.offsetLeft}px)` }, { transform: 'none' }], timing);
+    }
+    current.classList.add('arriving');
+    current.querySelector('span')?.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 180, delay: 90, easing: 'ease', fill: 'backwards' });
+    pill.getAnimations()[0]?.finished.finally(() => current.classList.remove('arriving'));
   }
 
   private onLocation = () => {
@@ -109,11 +164,13 @@ export class GlassMenu extends GlassElement {
     const floating = this.config.floating ?? true;
     return html`
       <nav class=${floating ? 'floating' : ''} aria-label="Main">
+        <span class="pill" aria-hidden="true"></span>
         ${this.items().map((item) => {
           const on = item.key === current;
           return html`<button
             type="button"
             class=${on ? 'current' : ''}
+            data-key=${item.key}
             aria-current=${on ? 'page' : 'false'}
             aria-label=${item.label}
             @click=${() => this.go(item)}
@@ -129,7 +186,12 @@ export class GlassMenu extends GlassElement {
 
   private go(item: Item) {
     const target = item.key === 'rooms' ? lastRoom(item.path!) : item.path!;
-    if (!samePath(target, location.pathname)) navigate(target);
+    if (samePath(target, location.pathname)) return;
+    const current = this.renderRoot.querySelector<HTMLElement>('button.current');
+    const lefts: Record<string, number> = {};
+    for (const b of this.renderRoot.querySelectorAll<HTMLElement>('button')) lefts[b.dataset.key!] = b.offsetLeft;
+    if (current) leaving = { pill: { left: current.offsetLeft, width: current.offsetWidth }, lefts, at: performance.now() };
+    navigate(target);
   }
 
   static styles = [
@@ -148,9 +210,18 @@ export class GlassMenu extends GlassElement {
         box-shadow: 0 16px 40px rgba(20, 30, 20, 0.14);
         backdrop-filter: blur(24px);
         -webkit-backdrop-filter: blur(24px);
+        position: relative;
         display: flex;
         align-items: center;
         justify-content: space-between;
+      }
+      .pill {
+        position: absolute;
+        top: 7px; /* 8px padding, less the nav's 1px border */
+        left: 0;
+        height: 56px;
+        border-radius: 28px;
+        background: var(--glass-ink);
       }
       nav.floating {
         position: fixed;
@@ -178,12 +249,14 @@ export class GlassMenu extends GlassElement {
         color: var(--glass-ink);
         cursor: pointer;
         -webkit-tap-highlight-color: transparent;
-        transition: background 0.2s ease;
+        position: relative; /* above the pill */
       }
       button.current {
         padding: 0 22px;
-        background: var(--glass-ink);
+      }
+      button.current:not(.arriving) {
         color: var(--glass-on-ink);
+        transition: color 0.15s ease;
       }
       button:focus-visible {
         outline: 2px solid var(--glass-ink);
