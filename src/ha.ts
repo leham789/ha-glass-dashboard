@@ -56,6 +56,10 @@ export interface HomeAssistant {
   callService(domain: string, service: string, data?: Record<string, unknown>): Promise<unknown>;
   /** HA's websocket API, e.g. for history. */
   callWS<T>(msg: Record<string, unknown>): Promise<T>;
+  /** The websocket itself, for messages that keep coming (e.g. a camera's live video set-up). */
+  connection?: {
+    subscribeMessage<T>(callback: (msg: T) => void, msg: Record<string, unknown>): Promise<() => Promise<void>>;
+  };
   /** The signed-in HA user. */
   user?: { id: string; name: string };
   locale?: { language: string };

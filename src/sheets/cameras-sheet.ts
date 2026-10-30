@@ -2,6 +2,7 @@ import { css, html, nothing, type CSSResultGroup, type PropertyValues } from 'li
 import { customElement, property, state } from 'lit/decorators.js';
 import { keyed } from 'lit/directives/keyed.js';
 import { GlassSheet } from '../elements/glass-sheet.js';
+import '../elements/glass-camera-live.js';
 import { type HassEntity, isUnavailable, openMoreInfo } from '../ha.js';
 import { shortName } from '../rooms.js';
 import { eventSnapshot } from '../snapshots.js';
@@ -22,7 +23,8 @@ const REFRESH_MS = 2_000;
 const SWIPE_PX = 50;
 
 /**
- * The cameras pop-up: one camera big, refreshing every couple of seconds,
+ * The cameras pop-up: one camera big, as live video where HA can stream it
+ * (else a still refreshing every couple of seconds),
  * with < > (or a swipe) to go round all the cameras and back to the first.
  * Cycle cameras moves on by itself every 10 seconds, forever. Underneath,
  * the camera's latest detections, its light, and full screen.
@@ -34,6 +36,9 @@ export class GlassCamerasSheet extends GlassSheet {
   /** On when the sheet opens, as in the design; the switch turns it off. */
   @state() private cycling = true;
   @state() private tick = Date.now();
+  /** When the still picture was last fetched; it stops refreshing while live video plays over it. */
+  @state() private stillAt = Date.now();
+  @state() private live = false;
   /** A new value redraws the progress line, restarting its 10 s fill. */
   @state() private cycleStart = Date.now();
   /** Event thumbnails by event entity + event id, once fetched ('' when one failed to load). */
@@ -50,7 +55,9 @@ export class GlassCamerasSheet extends GlassSheet {
   connectedCallback(): void {
     super.connectedCallback();
     this.refresh = window.setInterval(() => {
-      if (document.visibilityState === 'visible') this.tick = Date.now();
+      if (document.visibilityState !== 'visible') return;
+      this.tick = Date.now();
+      if (!this.live) this.stillAt = this.tick;
     }, REFRESH_MS);
   }
 
@@ -94,7 +101,7 @@ export class GlassCamerasSheet extends GlassSheet {
     const offline = isUnavailable(cam);
     const recording = cam?.state === 'recording';
     const pic = cam?.attributes.entity_picture as string | undefined;
-    const src = pic && !pic.startsWith('data:') ? `${pic}${pic.includes('?') ? '&' : '?'}t=${this.tick}` : pic;
+    const src = pic && !pic.startsWith('data:') ? `${pic}${pic.includes('?') ? '&' : '?'}t=${this.stillAt}` : pic;
     const many = this.cameras.length > 1;
     const light = c.light ? hass.states[c.light] : undefined;
     const lightOn = light?.state === 'on';
@@ -110,6 +117,17 @@ export class GlassCamerasSheet extends GlassSheet {
           @pointercancel=${() => (this.swipeX = undefined)}
         >
           ${src && !offline ? html`<img src=${src} alt="" draggable="false" />` : html`<span class="none">${offline ? 'Camera offline' : 'No picture'}</span>`}
+          ${offline
+            ? nothing
+            : html`<glass-camera-live
+                class="video"
+                .hass=${hass}
+                .entity=${c.entity}
+                @live-changed=${(e: CustomEvent<boolean>) => {
+                  this.live = e.detail;
+                  if (!e.detail) this.stillAt = Date.now();
+                }}
+              ></glass-camera-live>`}
           <span class="badge tl"><span class="dot ${offline ? 'off' : recording ? 'rec' : 'live'}"></span>${offline ? 'Offline' : recording ? 'Recording' : 'Live'}</span>
           <span class="badge tr">${new Date(this.tick).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}</span>
           ${many
@@ -280,6 +298,10 @@ export class GlassCamerasSheet extends GlassSheet {
         height: 100%;
         object-fit: cover;
         pointer-events: none;
+      }
+      .video {
+        position: absolute;
+        inset: 0;
       }
       .none {
         font-size: var(--glass-text-caption);

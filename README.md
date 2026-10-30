@@ -305,7 +305,7 @@ A camera picture that refreshes every 10 seconds, with a Recording / Live badge.
 
 The expand button opens the **cameras pop-up**:
 
-- one camera big, refreshing every 2 seconds
+- one camera big, as live video (WebRTC, or HLS where the browser plays it) when Home Assistant can stream it, otherwise a picture refreshing every 2 seconds
 - **< >** or a swipe to go round every camera card on the screen, looping back to the first
 - **Cycle cameras** (on by default) moves to the next camera every 10 seconds, with a progress line
 - **Recent**: the camera's latest detections (person, vehicle, ring, motion…) from its event entities, each with its snapshot when the camera is UniFi Protect
