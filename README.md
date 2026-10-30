@@ -207,6 +207,30 @@ buttons: [media_player.living_room_tv, media_player.living_room_ps5]
 style: dark   # or light
 ```
 
+## Security screen cards
+
+### Doors · `custom:glass-doors`
+
+A tile per door: peach while open with how long ("Open for 12 min"), glass when shut ("Shut since 18:05"). Give it a title and it heads the screen, with one pill for the whole house ("1 door open" / "All doors shut"). With no entities chosen it shows every door and window sensor.
+
+```yaml
+type: custom:glass-doors
+title: Security
+entities: [binary_sensor.front_door_contact, binary_sensor.back_door_contact]   # optional
+```
+
+### Camera · `custom:glass-camera`
+
+A camera picture that refreshes every 10 seconds, with a Recording / Live badge and an expand button for Home Assistant's live view. Underneath are its name, when it last saw motion and when the doorbell last rang, and a Motion / Clear pill. Stack one per camera.
+
+```yaml
+type: custom:glass-camera
+entity: camera.doorbell
+motion_entity: binary_sensor.doorbell_motion   # optional
+ding_entity: binary_sensor.doorbell_ding       # optional
+heading: Cameras                               # optional, on the first one
+```
+
 ## Building blocks
 
 ### Light tile · `custom:glass-light-tile`

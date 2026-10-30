@@ -6,6 +6,24 @@ import type { EntityRegistryEntry, HassEntity, HomeAssistant } from '../src/ha.j
 
 type Def = [id: string, state: string, attrs?: Record<string, unknown>, area?: string, device?: string];
 
+/** When some things last changed, in minutes ago (everything else: an hour ago). */
+const CHANGED_MINS_AGO: Record<string, number> = {
+  'binary_sensor.back_door_contact': 12,
+  'binary_sensor.front_door_contact': 200,
+  'binary_sensor.doorbell_motion': 4,
+  'binary_sensor.doorbell_ding': 95,
+  'binary_sensor.garden_turret_motion': 140,
+};
+
+function minsAgo(mins: number): string {
+  return new Date(Date.now() - mins * 60_000).toISOString();
+}
+
+/** A placeholder camera picture. */
+const CAMERA_PICTURE = `data:image/svg+xml,${encodeURIComponent(
+  '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 9"><defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5a6b7d"/><stop offset="1" stop-color="#2c3540"/></linearGradient></defs><rect width="16" height="9" fill="url(#g)"/><rect y="6" width="16" height="3" fill="#3d4a3a"/></svg>',
+)}`;
+
 /** A date n days from today, as "YYYY-MM-DD". */
 function inDays(n: number): string {
   const d = new Date();
@@ -64,6 +82,11 @@ const defs: Def[] = [
   ['sensor.bedroom_humidity', '74', { friendly_name: 'Bedroom Humidity', device_class: 'humidity' }, 'bedroom'],
   // Outside
   ['light.garden_fence', 'on', { friendly_name: 'Garden Fence', color_mode: 'onoff' }, 'garden'],
+  ['camera.doorbell', 'recording', { friendly_name: 'Doorbell', entity_picture: CAMERA_PICTURE }, 'front'],
+  ['binary_sensor.doorbell_motion', 'off', { friendly_name: 'Doorbell Motion', device_class: 'motion' }, 'front'],
+  ['binary_sensor.doorbell_ding', 'off', { friendly_name: 'Doorbell Ding', device_class: 'occupancy' }, 'front'],
+  ['camera.garden_turret', 'idle', { friendly_name: 'Garden Turret', entity_picture: CAMERA_PICTURE }, 'garden'],
+  ['binary_sensor.garden_turret_motion', 'off', { friendly_name: 'Garden Turret Motion', device_class: 'motion' }, 'garden'],
   ['binary_sensor.back_door_contact', 'on', { friendly_name: 'Back Door Contact', device_class: 'door' }, 'back'],
   // Batteries (diagnostic entities, as Zigbee devices report them)
   ['sensor.lr_remote_battery', '12', { friendly_name: 'Living Room Remote Battery', device_class: 'battery' }, 'living_room'],
@@ -103,7 +126,7 @@ const defs: Def[] = [
 const states = Object.fromEntries(
   defs.map(([entity_id, state, attributes = {}]) => [
     entity_id,
-    { entity_id, state, attributes, last_changed: '', last_updated: '' } as HassEntity,
+    { entity_id, state, attributes, last_changed: minsAgo(CHANGED_MINS_AGO[entity_id] ?? 60), last_updated: '' } as HassEntity,
   ]),
 );
 const entities: Record<string, EntityRegistryEntry> = Object.fromEntries(
@@ -125,6 +148,7 @@ const areas = {
   office: area('office', 'Office', 'upstairs'),
   bedroom: area('bedroom', 'Bedroom', 'upstairs'),
   garden: area('garden', 'Garden', 'outside'),
+  front: area('front', 'Front', 'outside'),
   back: area('back', 'Back', 'outside'),
 };
 
