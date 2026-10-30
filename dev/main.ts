@@ -124,6 +124,7 @@ function add(containerId: string, type: string, config: Record<string, unknown>)
 }
 
 add('chips', 'glass-status-chips', { security_path: '/dev/security', energy_path: '/dev/energy' });
+add('goodnight', 'glass-goodnight', { areas: ['living_room', 'hallway', 'kitchen', 'office'], always_show: true });
 add('rooms', 'glass-rooms', {});
 add('menu', 'glass-menu', {
   home_path: location.pathname,

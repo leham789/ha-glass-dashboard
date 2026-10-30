@@ -25,6 +25,20 @@ energy_path: /glass/energy       # optional, linked from Room temperatures
 exclude_areas: [server_room]     # optional
 ```
 
+### Goodnight · `custom:glass-goodnight`
+
+A late-evening card. It appears between 22:00 and 05:00 while lights are still on in the chosen rooms or a door is open, and stays hidden otherwise. **Slide** the green knob across to switch those lights off, or to run your own script instead. The card then says it's done and mentions any door that's still open. **Tap the tick** to put the lights back on.
+
+By default it covers your lowest floor. Pick rooms, a script and the times in its editor. A keyboard press on the knob also confirms.
+
+```yaml
+type: custom:glass-goodnight
+areas: [living_room, hallway, kitchen, office]   # optional
+script: script.goodnight                         # optional
+show_after: "22:00"                              # optional
+show_until: "05:00"                              # optional
+```
+
 ### Menu · `custom:glass-menu`
 
 The bottom menu: Home, Rooms, Energy and Security. The screen you're on is the dark pill with its name, and the others are icons. It floats over the bottom of the screen. Any view in the same dashboard that isn't Home, Energy or Security counts as a room, and **Rooms** reopens the last room you viewed on that device. Leave out a path to hide that item.
