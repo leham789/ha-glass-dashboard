@@ -12,7 +12,6 @@ export class GlassAroundEditor extends GlassFormEditor<AroundConfig> {
       { name: 'printer_remaining', label: 'Time remaining sensor', selector: { entity: { domain: 'sensor' } } },
       { name: 'printer_task', label: 'Print name sensor', selector: { entity: { domain: 'sensor' } } },
       { name: 'printer_name', label: 'Printer name (e.g. P1S)', selector: { text: {} } },
-      { name: 'printer_path', label: 'Open a view from the printer tile (optional)', selector: { navigation: {} } },
     ];
   }
 }
