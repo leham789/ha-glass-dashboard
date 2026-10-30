@@ -369,6 +369,21 @@ Tapping something on a card opens our own pop-up instead of Home Assistant's mor
 
 Anything else (scenes, scripts, covers, locks…) still opens Home Assistant's own dialog, as do pop-ups opened from outside these cards (HA's search, the logbook).
 
+## Motion and haptics
+
+The cards move a little, always to show what changed, never for decoration. Nothing bounces.
+
+- **Opening a view:** headers fade in and the cards rise into place in turn. Switching room, they come in from the side you're heading.
+- **Pressing:** whatever you press shrinks slightly and comes back.
+- **Lights:** turning one on spreads its colour out from where you tapped; off fades it away.
+- **Thermostats:** the target rolls up or down to its new value.
+- **Pop-ups:** slide up; drag one down by its top, or flick it, to close.
+- **Things to notice:** Motion, an open door and a finished print ring softly for about 30 seconds, then rest.
+
+If your phone or computer is set to reduce motion, all of this becomes plain fades.
+
+**Haptics** come through the Home Assistant app (iPhone and Android), and as a short buzz in Chrome on Android: a light tap when you switch something, a tick for each tenth of a slider or each thermostat step, a firmer bump at a slider's ends, and a double tap when a scene or Goodnight runs. They follow the **Vibrate** setting in your Home Assistant profile. Safari and computers have none.
+
 ## Theming
 
 The cards follow Home Assistant's light and dark mode on their own. When HA's dark theme is on (your profile's theme setting, or "Auto" with a dark device), every card and pop-up switches to its dark colours, with no set-up needed.

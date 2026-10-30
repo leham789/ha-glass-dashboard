@@ -2,6 +2,7 @@ import { css, html, type CSSResultGroup, type TemplateResult } from 'lit';
 import { GlassElement, openOverlays } from '../glass-element.js';
 import { property, state } from 'lit/decorators.js';
 import { tokens } from '../tokens.js';
+import { haptic } from '../motion.js';
 import type { HomeAssistant } from '../ha.js';
 import type { IconName } from '../icons.js';
 import './glass-icon.js';
@@ -13,10 +14,14 @@ import './glass-icon.js';
  * Sheets are added to <body> rather than drawn inside a card, so nothing in
  * HA's layout can clip them. Use `GlassSheet.open(tag, hass)` to show one;
  * the opener keeps its `hass` current until it closes.
+ *
+ * Drag it down by its top (handle and title) to close: past 120 px, or a
+ * quick flick, closes it; anything less goes back.
  */
 export abstract class GlassSheet extends GlassElement {
   @property({ attribute: false }) hass?: HomeAssistant;
   @state() private shown = false;
+  private dragFrom?: { y: number; t: number };
 
   protected abstract sheetTitle: string;
   /** A second line under the title, e.g. the room. */
@@ -38,6 +43,7 @@ export abstract class GlassSheet extends GlassElement {
     const sheet = document.createElement(tag) as T;
     sheet.hass = hass;
     document.body.appendChild(sheet);
+    haptic('light');
     return sheet;
   }
 
@@ -70,6 +76,37 @@ export abstract class GlassSheet extends GlassElement {
     if (e.key === 'Escape') this.close();
   };
 
+  private get sheetEl(): HTMLElement | null {
+    return this.renderRoot.querySelector<HTMLElement>('.sheet');
+  }
+
+  private onDragStart(e: PointerEvent) {
+    if (e.button !== 0 || (e.target as Element).closest('button')) return;
+    this.dragFrom = { y: e.clientY, t: performance.now() };
+    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+  }
+
+  private onDragMove(e: PointerEvent) {
+    const sheet = this.sheetEl;
+    if (!this.dragFrom || !sheet) return;
+    // Follows the finger with no easing; it can't be pulled above where it sits.
+    const dy = Math.max(0, e.clientY - this.dragFrom.y);
+    sheet.style.transition = 'none';
+    sheet.style.transform = `translate(-50%, ${dy}px)`;
+  }
+
+  private onDragEnd(e: PointerEvent) {
+    const sheet = this.sheetEl;
+    if (!this.dragFrom || !sheet) return;
+    const dy = Math.max(0, e.clientY - this.dragFrom.y);
+    const speed = dy / Math.max(1, performance.now() - this.dragFrom.t);
+    this.dragFrom = undefined;
+    // Hand back to the stylesheet, which eases on from here: closed, or back in place.
+    sheet.style.transition = '';
+    sheet.style.transform = '';
+    if (dy > 120 || (dy > 24 && speed > 0.6)) this.close();
+  }
+
   render() {
     return html`
       <div class="backdrop ${this.shown ? 'shown' : ''}" @click=${() => this.close()}></div>
@@ -80,19 +117,27 @@ export abstract class GlassSheet extends GlassElement {
         tabindex="-1"
         aria-labelledby="title"
       >
-        <span class="handle" aria-hidden="true"></span>
-        <header>
-          <span class="title">
-            ${this.renderIcon()}
-            <span class="names">
-              <h1 id="title">${this.sheetTitle}</h1>
-              ${this.sheetSubtitle ? html`<span class="subtitle">${this.sheetSubtitle}</span>` : ''}
+        <div
+          class="grab"
+          @pointerdown=${this.onDragStart}
+          @pointermove=${this.onDragMove}
+          @pointerup=${this.onDragEnd}
+          @pointercancel=${this.onDragEnd}
+        >
+          <span class="handle" aria-hidden="true"></span>
+          <header>
+            <span class="title">
+              ${this.renderIcon()}
+              <span class="names">
+                <h1 id="title">${this.sheetTitle}</h1>
+                ${this.sheetSubtitle ? html`<span class="subtitle">${this.sheetSubtitle}</span>` : ''}
+              </span>
             </span>
-          </span>
-          <button type="button" class="close" aria-label="Close" @click=${() => this.close()}>
-            <glass-icon name="x" size="22" stroke="1.8"></glass-icon>
-          </button>
-        </header>
+            <button type="button" class="close" aria-label="Close" @click=${() => this.close()}>
+              <glass-icon name="x" size="22" stroke="1.8"></glass-icon>
+            </button>
+          </header>
+        </div>
         ${this.renderBody()}
       </section>
     `;
@@ -150,6 +195,12 @@ export abstract class GlassSheet extends GlassElement {
         .backdrop {
           transition: none;
         }
+      }
+      .grab {
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+        touch-action: none; /* the drag is ours, not the page's scroll */
       }
       .handle {
         align-self: center;

@@ -11,6 +11,7 @@ import type { GlassCamerasSheet, SheetCamera } from '../../sheets/cameras-sheet.
 import '../../sheets/cameras-sheet.js';
 import '../../elements/glass-icon.js';
 import './camera-editor.js';
+import { attentionStyles } from '../../motion.js';
 
 export interface CameraConfig extends LovelaceCardConfig, SheetCamera {
   /** A heading above the card, e.g. "Cameras" on the first one. */
@@ -119,7 +120,7 @@ export class GlassCamera extends GlassElement {
             <span class="name">${c.name ?? shortName(cam, '')}</span>
             ${last ? html`<span class="last">${last}</span>` : nothing}
           </span>
-          ${motion ? html`<span class="pill ${moving ? 'motion' : 'clear'}">${moving ? 'Motion' : 'Clear'}</span>` : nothing}
+          ${motion ? html`<span class="pill ${moving ? 'motion ringing' : 'clear'}">${moving ? 'Motion' : 'Clear'}</span>` : nothing}
         </div>
       </section>
     `;
@@ -138,6 +139,7 @@ export class GlassCamera extends GlassElement {
 
   static styles = [
     tokens,
+    attentionStyles,
     css`
       :host {
         display: flex;

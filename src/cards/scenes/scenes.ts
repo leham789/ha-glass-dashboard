@@ -5,6 +5,7 @@ import { tokens } from '../../tokens.js';
 import { ensureFonts } from '../../fonts.js';
 import { type HassEntity, type HomeAssistant, type LovelaceCardConfig, registerCard } from '../../ha.js';
 import { distinctNames, shortName } from '../../rooms.js';
+import { haptic } from '../../motion.js';
 import './scenes-editor.js';
 
 export interface ScenesConfig extends LovelaceCardConfig {
@@ -112,6 +113,7 @@ export class GlassScenes extends GlassElement {
 
   private run(id: string) {
     const domain = id.split('.')[0];
+    haptic('success');
     this.hass!.callService(domain === 'script' ? 'script' : 'scene', 'turn_on', { entity_id: id });
   }
 

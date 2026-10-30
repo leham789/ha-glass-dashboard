@@ -13,6 +13,7 @@ export interface TitleConfig extends LovelaceCardConfig {
 /** A screen's title, in the pack's Screen title style ("Heating & Energy"). */
 @customElement('glass-title')
 export class GlassTitle extends GlassElement {
+  protected static arriveAs = 'fade' as const;
   @property({ attribute: false }) hass?: HomeAssistant;
   @state() private config?: TitleConfig;
 

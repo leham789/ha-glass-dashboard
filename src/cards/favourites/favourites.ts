@@ -5,6 +5,7 @@ import { tokens } from '../../tokens.js';
 import { ensureFonts } from '../../fonts.js';
 import { type HomeAssistant, type LovelaceCardConfig, isUnavailable, openMoreInfo, registerCard } from '../../ha.js';
 import { isLightOn } from '../../light-colour.js';
+import { haptic } from '../../motion.js';
 import './favourites-editor.js';
 
 export interface FavouritesConfig extends LovelaceCardConfig {
@@ -108,8 +109,10 @@ export class GlassFavourites extends GlassElement {
     const domain = id.split('.')[0];
     if (ACTIONS.has(domain)) {
       const service = domain === 'scene' || domain === 'script' ? 'turn_on' : 'press';
+      haptic('success');
       this.hass!.callService(domain, service, { entity_id: id });
     } else if (TOGGLES.has(domain)) {
+      haptic('light');
       this.hass!.callService(domain === 'media_player' || domain === 'climate' ? domain : 'homeassistant', this.isOn(id) ? 'turn_off' : 'turn_on', {
         entity_id: id,
       });

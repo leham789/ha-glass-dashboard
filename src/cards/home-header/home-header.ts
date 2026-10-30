@@ -24,6 +24,7 @@ export interface HomeHeaderConfig extends LovelaceCardConfig {
  */
 @customElement('glass-home-header')
 export class GlassHomeHeader extends GlassElement {
+  protected static arriveAs = 'fade' as const;
   @property({ attribute: false }) hass?: HomeAssistant;
   @state() private config?: HomeHeaderConfig;
   @state() private now = new Date();

@@ -16,6 +16,7 @@ import '../../sheets/temps-sheet.js';
 import '../../sheets/batteries-sheet.js';
 import '../../elements/glass-icon.js';
 import './status-chips-editor.js';
+import { attentionStyles } from '../../motion.js';
 
 export interface StatusChipsConfig extends LovelaceCardConfig {
   /** Where an open-door chip goes, e.g. the Security view. */
@@ -97,7 +98,7 @@ export class GlassStatusChips extends GlassElement {
       ${this.chips().map(
         (c) => html`<button
           type="button"
-          class="chip ${c.attention ? 'attention' : ''}"
+          class="chip ${c.attention ? 'attention' : ''} ${c.key === 'open' ? 'ringing' : ''}"
           ?disabled=${!c.onTap}
           @click=${c.onTap}
         >
@@ -190,6 +191,7 @@ export class GlassStatusChips extends GlassElement {
 
   static styles = [
     tokens,
+    attentionStyles,
     css`
       :host {
         display: block;

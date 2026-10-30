@@ -11,6 +11,10 @@ import type { GlassRoomOptionsSheet } from '../../sheets/room-options-sheet.js';
 import '../../sheets/room-options-sheet.js';
 import '../../elements/glass-icon.js';
 import './room-header-editor.js';
+import { EASE, arriveFrom, haptic, reducedMotion } from '../../motion.js';
+
+/** Where the highlight was in the switcher as you left a room, so the next room's switcher slides it on. */
+let leaving: { left: number; width: number; at: number } | undefined;
 
 export interface RoomHeaderConfig extends LovelaceCardConfig {
   /** This screen's room. */
@@ -29,6 +33,7 @@ export interface RoomHeaderConfig extends LovelaceCardConfig {
  */
 @customElement('glass-room-header')
 export class GlassRoomHeader extends GlassElement {
+  protected static arriveAs = 'fade' as const;
   @property({ attribute: false }) hass?: HomeAssistant;
   @state() private config?: RoomHeaderConfig;
   private watched: string[] = [];
@@ -62,9 +67,13 @@ export class GlassRoomHeader extends GlassElement {
     super.connectedCallback();
     ensureFonts();
     this.stopPrefs = onPrefsChange(() => this.requestUpdate());
+    // HA keeps views it has shown: coming back to one puts this card back without re-rendering it.
+    if (this.hasUpdated) this.updateComplete.then(() => this.placePill());
   }
 
   disconnectedCallback(): void {
+    this.fit.disconnect();
+    this.fitted = undefined;
     this.stopPrefs?.();
     this.sheet?.close();
     super.disconnectedCallback();
@@ -88,6 +97,41 @@ export class GlassRoomHeader extends GlassElement {
       const current = this.renderRoot.querySelector<HTMLElement>('[aria-current="page"]');
       if (nav && current) nav.scrollLeft = current.offsetLeft - nav.clientWidth / 2 + current.offsetWidth / 2;
     }
+    this.placePill();
+  }
+
+  /** Re-fits the highlight if the current room's tab changes size (e.g. once the font loads). */
+  private fit = new ResizeObserver(() => this.placePill());
+  private fitted?: HTMLElement;
+
+  /** Puts the highlight under the current room, sliding it over from the last room if you just switched. */
+  private placePill() {
+    const pill = this.renderRoot.querySelector<HTMLElement>('.pill');
+    const current = this.renderRoot.querySelector<HTMLElement>('[aria-current="page"]');
+    if (!pill) return;
+    pill.hidden = !current;
+    if (current !== this.fitted) {
+      this.fit.disconnect();
+      if (current) this.fit.observe(current);
+      this.fitted = current ?? undefined;
+    }
+    if (!current) return;
+    const to = { left: current.offsetLeft, width: current.offsetWidth };
+    pill.style.transform = `translateX(${to.left}px)`;
+    pill.style.width = `${to.width}px`;
+    const from = leaving;
+    if (!from || performance.now() - from.at > 1500 || reducedMotion()) return;
+    leaving = undefined;
+    // Its name stays dark until the highlight is under it.
+    current.classList.add('arriving');
+    const slide = pill.animate(
+      [
+        { transform: `translateX(${from.left}px)`, width: `${from.width}px` },
+        { transform: `translateX(${to.left}px)`, width: `${to.width}px` },
+      ],
+      { duration: 250, easing: EASE },
+    );
+    slide.finished.finally(() => current.classList.remove('arriving'));
   }
 
   private rooms() {
@@ -117,6 +161,7 @@ export class GlassRoomHeader extends GlassElement {
 
     return html`
       <nav aria-label="Rooms">
+        <span class="pill" aria-hidden="true"></span>
         ${this.rooms().map((a) => {
           const current = a.area_id === this.config!.area;
           return html`<a
@@ -166,7 +211,14 @@ export class GlassRoomHeader extends GlassElement {
 
   private go(e: Event, areaId: string) {
     e.preventDefault();
-    if (areaId !== this.config!.area) navigate(this.config!.room_path.replace('{area}', areaId));
+    if (areaId === this.config!.area) return;
+    const ids = this.rooms().map((a) => a.area_id);
+    const current = this.renderRoot.querySelector<HTMLElement>('[aria-current="page"]');
+    if (current) leaving = { left: current.offsetLeft, width: current.offsetWidth, at: performance.now() };
+    // The next room comes in from the side you're heading.
+    arriveFrom(ids.indexOf(areaId) > ids.indexOf(this.config!.area) ? 1 : -1);
+    haptic('selection');
+    navigate(this.config!.room_path.replace('{area}', areaId));
   }
 
   static styles = [
@@ -193,7 +245,16 @@ export class GlassRoomHeader extends GlassElement {
       nav::-webkit-scrollbar {
         display: none;
       }
+      .pill {
+        position: absolute;
+        top: 4px;
+        left: 0;
+        height: 38px;
+        border-radius: 19px;
+        background: var(--glass-ink);
+      }
       a {
+        position: relative; /* above the highlight */
         flex: none;
         height: 38px;
         padding: 0 14px;
@@ -206,9 +267,9 @@ export class GlassRoomHeader extends GlassElement {
         text-decoration: none;
         -webkit-tap-highlight-color: transparent;
       }
-      a[aria-current='page'] {
-        background: var(--glass-ink);
+      a[aria-current='page']:not(.arriving) {
         color: var(--glass-on-ink);
+        transition: color 0.15s ease;
       }
       a:focus-visible {
         outline: 2px solid var(--glass-ink);

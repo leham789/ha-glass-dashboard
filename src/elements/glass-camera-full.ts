@@ -5,6 +5,7 @@ import { tokens } from '../tokens.js';
 import { type HomeAssistant, isUnavailable } from '../ha.js';
 import { shortName } from '../rooms.js';
 import { ago } from '../time.js';
+import { haptic } from '../motion.js';
 import './glass-camera-live.js';
 import './glass-icon.js';
 
@@ -115,7 +116,7 @@ export class GlassCameraFull extends GlassElement {
           <span class="last">${cam ? `Updated ${ago(cam.last_changed)}` : ''}</span>
         </span>
         ${light
-          ? html`<button type="button" class="light ${lightOn ? 'on' : ''}" aria-pressed=${lightOn ? 'true' : 'false'} ?disabled=${isUnavailable(light)} @click=${() => hass.callService('homeassistant', lightOn ? 'turn_off' : 'turn_on', { entity_id: c.light })}>
+          ? html`<button type="button" class="light ${lightOn ? 'on' : ''}" aria-pressed=${lightOn ? 'true' : 'false'} ?disabled=${isUnavailable(light)} @click=${() => (haptic('light'), hass.callService('homeassistant', lightOn ? 'turn_off' : 'turn_on', { entity_id: c.light }))}>
               <glass-icon name="lightbulb" size="18" stroke="1.7"></glass-icon>${shortName(light, '')} · ${lightOn ? 'On' : 'Off'}
             </button>`
           : nothing}

@@ -7,6 +7,7 @@ import type { HassEntity } from '../ha.js';
 import { dailyUsage, spans, stateHistory } from '../history.js';
 import type { IconName } from '../icons.js';
 import { clock, duration } from '../time.js';
+import { haptic } from '../motion.js';
 
 /**
  * Replaces HA's pop-up for switches and smart plugs (switch, input_boolean):
@@ -103,7 +104,7 @@ export class GlassSwitchSheet extends GlassEntitySheet {
             aria-checked=${on ? 'true' : 'false'}
             aria-label="Power"
             ?disabled=${off}
-            @click=${() => this.hass!.callService('homeassistant', on ? 'turn_off' : 'turn_on', { entity_id: e.entity_id })}
+            @click=${() => (haptic('light'), this.hass!.callService('homeassistant', on ? 'turn_off' : 'turn_on', { entity_id: e.entity_id }))}
           ></button>
         </span>
       </div>

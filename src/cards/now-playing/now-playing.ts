@@ -13,6 +13,7 @@ import {
   reportVisibility,
 } from '../../ha.js';
 import { areaOf, shortName } from '../../rooms.js';
+import { haptic } from '../../motion.js';
 import '../../elements/glass-icon.js';
 import './now-playing-editor.js';
 
@@ -133,7 +134,7 @@ export class GlassNowPlaying extends GlassElement {
           type="button"
           class="play"
           aria-label=${playing ? 'Pause' : 'Play'}
-          @click=${() => this.hass!.callService('media_player', 'media_play_pause', { entity_id: p.entity_id })}
+          @click=${() => (haptic('light'), this.hass!.callService('media_player', 'media_play_pause', { entity_id: p.entity_id }))}
         >
           <glass-icon name=${playing ? 'pause' : 'play'} size="18" stroke="2" solid></glass-icon>
         </button>
