@@ -148,10 +148,18 @@ const defs: Def[] = [
   ['sensor.red_bin', inDays(2), { friendly_name: 'Red Bin' }],
   ['sensor.grey_bin', inDays(2), { friendly_name: 'Grey Bin' }],
   ['sensor.blue_bin', inDays(9), { friendly_name: 'Blue Bin' }],
-  ['sensor.p1s_print_status', 'running', { friendly_name: 'P1S Print status' }],
-  ['sensor.p1s_print_progress', '42', { friendly_name: 'P1S Print progress', unit_of_measurement: '%' }],
-  ['sensor.p1s_remaining_time', '72', { friendly_name: 'P1S Remaining time', unit_of_measurement: 'min' }],
-  ['sensor.p1s_task_name', 'Plant-pot-plug', { friendly_name: 'P1S Task name' }],
+  ['sensor.p1s_print_status', 'running', { friendly_name: 'P1S Print status' }, 'office', 'p1s'],
+  ['sensor.p1s_print_progress', '42', { friendly_name: 'P1S Print progress', unit_of_measurement: '%' }, 'office', 'p1s'],
+  ['sensor.p1s_remaining_time', '72', { friendly_name: 'P1S Remaining time', unit_of_measurement: 'min' }, 'office', 'p1s'],
+  ['sensor.p1s_task_name', 'Plant-pot-plug', { friendly_name: 'P1S Task name' }, 'office', 'p1s'],
+  // The Bambu Lab integration's layer, target and control entities on the same device
+  ['sensor.p1s_current_layer', '16', { friendly_name: 'P1S Current layer' }, 'office', 'p1s'],
+  ['sensor.p1s_total_layer_count', '37', { friendly_name: 'P1S Total layer count' }, 'office', 'p1s'],
+  ['sensor.p1s_target_nozzle_temperature', '220', { friendly_name: 'P1S Target nozzle temperature', device_class: 'temperature' }, 'office', 'p1s'],
+  ['sensor.p1s_target_bed_temperature', '60', { friendly_name: 'P1S Target bed temperature', device_class: 'temperature' }, 'office', 'p1s'],
+  ['button.p1s_pause', 'unknown', { friendly_name: 'P1S Pause printing' }, 'office', 'p1s'],
+  ['button.p1s_resume', 'unknown', { friendly_name: 'P1S Resume printing' }, 'office', 'p1s'],
+  ['button.p1s_stop', 'unknown', { friendly_name: 'P1S Stop printing' }, 'office', 'p1s'],
   // Home header, favourites and the Heating & Energy tiles
   ['person.alex', 'home', { friendly_name: 'Alex Morgan', user_id: 'user-1', source: 'device_tracker.alex_phone' }],
   ['device_tracker.alex_phone', 'home', { friendly_name: "Alex's iPhone" }, undefined, 'alex_phone'],
@@ -351,6 +359,14 @@ function makeHass(states: Record<string, HassEntity>): HomeAssistant {
           render();
           return;
         }
+      }
+      if (domain === 'button' && service === 'press') {
+        // The printer's own buttons: pause, resume and stop change its status.
+        const status = hass.states['sensor.p1s_print_status'];
+        const next = targets[0].endsWith('_pause') ? 'pause' : targets[0].endsWith('_resume') ? 'running' : 'idle';
+        hass = makeHass({ ...hass.states, [status.entity_id]: { ...status, state: next, last_changed: new Date().toISOString() } });
+        render();
+        return;
       }
       if (domain === 'climate' && service === 'set_preset_mode') {
         const id = targets[0];

@@ -6,21 +6,22 @@ import { ensureFonts } from '../../fonts.js';
 import {
   type HomeAssistant,
   type LovelaceCardConfig,
-  navigate,
-  openMoreInfo,
   registerCard,
   reportVisibility,
 } from '../../ha.js';
 import { type Collection, binColour, collections, daysUntil } from '../../bins.js';
 import { type PrinterEntities, type PrinterState, printerState } from '../../printer.js';
 import './around-editor.js';
+import { GlassSheet } from '../../elements/glass-sheet.js';
+import '../../sheets/printer-sheet.js';
+import type { GlassPrinterSheet } from '../../sheets/printer-sheet.js';
 
 export interface AroundConfig extends LovelaceCardConfig, PrinterEntities {
   /** Bin sensors, e.g. from Waste Collection Schedule. */
   bins?: string[];
   /** Shown as "3D printer · <name>". */
   printer_name?: string;
-  /** A view to open from the printer tile, e.g. the Office. */
+  /** No longer used: the printer tile opens the printer pop-up. Kept so old configs still load. */
   printer_path?: string;
 }
 
@@ -157,6 +158,14 @@ export class GlassAround extends GlassElement {
     return p?.showFull ? p : undefined;
   }
 
+  /** The printer pop-up: progress, camera, temperatures and Pause / Resume / Stop. */
+  private openPrinter(statusId: string) {
+    const c = this.config!;
+    const sheet = GlassSheet.open<GlassPrinterSheet>('glass-printer-sheet', this.hass!);
+    sheet.printer = c;
+    sheet.entityId = statusId;
+  }
+
   private renderPrinter(p: PrinterState) {
     const c = this.config!;
     const status = p.status;
@@ -170,7 +179,7 @@ export class GlassAround extends GlassElement {
     return html`<button
       type="button"
       class="tile"
-      @click=${() => (c.printer_path ? navigate(c.printer_path) : openMoreInfo(this, status.entity_id))}
+      @click=${() => this.openPrinter(status.entity_id)}
     >
       <span class="head">
         <span class="label">3D printer${c.printer_name ? ` · ${c.printer_name}` : ''}</span>

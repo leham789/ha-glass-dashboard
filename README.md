@@ -89,7 +89,7 @@ room_path: /glass/{area}                                                       #
 Things that only matter for a while:
 
 - **Bins** show from two days before collection until noon on the day. The tile has the day, a coloured dot per bin, "2 days / Tomorrow / Today", and when the next other bin is due. It works with one Waste Collection Schedule sensor per bin, or one sensor with the upcoming dates.
-- **3D printer** shows while printing (progress, time left, print name) and for two hours after ("Done").
+- **3D printer** shows while printing (progress, time left, print name) and for two hours after ("Done"). Tap it for the **printer pop-up**: progress, time left and when it'll be done, the layer, the chamber camera and light, nozzle / bed / AMS humidity, and Pause / Resume / Stop (Stop asks twice). Anything not set here (camera, light, temperatures, buttons, layers) is found on the printer's device by the Bambu Lab integration's names.
 
 The two tiles share the row. One on its own spans the row, and with neither the card hides.
 
@@ -101,7 +101,6 @@ printer_progress: sensor.p1s_print_progress
 printer_remaining: sensor.p1s_remaining_time
 printer_task: sensor.p1s_task_name
 printer_name: P1S
-printer_path: /glass/office   # optional
 ```
 
 ### Menu · `custom:glass-menu`
@@ -365,6 +364,7 @@ Tapping something on a card opens our own pop-up instead of Home Assistant's mor
 - **Sensors** (temperature, energy, batteries, bins, doors and windows): the reading, its history for 24 hours or 7 days, and three facts from it.
 - **People:** home, a zone or away, since when, today's timeline and the phone's battery.
 - **Switches and plugs:** on / off, what a plug is using now and today, and today's timeline.
+- **3D printer** (from the printer tile): progress, camera, temperatures, and Pause / Resume / Stop.
 - **Cameras:** the full-screen view.
 
 Anything else (scenes, scripts, covers, locks…) still opens Home Assistant's own dialog, as do pop-ups opened from outside these cards (HA's search, the logbook).
