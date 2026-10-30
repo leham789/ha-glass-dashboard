@@ -123,10 +123,13 @@ export class GlassRoomHeader extends GlassElement {
     leaving = undefined;
     // Its name stays dark until the highlight is under it.
     current.classList.add('arriving');
+    // Transform only (slide, and stretch to the new width), never width itself: HA
+    // builds the new room's page in one long busy spell right after the tap, and only
+    // transform and opacity keep animating through that.
     const slide = pill.animate(
       [
-        { transform: `translateX(${from.left}px)`, width: `${from.width}px` },
-        { transform: `translateX(${to.left}px)`, width: `${to.width}px` },
+        { transform: `translateX(${from.left}px) scaleX(${from.width / to.width})` },
+        { transform: `translateX(${to.left}px) scaleX(1)` },
       ],
       { duration: 250, easing: EASE },
     );
@@ -245,6 +248,7 @@ export class GlassRoomHeader extends GlassElement {
         position: absolute;
         top: 4px;
         left: 0;
+        transform-origin: left center;
         height: 38px;
         border-radius: 19px;
         background: var(--glass-ink);

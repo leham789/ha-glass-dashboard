@@ -115,10 +115,13 @@ export class GlassMenu extends GlassElement {
     if (!from || performance.now() - from.at > 1500 || reducedMotion()) return;
     leaving = undefined;
     const timing = { duration: 250, easing: EASE };
+    // Transform only (slide, and stretch to the new width), never width itself: HA
+    // builds the new page in one long busy spell right after the tap, and only
+    // transform and opacity keep animating through that.
     pill.animate(
       [
-        { transform: `translateX(${from.pill.left}px)`, width: `${from.pill.width}px` },
-        { transform: `translateX(${to.left}px)`, width: `${to.width}px` },
+        { transform: `translateX(${from.pill.left}px) scaleX(${from.pill.width / to.width})` },
+        { transform: `translateX(${to.left}px) scaleX(1)` },
       ],
       timing,
     );
@@ -220,6 +223,7 @@ export class GlassMenu extends GlassElement {
         position: absolute;
         top: 7px; /* 8px padding, less the nav's 1px border */
         left: 0;
+        transform-origin: left center;
         height: 56px;
         border-radius: 28px;
         background: var(--glass-ink);
