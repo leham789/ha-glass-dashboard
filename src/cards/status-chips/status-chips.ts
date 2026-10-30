@@ -7,13 +7,20 @@ import type { IconName } from '../../icons.js';
 import { lightsByArea, roomSummary, shortName } from '../../rooms.js';
 import { GlassSheet } from '../../elements/glass-sheet.js';
 import type { GlassLightsSheet } from '../../sheets/lights-sheet.js';
+import type { GlassTempsSheet } from '../../sheets/temps-sheet.js';
+import { LOW_BATTERY, batteries } from '../../batteries.js';
+import { batteryIcon } from '../../climate.js';
 import '../../sheets/lights-sheet.js';
+import '../../sheets/temps-sheet.js';
+import '../../sheets/batteries-sheet.js';
 import '../../elements/glass-icon.js';
 import './status-chips-editor.js';
 
 export interface StatusChipsConfig extends LovelaceCardConfig {
   /** Where an open-door chip goes, e.g. the Security view. */
   security_path?: string;
+  /** Where the temperatures pop-up's "Go to Heating & Energy" goes. */
+  energy_path?: string;
   exclude_areas?: string[];
 }
 
@@ -27,7 +34,6 @@ interface Chip {
 }
 
 const OPENINGS = new Set(['door', 'window', 'garage_door', 'opening']);
-const LOW_BATTERY = 40;
 
 /**
  * Home's row of status chips, each a summary that opens more detail:
@@ -149,27 +155,35 @@ export class GlassStatusChips extends LitElement {
         label: lo === hi ? `Rooms ${lo}°` : `Rooms ${lo}–${hi}°`,
         icon: 'thermometer',
         iconBg: '#F7C2A4',
+        onTap: () => this.openSheet<GlassTempsSheet>('glass-temps-sheet', (s) => (s.energyPath = this.config?.energy_path)),
       });
     }
 
-    const low = Object.values(hass.states).filter((e) => {
-      const level = Number(e.state);
-      return e.attributes.device_class === 'battery' && e.state !== '' && Number.isFinite(level) && level < LOW_BATTERY;
-    }).length;
-    chips.push({
-      key: 'batteries',
-      label: low === 1 ? '1 low battery' : low ? `${low} low batteries` : 'Batteries OK',
-      icon: low ? 'battery-low' : 'battery-full',
-      iconBg: '#CDB8F5',
-    });
+    const all = batteries(hass);
+    if (all.length) {
+      const low = all.filter((b) => b.level < LOW_BATTERY).length;
+      chips.push({
+        key: 'batteries',
+        label: low === 1 ? '1 low battery' : low ? `${low} low batteries` : 'Batteries OK',
+        icon: batteryIcon(all[0].level),
+        iconBg: '#CDB8F5',
+        onTap: () => this.openSheet('glass-batteries-sheet'),
+      });
+    }
 
     return chips;
   }
 
   private openLights() {
+    this.openSheet<GlassLightsSheet>('glass-lights-sheet');
+  }
+
+  /** Opens one sheet at a time; every sheet gets the card's excluded areas where it uses them. */
+  private openSheet<T extends GlassSheet>(tag: string, setup?: (sheet: T) => void) {
     if (this.sheet?.isConnected) return;
-    const sheet = GlassSheet.open<GlassLightsSheet>('glass-lights-sheet', this.hass!);
-    sheet.excludeAreas = this.config?.exclude_areas ?? [];
+    const sheet = GlassSheet.open<T>(tag, this.hass!);
+    (sheet as unknown as { excludeAreas?: string[] }).excludeAreas = this.config?.exclude_areas ?? [];
+    setup?.(sheet);
     this.sheet = sheet;
   }
 

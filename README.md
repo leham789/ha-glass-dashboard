@@ -12,12 +12,16 @@ One scrolling row of chips that sum up the house:
 
 - **an open door or window** (first, in peach, only while something is open). It opens your Security view.
 - **lights on**. It opens the **Lights** pop-up: how many are on, *All off* (then *Undo*), On / All / Offline filters, and every light by room. Tap a light to switch it.
-- **room temperatures**, from coldest to warmest room ("Rooms 15–23°")
-- **low batteries**: any battery under 40%
+- **room temperatures**, from coldest to warmest room ("Rooms 15–23°"). It opens **Room temperatures**:
+  - the house average, and the weather outside
+  - a tile per room, sorted by room or coldest or warmest, with a Cold / Cool / Comfy / Warm / Hot pill and a humidity scale
+  - only Cold, Warm and Hot rooms get a faint coloured corner
+- **low batteries**: any battery under 40%. It opens **Batteries**: every battery from lowest up, with an icon that shows the charge. Tiles under 40% turn dark, and phones are listed separately.
 
 ```yaml
 type: custom:glass-status-chips
 security_path: /glass/security   # optional
+energy_path: /glass/energy       # optional, linked from Room temperatures
 exclude_areas: [server_room]     # optional
 ```
 

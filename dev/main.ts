@@ -45,6 +45,10 @@ const defs: Def[] = [
   ['sensor.lr_remote_battery', '12', { friendly_name: 'Living Room Remote Battery', device_class: 'battery' }, 'living_room'],
   ['sensor.guest_remote_battery', '36', { friendly_name: 'Guest Remote Battery', device_class: 'battery' }],
   ['sensor.front_door_battery', '90', { friendly_name: 'Front Door Battery', device_class: 'battery' }, 'hallway'],
+  ['sensor.alex_phone_battery_level', '45', { friendly_name: "Alex's Phone Battery level", device_class: 'battery' }],
+  // A warm room and the weather, for the temperatures pop-up
+  ['sensor.kitchen_temperature', '23.4', { friendly_name: 'Kitchen Temperature', device_class: 'temperature' }, 'kitchen'],
+  ['weather.home', 'partlycloudy', { friendly_name: 'Home', temperature: 11.3, humidity: 90 }],
   // Not in a room: light-tile states only
   ['light.office_group', 'on', {
     friendly_name: 'Office Hue Group',
@@ -62,7 +66,10 @@ const states = Object.fromEntries(
   ]),
 );
 const entities: Record<string, EntityRegistryEntry> = Object.fromEntries(
-  defs.map(([entity_id, , , area, device]) => [entity_id, { entity_id, area_id: area ?? null, device_id: device ?? null }]),
+  defs.map(([entity_id, , , area, device]) => [
+    entity_id,
+    { entity_id, area_id: area ?? null, device_id: device ?? null, platform: entity_id.includes('phone') ? 'mobile_app' : undefined },
+  ]),
 );
 const floors = {
   downstairs: { floor_id: 'downstairs', name: 'Downstairs', level: 0 },
@@ -116,7 +123,7 @@ function add(containerId: string, type: string, config: Record<string, unknown>)
   cards.push(card);
 }
 
-add('chips', 'glass-status-chips', { security_path: '/dev/security' });
+add('chips', 'glass-status-chips', { security_path: '/dev/security', energy_path: '/dev/energy' });
 add('rooms', 'glass-rooms', {});
 add('menu', 'glass-menu', {
   home_path: location.pathname,

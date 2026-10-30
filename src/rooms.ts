@@ -22,6 +22,8 @@ export interface RoomSummary {
   alert: boolean;
   /** The room's temperature in °, when it has a sensor. */
   temperature?: number;
+  /** The room's humidity in %, when it has a sensor. */
+  humidity?: number;
   /** Every entity this summary read, so a card only re-renders when one changes. */
   watch: string[];
 }
@@ -51,13 +53,16 @@ export function roomSummary(hass: HomeAssistant, areaId: string, exclude: string
   const lights = roomLights(hass, ids, name);
   const members = lights.flatMap((l) => groupMembers(hass.states[l.id]) ?? []);
   const chosen = [area?.temperature_entity_id, area?.humidity_entity_id].filter((id): id is string => !!id);
+  const temperature = numberState(hass.states[area?.temperature_entity_id ?? pickSensor(hass, ids, 'temperature') ?? '']);
+  const humidity = numberState(hass.states[area?.humidity_entity_id ?? pickSensor(hass, ids, 'humidity') ?? '']);
   return {
     areaId,
     name,
     lights,
     onCount: lights.filter((l) => l.on).length,
-    ...roomMeta(hass, ids, name, area?.temperature_entity_id, area?.humidity_entity_id),
-    temperature: numberState(hass.states[area?.temperature_entity_id ?? pickSensor(hass, ids, 'temperature') ?? '']),
+    ...roomMeta(hass, ids, name, climateText(temperature, humidity)),
+    temperature,
+    humidity,
     watch: [...ids, ...members, ...chosen],
   };
 }
@@ -116,8 +121,7 @@ function roomMeta(
   hass: HomeAssistant,
   ids: string[],
   areaName: string,
-  tempId?: string | null,
-  humidityId?: string | null,
+  climate: string,
 ): { meta: string; alert: boolean } {
   const of = (cls: Set<string>) =>
     ids.filter((id) => id.startsWith('binary_sensor.') && cls.has(hass.states[id].attributes.device_class));
@@ -126,7 +130,6 @@ function roomMeta(
   const open = openings.find((id) => hass.states[id].state === 'on');
   if (open) return { meta: `${sentence(shortName(hass.states[open], ''))} open`, alert: true };
 
-  const climate = climateText(hass, ids, tempId, humidityId);
   if (climate) return { meta: climate, alert: false };
 
   if (openings.length) return { meta: `${sentence(shortName(hass.states[openings[0]], ''))} shut`, alert: false };
@@ -140,12 +143,8 @@ function roomMeta(
   return { meta: '', alert: false };
 }
 
-/** "18.0° · 82%" from the area's chosen sensors, or the room's own climate sensor. */
-function climateText(hass: HomeAssistant, ids: string[], tempId?: string | null, humidityId?: string | null): string {
-  const temp = tempId ?? pickSensor(hass, ids, 'temperature');
-  const hum = humidityId ?? pickSensor(hass, ids, 'humidity');
-  const t = numberState(hass.states[temp ?? '']);
-  const h = numberState(hass.states[hum ?? '']);
+/** "18.0° · 82%" from a room's temperature and humidity. */
+function climateText(t?: number, h?: number): string {
   const parts = [];
   if (t !== undefined) parts.push(`${t.toFixed(1)}°`);
   if (h !== undefined) parts.push(`${Math.round(h)}%`);

@@ -35,7 +35,9 @@ export abstract class GlassSheet extends LitElement {
     document.documentElement.style.overflow = 'hidden';
     requestAnimationFrame(() => {
       this.shown = true;
-      this.renderRoot.querySelector<HTMLElement>('.close')?.focus();
+      // Focus the dialog itself so screen readers land in it and Tab starts there,
+      // without drawing a focus ring on the close button for touch users.
+      this.renderRoot.querySelector<HTMLElement>('.sheet')?.focus({ preventScroll: true });
     });
   }
 
@@ -61,6 +63,7 @@ export abstract class GlassSheet extends LitElement {
         class="sheet ${this.shown ? 'shown' : ''}"
         role="dialog"
         aria-modal="true"
+        tabindex="-1"
         aria-labelledby="title"
       >
         <span class="handle" aria-hidden="true"></span>
@@ -123,6 +126,9 @@ export abstract class GlassSheet extends LitElement {
       }
       .sheet.shown {
         transform: translate(-50%, 0);
+      }
+      .sheet:focus {
+        outline: none;
       }
       @media (prefers-reduced-motion: reduce) {
         .sheet,

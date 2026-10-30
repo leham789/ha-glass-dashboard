@@ -7,6 +7,7 @@ export class GlassStatusChipsEditor extends GlassFormEditor<StatusChipsConfig> {
   protected fields() {
     return [
       { name: 'security_path', label: 'Open this view from an open-door chip (optional)', selector: { navigation: {} } },
+      { name: 'energy_path', label: 'Heating & Energy view, linked from the temperatures pop-up (optional)', selector: { navigation: {} } },
       { name: 'exclude_areas', label: 'Areas to leave out (optional)', selector: { area: { multiple: true } } },
     ];
   }

@@ -16,6 +16,8 @@ export interface EntityRegistryEntry {
   entity_id: string;
   area_id?: string | null;
   device_id?: string | null;
+  /** The integration that made the entity, e.g. "mobile_app". */
+  platform?: string;
   hidden?: boolean;
   entity_category?: string | null;
 }
