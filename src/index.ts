@@ -23,5 +23,8 @@ import './cards/room-temps/room-temps.js';
 import './cards/electricity/electricity.js';
 import './cards/stat-tiles/stat-tiles.js';
 import './cards/title/title.js';
+import './cards/printer/printer-card.js';
+import './cards/switch-rows/switch-rows.js';
+import './cards/room-alert/room-alert.js';
 
-console.info('%c GLASS DASHBOARD %c 0.11.0 ', 'background:#121316;color:#C6F432', 'background:#C6F432;color:#121316');
+console.info('%c GLASS DASHBOARD %c 0.12.0 ', 'background:#121316;color:#C6F432', 'background:#C6F432;color:#121316');

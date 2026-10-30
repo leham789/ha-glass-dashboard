@@ -75,6 +75,15 @@ const defs: Def[] = [
   ['sensor.p1s_bed_temperature', '60', { friendly_name: 'P1S Bed', device_class: 'temperature' }, 'office', 'p1s'],
   ['sensor.p1s_progress', '42', { friendly_name: 'P1S Progress' }, 'office', 'p1s'],
   ['light.p1s_chamber', 'on', { friendly_name: 'P1S Chamber light', color_mode: 'onoff' }, 'office', 'p1s'],
+  // Office power, a bulb whose wall switch is off, and the printer's camera and readings
+  ['switch.office_pc', 'on', { friendly_name: 'Office PC' }, 'office', 'pc_plug'],
+  ['sensor.office_pc_power', '2.2', { friendly_name: 'Office PC Power', device_class: 'power', unit_of_measurement: 'W' }, 'office', 'pc_plug'],
+  ['sensor.office_pc_energy', '3.69', { friendly_name: 'Office PC Energy', device_class: 'energy', unit_of_measurement: 'kWh' }, 'office', 'pc_plug'],
+  ['switch.office_monitor_plug', 'off', { friendly_name: 'Office Monitor plug' }, 'office'],
+  ['light.office_ceiling', 'unavailable', { friendly_name: 'Office Ceiling' }, 'office'],
+  ['switch.office_ceiling_mains', 'off', { friendly_name: 'Office Ceiling mains' }, 'office'],
+  ['camera.p1s_chamber', 'streaming', { friendly_name: 'P1S Chamber', entity_picture: CAMERA_PICTURE }, 'office', 'p1s'],
+  ['sensor.p1s_ams_humidity', '38', { friendly_name: 'P1S AMS humidity', device_class: 'humidity', unit_of_measurement: '%' }, 'office', 'p1s'],
   // Bedroom (upstairs)
   ['light.bedroom_left', 'off', { friendly_name: 'Bedroom Left Side' }, 'bedroom'],
   ['light.bedroom_right', 'off', { friendly_name: 'Bedroom Right Side' }, 'bedroom'],
@@ -211,6 +220,16 @@ function makeHass(states: Record<string, HassEntity>): HomeAssistant {
       }
       if (domain === 'homeassistant') {
         const id = targets[0];
+        // Powering a bulb's mains switch brings the bulb back.
+        if (id === 'switch.office_ceiling_mains' && service === 'turn_on') {
+          hass = makeHass({
+            ...hass.states,
+            [id]: { ...hass.states[id], state: 'on' },
+            'light.office_ceiling': { ...hass.states['light.office_ceiling'], state: 'off' },
+          });
+          render();
+          return;
+        }
         hass = makeHass({ ...hass.states, [id]: { ...hass.states[id], state: service === 'turn_on' ? 'on' : 'off' } });
         render();
         return;

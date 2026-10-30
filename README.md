@@ -207,6 +207,29 @@ buttons: [media_player.living_room_tv, media_player.living_room_ps5]
 style: dark   # or light
 ```
 
+### 3D printer · `custom:glass-printer`
+
+While printing, and for two hours after, it's the full card. It has the chamber camera with a Chamber light button, a progress ring, time left and when it'll end, the print's name, and nozzle / bed / AMS humidity. Otherwise it's one compact row ("Idle · last print 2 days ago") that opens the full card when tapped. Adding it pre-fills the usual Bambu Lab sensor names.
+
+### Power switches · `custom:glass-switch-rows`
+
+Smart plugs as rows with a switch. Each row shows what the plug is drawing and has used ("2.2 W now · 3.69 kWh total"), found from the plug's own sensors.
+
+```yaml
+type: custom:glass-switch-rows
+entities: [switch.office_pc, switch.office_monitor_plug]
+```
+
+### Room alert · `custom:glass-room-alert`
+
+Appears only when a smart bulb is offline because the wall switch or plug that powers it is off, with a **Power on** button.
+
+```yaml
+type: custom:glass-room-alert
+light: light.office_ceiling
+switch: switch.office_ceiling_mains
+```
+
 ## Heating & Energy screen cards
 
 ### Screen title · `custom:glass-title`

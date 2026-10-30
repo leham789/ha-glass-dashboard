@@ -3,7 +3,6 @@ import { customElement, property, state } from 'lit/decorators.js';
 import { tokens } from '../../tokens.js';
 import { ensureFonts } from '../../fonts.js';
 import {
-  type HassEntity,
   type HomeAssistant,
   type LovelaceCardConfig,
   navigate,
@@ -12,25 +11,18 @@ import {
   reportVisibility,
 } from '../../ha.js';
 import { type Collection, binColour, collections, daysUntil } from '../../bins.js';
+import { type PrinterEntities, type PrinterState, printerState } from '../../printer.js';
 import './around-editor.js';
 
-export interface AroundConfig extends LovelaceCardConfig {
+export interface AroundConfig extends LovelaceCardConfig, PrinterEntities {
   /** Bin sensors, e.g. from Waste Collection Schedule. */
   bins?: string[];
-  /** The printer's status sensor (running, pause, finish, idle…), e.g. sensor.p1s_print_status. */
-  printer_status?: string;
-  printer_progress?: string;
-  printer_remaining?: string;
-  printer_task?: string;
   /** Shown as "3D printer · <name>". */
   printer_name?: string;
   /** A view to open from the printer tile, e.g. the Office. */
   printer_path?: string;
 }
 
-const PRINTING = new Set(['running', 'printing', 'pause', 'paused', 'prepare', 'slicing', 'init', 'heating']);
-const FINISHED = new Set(['finish', 'finished', 'completed', 'complete', 'failed', 'error']);
-const AFTER_PRINT_MS = 2 * 60 * 60 * 1000;
 const BINS_DAYS_AHEAD = 2;
 const BINS_UNTIL_HOUR = 12;
 
@@ -159,32 +151,20 @@ export class GlassAround extends LitElement {
     </div>`;
   }
 
-  private printer(): { status: HassEntity; active: boolean } | undefined {
-    const status = this.hass!.states[this.config!.printer_status ?? ''];
-    if (!status) return undefined;
-    const s = status.state.toLowerCase();
-    if (PRINTING.has(s)) return { status, active: true };
-    if (FINISHED.has(s) && this.now.getTime() - Date.parse(status.last_changed) < AFTER_PRINT_MS) {
-      return { status, active: false };
-    }
-    return undefined;
+  private printer(): PrinterState | undefined {
+    const p = printerState(this.hass!, this.config!, this.now);
+    return p?.showFull ? p : undefined;
   }
 
-  private renderPrinter({ status, active }: { status: HassEntity; active: boolean }) {
+  private renderPrinter(p: PrinterState) {
     const c = this.config!;
-    const s = status.state.toLowerCase();
-    const failed = s === 'failed' || s === 'error';
-    const paused = s === 'pause' || s === 'paused';
-    const progress = Number(this.hass!.states[c.printer_progress ?? '']?.state);
-    const task = this.hass!.states[c.printer_task ?? '']?.state;
-    const taskText = task && task !== 'unknown' && task !== 'unavailable' ? task : '';
-    const left = remaining(this.hass!.states[c.printer_remaining ?? '']);
-
-    const big = active ? (Number.isFinite(progress) ? `${Math.round(progress)}%` : 'Printing') : failed ? 'Failed' : 'Done';
+    const status = p.status;
+    const active = p.phase === 'printing' || p.phase === 'paused';
+    const big = active ? (p.progress !== undefined ? `${Math.round(p.progress)}%` : 'Printing') : p.phase === 'failed' ? 'Failed' : 'Done';
     const small = active
-      ? [paused ? 'Paused' : left ? `${left} left` : '', taskText].filter(Boolean).join(' · ')
-      : taskText;
-    const dot = active ? 'var(--glass-info)' : failed ? 'var(--glass-attention)' : 'var(--glass-go)';
+      ? [p.phase === 'paused' ? 'Paused' : p.left ? `${p.left} left` : '', p.task].filter(Boolean).join(' · ')
+      : p.task;
+    const dot = active ? 'var(--glass-info)' : p.phase === 'failed' ? 'var(--glass-attention)' : 'var(--glass-go)';
 
     return html`<button
       type="button"
@@ -290,15 +270,6 @@ export class GlassAround extends LitElement {
   ];
 }
 
-/** "1h 12m" from a remaining-time sensor in minutes, hours or seconds. */
-function remaining(e?: HassEntity): string {
-  const n = Number(e?.state);
-  if (!e || !Number.isFinite(n) || n <= 0) return '';
-  const unit = String(e.attributes.unit_of_measurement ?? 'min').toLowerCase();
-  const mins = Math.round(unit.startsWith('h') ? n * 60 : unit.startsWith('s') ? n / 60 : n);
-  const h = Math.floor(mins / 60);
-  return h ? `${h}h ${mins % 60}m` : `${mins}m`;
-}
 
 /** ["Green", "Red", "Grey"] → "Green, Red & Grey". */
 function listText(items: string[]): string {

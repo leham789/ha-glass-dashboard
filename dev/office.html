@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Glass cards · office preview</title>
+  <style>
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: #edeef1;
+      font-family: 'Outfit', system-ui, sans-serif;
+      color: #121316;
+    }
+    main {
+      max-width: 390px;
+      margin: 0 auto;
+      padding: 24px 20px 64px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    p { margin: 0; font-size: 13px; color: #5f626a; }
+    #log {
+      position: sticky;
+      bottom: 100px;
+      z-index: 6;
+      min-height: 18px;
+      padding: 10px 14px;
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.85);
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <p>Office screen with mock data. <a href="./index.html">Home</a> · <a href="./room.html">Room</a></p>
+    <div id="header"></div>
+    <div id="alert"></div>
+    <div id="printer"></div>
+    <div id="power"></div>
+    <p id="log">Nothing sent yet</p>
+    <div id="menu"></div>
+  </main>
+  <script type="module" src="./office.ts"></script>
+</body>
+</html>
