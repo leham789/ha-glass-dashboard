@@ -24,6 +24,14 @@ const CAMERA_PICTURE = `data:image/svg+xml,${encodeURIComponent(
   '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 9"><defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5a6b7d"/><stop offset="1" stop-color="#2c3540"/></linearGradient></defs><rect width="16" height="9" fill="url(#g)"/><rect y="6" width="16" height="3" fill="#3d4a3a"/></svg>',
 )}`;
 
+/** A stand-in event thumbnail, its sky shaded by the event id. */
+function snapshot(path: string): string {
+  const hue = [...path].reduce((h, ch) => (h * 31 + ch.charCodeAt(0)) % 360, 0);
+  return `data:image/svg+xml,${encodeURIComponent(
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 9"><rect width="16" height="9" fill="hsl(${hue} 25% 45%)"/><rect y="6" width="16" height="3" fill="#3d4a3a"/><circle cx="8" cy="5" r="1.4" fill="#d8d2c4"/></svg>`,
+  )}`;
+}
+
 /** A date n days from today, as "YYYY-MM-DD". */
 function inDays(n: number): string {
   const d = new Date();
@@ -92,16 +100,16 @@ const defs: Def[] = [
   // Outside
   ['light.garden_fence', 'on', { friendly_name: 'Garden Fence', color_mode: 'onoff' }, 'garden'],
   ['camera.doorbell', 'recording', { friendly_name: 'Doorbell', entity_picture: CAMERA_PICTURE }, 'front', 'doorbell'],
-  ['event.doorbell_smart_detection', minsAgo(4), { friendly_name: 'Doorbell Smart detection', event_type: 'person' }, 'front', 'doorbell'],
-  ['event.doorbell_vehicle', minsAgo(160), { friendly_name: 'Doorbell Vehicle', event_type: 'detected', attributes: { objectType: 'vehicle' } }, 'front', 'doorbell'],
-  ['event.doorbell_doorbell', minsAgo(95), { friendly_name: 'Doorbell Doorbell', event_type: 'ring' }, 'front', 'doorbell'],
+  ['event.doorbell_smart_detection', minsAgo(4), { event_id: 'ev-person', friendly_name: 'Doorbell Smart detection', event_type: 'person' }, 'front', 'doorbell'],
+  ['event.doorbell_vehicle', minsAgo(160), { event_id: 'ev-vehicle', friendly_name: 'Doorbell Vehicle', event_type: 'detected', attributes: { objectType: 'vehicle' } }, 'front', 'doorbell'],
+  ['event.doorbell_doorbell', minsAgo(95), { event_id: 'ev-ring', friendly_name: 'Doorbell Doorbell', event_type: 'ring' }, 'front', 'doorbell'],
   ['event.doorbell_sound', 'unknown', { friendly_name: 'Doorbell Sound detection', event_type: null }, 'front', 'doorbell'],
   ['light.front_porch', 'off', { friendly_name: 'Porch light' }, 'front'],
   ['binary_sensor.doorbell_motion', 'off', { friendly_name: 'Doorbell Motion', device_class: 'motion' }, 'front'],
   ['binary_sensor.doorbell_ding', 'off', { friendly_name: 'Doorbell Ding', device_class: 'occupancy' }, 'front'],
   ['camera.garden_turret', 'idle', { friendly_name: 'Garden Turret', entity_picture: CAMERA_PICTURE }, 'garden', 'turret'],
-  ['event.garden_turret_motion_detection', minsAgo(140), { friendly_name: 'Garden Turret Motion detection', event_type: 'motion' }, 'garden', 'turret'],
-  ['event.garden_turret_smart_detection', minsAgo(3000), { friendly_name: 'Garden Turret Smart detection', event_type: 'animal' }, 'garden', 'turret'],
+  ['event.garden_turret_motion_detection', minsAgo(140), { event_id: 'ev-motion', friendly_name: 'Garden Turret Motion detection', event_type: 'motion' }, 'garden', 'turret'],
+  ['event.garden_turret_smart_detection', minsAgo(3000), { event_id: 'ev-animal', friendly_name: 'Garden Turret Smart detection', event_type: 'animal' }, 'garden', 'turret'],
   ['binary_sensor.garden_turret_motion', 'off', { friendly_name: 'Garden Turret Motion', device_class: 'motion' }, 'garden'],
   ['binary_sensor.back_door_contact', 'on', { friendly_name: 'Back Door Contact', device_class: 'door' }, 'back'],
   // Batteries (diagnostic entities, as Zigbee devices report them)
@@ -161,7 +169,7 @@ const states = Object.fromEntries(
 const entities: Record<string, EntityRegistryEntry> = Object.fromEntries(
   defs.map(([entity_id, , , area, device]) => [
     entity_id,
-    { entity_id, area_id: area ?? null, device_id: device ?? null, platform: entity_id.includes('phone') ? 'mobile_app' : undefined },
+    { entity_id, area_id: area ?? null, device_id: device ?? null, platform: entity_id.includes('phone') ? 'mobile_app' : entity_id.startsWith('event.') ? 'unifiprotect' : undefined },
   ]),
 );
 const floors = {
@@ -194,6 +202,8 @@ function makeHass(states: Record<string, HassEntity>): HomeAssistant {
       office_climate: { id: 'office_climate', name: 'Office Climate' },
       p1s: { id: 'p1s', name: 'P1S' },
       pc_plug: { id: 'pc_plug', name: 'Office PC plug' },
+      doorbell: { id: 'doorbell', name: 'Doorbell', config_entries: ['protect'] },
+      turret: { id: 'turret', name: 'Garden Turret', config_entries: ['protect'] },
     },
     areas,
     floors,
@@ -206,6 +216,8 @@ function makeHass(states: Record<string, HassEntity>): HomeAssistant {
         userData[msg.key as string] = msg.value;
         return {} as T;
       }
+      // Event thumbnails: a stand-in picture, a different shade per event.
+      if (msg.type === 'auth/sign_path') return { path: snapshot(msg.path as string) } as T;
       const id = (msg.entity_ids as string[])[0];
       const start = Date.parse(msg.start_time as string);
       const points = [];

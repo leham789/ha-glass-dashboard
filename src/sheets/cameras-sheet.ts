@@ -4,6 +4,7 @@ import { keyed } from 'lit/directives/keyed.js';
 import { GlassSheet } from '../elements/glass-sheet.js';
 import { type HassEntity, isUnavailable, openMoreInfo } from '../ha.js';
 import { shortName } from '../rooms.js';
+import { eventSnapshot } from '../snapshots.js';
 import { ago, clock } from '../time.js';
 
 /** What the sheet needs to know about each camera (a camera card's settings). */
@@ -35,6 +36,9 @@ export class GlassCamerasSheet extends GlassSheet {
   @state() private tick = Date.now();
   /** A new value redraws the progress line, restarting its 10 s fill. */
   @state() private cycleStart = Date.now();
+  /** Event thumbnails by event entity + event id, once fetched ('' when one failed to load). */
+  @state() private snaps: Record<string, string> = {};
+  private asked = new Set<string>();
   private refresh?: number;
   private cycle?: number;
   private swipeX?: number;
@@ -94,7 +98,8 @@ export class GlassCamerasSheet extends GlassSheet {
     const many = this.cameras.length > 1;
     const light = c.light ? hass.states[c.light] : undefined;
     const lightOn = light?.state === 'on';
-    const events = this.events(c.entity);
+    const events = this.events(c.entity).slice(0, 3);
+    for (const e of events) this.fetchSnap(e.entity, e.key);
 
     return html`
       <div class="feed-wrap">
@@ -169,9 +174,13 @@ export class GlassCamerasSheet extends GlassSheet {
         ? html`<div class="recent">
             <span class="top"><h2>Recent</h2><span class="hint">Latest of each kind</span></span>
             <div class="clips">
-              ${events.slice(0, 3).map(
-                (e) => html`<button type="button" class="clip" @click=${() => openMoreInfo(this, e.id)}>
-                  <span class="thumb"><span class="pan"></span><span class="kind">${e.kind}</span></span>
+              ${events.map(
+                (e) => html`<button type="button" class="clip" @click=${() => openMoreInfo(this, e.entity.entity_id)}>
+                  <span class="thumb"
+                    >${this.snaps[e.key]
+                      ? html`<img class="pan" src=${this.snaps[e.key]} alt="" draggable="false" @error=${() => (this.snaps = { ...this.snaps, [e.key]: '' })} />`
+                      : html`<span class="pan"></span>`}<span class="kind">${e.kind}</span></span
+                  >
                   <span class="when">${e.when}</span>
                 </button>`,
               )}
@@ -223,7 +232,7 @@ export class GlassCamerasSheet extends GlassSheet {
    * The camera's latest detections, newest first: each of its event entities
    * (ring, motion, person, vehicle, sound…) holds the time and kind of its last event.
    */
-  private events(cameraId: string): { id: string; kind: string; when: string; at: number }[] {
+  private events(cameraId: string): { entity: HassEntity; key: string; kind: string; when: string }[] {
     const hass = this.hass!;
     const device = hass.entities?.[cameraId]?.device_id;
     if (!device) return [];
@@ -232,7 +241,16 @@ export class GlassCamerasSheet extends GlassSheet {
       .map((e) => ({ e, at: Date.parse(e.state) }))
       .filter(({ at }) => !Number.isNaN(at))
       .sort((a, b) => b.at - a.at)
-      .map(({ e, at }) => ({ id: e.entity_id, kind: eventKind(e), when: ago(e.state), at }));
+      .map(({ e }) => ({ entity: e, key: `${e.entity_id}|${e.attributes.event_id ?? e.state}`, kind: eventKind(e), when: ago(e.state) }));
+  }
+
+  /** Asks once per event for its thumbnail; a new event on the same entity asks again. */
+  private fetchSnap(entity: HassEntity, key: string) {
+    if (this.asked.has(key)) return;
+    this.asked.add(key);
+    eventSnapshot(this.hass!, entity).then((url) => {
+      if (url) this.snaps = { ...this.snaps, [key]: url };
+    });
   }
 
   static styles: CSSResultGroup = [
@@ -490,6 +508,9 @@ export class GlassCamerasSheet extends GlassSheet {
       .pan {
         position: absolute;
         inset: -10px -20px;
+        width: calc(100% + 40px);
+        height: calc(100% + 20px);
+        object-fit: cover;
         background: linear-gradient(120deg, #4a5563, #2a2f36);
         animation: drift 6s ease-in-out infinite;
       }

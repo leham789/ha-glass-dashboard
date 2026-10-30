@@ -28,6 +28,8 @@ export interface DeviceRegistryEntry {
   name?: string | null;
   /** The name you gave it in HA, if any. */
   name_by_user?: string | null;
+  /** The integration set-ups the device comes from. */
+  config_entries?: string[];
 }
 
 export interface AreaRegistryEntry {

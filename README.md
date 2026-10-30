@@ -308,7 +308,7 @@ The expand button opens the **cameras pop-up**:
 - one camera big, refreshing every 2 seconds
 - **< >** or a swipe to go round every camera card on the screen, looping back to the first
 - **Cycle cameras** (on by default) moves to the next camera every 10 seconds, with a progress line
-- **Recent**: the camera's latest detections (person, vehicle, ring, motion…) from its event entities
+- **Recent**: the camera's latest detections (person, vehicle, ring, motion…) from its event entities, each with its snapshot when the camera is UniFi Protect
 - the camera's light (e.g. the porch light), and **Full screen** for Home Assistant's live view
 
 ```yaml
