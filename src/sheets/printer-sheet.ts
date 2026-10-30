@@ -6,6 +6,7 @@ import { type HassEntity, isUnavailable } from '../ha.js';
 import type { IconName } from '../icons.js';
 import { type PrinterEntities, minutesOf, printerState } from '../printer.js';
 import { clock, duration } from '../time.js';
+import { haptic } from '../motion.js';
 
 /** What the printer sheet is told; anything left out is found on the printer's device. */
 export interface PrinterSheetEntities extends PrinterEntities {
@@ -67,6 +68,7 @@ export class GlassPrinterSheet extends GlassEntitySheet {
   }
 
   private press(button?: HassEntity) {
+    if (button) haptic('light');
     if (button) this.hass!.callService('button', 'press', { entity_id: button.entity_id });
   }
 
@@ -130,7 +132,7 @@ export class GlassPrinterSheet extends GlassEntitySheet {
               ? html`<img src=${camera.attributes.entity_picture} alt="" draggable="false" />`
               : html`<span class="none">Camera offline</span>`}
             ${light
-              ? html`<button type="button" class="light ${lightOn ? 'on' : ''}" aria-pressed=${lightOn ? 'true' : 'false'} @click=${() => hass.callService('homeassistant', lightOn ? 'turn_off' : 'turn_on', { entity_id: light.entity_id })}>
+              ? html`<button type="button" class="light ${lightOn ? 'on' : ''}" aria-pressed=${lightOn ? 'true' : 'false'} @click=${() => (haptic('light'), hass.callService('homeassistant', lightOn ? 'turn_off' : 'turn_on', { entity_id: light.entity_id }))}>
                   <glass-icon name="lightbulb" size="16" stroke="1.7"></glass-icon>Light · ${lightOn ? 'On' : 'Off'}
                 </button>`
               : nothing}
