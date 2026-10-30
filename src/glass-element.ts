@@ -1,6 +1,7 @@
 import { LitElement, css, type CSSResultGroup, type CSSResultOrNative, type PropertyValues } from 'lit';
 import type { HomeAssistant } from './ha.js';
 import { GlassOffline } from './elements/glass-offline.js';
+import { press, sliderHaptic, sliderStart } from './motion.js';
 
 /**
  * Sheets and full-screen views that are open right now. They live in <body>,
@@ -23,10 +24,23 @@ const offlineStyles = css`
  * mode: when HA's dark theme is on, the host gets a `dark` attribute and the
  * tokens in tokens.ts switch to their dark values. While HA's connection is
  * down it gets `offline`, and the banner across the top shows.
+ *
+ * In cards and sheets alike, what you press shrinks a little and sliders
+ * tick every tenth (motion.ts). Views themselves appear at once: no
+ * animation on opening a page, so moving around stays snappy.
  */
 export class GlassElement extends LitElement {
   protected static finalizeStyles(styles?: CSSResultGroup): CSSResultOrNative[] {
     return [...super.finalizeStyles(styles), offlineStyles];
+  }
+
+  constructor() {
+    super();
+    // Buttons and links shrink a little while pressed; sliders tick as they move (motion.ts).
+    this.addEventListener('pointerdown', press);
+    this.addEventListener('pointerdown', sliderStart);
+    this.addEventListener('focusin', sliderStart);
+    this.addEventListener('input', sliderHaptic);
   }
 
   // Before shouldUpdate, which most cards use to skip renders when their own entities haven't changed.

@@ -5,6 +5,7 @@ import { tokens } from '../tokens.js';
 import { type HomeAssistant, isUnavailable } from '../ha.js';
 import { shortName } from '../rooms.js';
 import { ago, clock } from '../time.js';
+import { haptic } from '../motion.js';
 import './glass-camera-live.js';
 import './glass-icon.js';
 
@@ -142,11 +143,26 @@ export class GlassCameraFull extends GlassElement {
     }
   };
 
-  /** Keeps the zoomed picture covering its frame: no black edges while panning. */
+  /**
+   * Zoomed, the picture spills past its frame over the whole screen. Panning
+   * stops where it would leave a gap: on a side where the picture is bigger
+   * than the screen its edge can't come in past the screen's edge, and where
+   * it's smaller it can't go off the screen.
+   */
   private clamp(z: { scale: number; x: number; y: number }, box: DOMRect) {
-    const mx = ((z.scale - 1) * box.width) / 2;
-    const my = ((z.scale - 1) * box.height) / 2;
-    return { scale: z.scale, x: Math.max(-mx, Math.min(mx, z.x)), y: Math.max(-my, Math.min(my, z.y)) };
+    if (z.scale <= 1) return { scale: 1, x: 0, y: 0 };
+    const limit = (offset: number, start: number, size: number, screen: number) => {
+      const centre = start + size / 2; // the frame's centre, which the picture scales about
+      const half = (size * z.scale) / 2;
+      const a = half - centre;
+      const b = screen - centre - half;
+      return Math.max(Math.min(a, b), Math.min(Math.max(a, b), offset));
+    };
+    return {
+      scale: z.scale,
+      x: limit(z.x, box.left, box.width, window.innerWidth),
+      y: limit(z.y, box.top, box.height, window.innerHeight),
+    };
   }
 
   /** The camera's last motion and ring, as on the Cameras sheet, or the opener's own line. */
@@ -184,7 +200,7 @@ export class GlassCameraFull extends GlassElement {
         ${this.zoom.scale > 1.05
           ? html`<button type="button" class="pill zoom-pill" aria-label="Zoom back out" @click=${() => (this.zoom = { scale: 1, x: 0, y: 0 })}>${this.zoom.scale.toFixed(1)}×</button>`
           : nothing}
-        <span class="hint">Turn your phone for a bigger picture</span>
+        ${this.zoom.scale > 1.05 ? nothing : html`<span class="hint">Turn your phone for a bigger picture</span>`}
       </div>
 
       <div class="top">
@@ -210,7 +226,7 @@ export class GlassCameraFull extends GlassElement {
           <span class="last">${this.lastLine(c) || (cam ? `Updated ${ago(cam.last_changed)}` : '')}</span>
         </span>
         ${light
-          ? html`<button type="button" class="light ${lightOn ? 'on' : ''}" aria-pressed=${lightOn ? 'true' : 'false'} ?disabled=${isUnavailable(light)} @click=${() => hass.callService('homeassistant', lightOn ? 'turn_off' : 'turn_on', { entity_id: c.light })}>
+          ? html`<button type="button" class="light ${lightOn ? 'on' : ''}" aria-pressed=${lightOn ? 'true' : 'false'} ?disabled=${isUnavailable(light)} @click=${() => (haptic('light'), hass.callService('homeassistant', lightOn ? 'turn_off' : 'turn_on', { entity_id: c.light }))}>
               <glass-icon name="lightbulb" size="18" stroke="1.7"></glass-icon>${shortName(light, '')} · ${lightOn ? 'On' : 'Off'}
             </button>`
           : nothing}
@@ -242,7 +258,8 @@ export class GlassCameraFull extends GlassElement {
         transform: translateY(-60%);
         aspect-ratio: 16 / 9;
         background: #1f2427;
-        overflow: hidden;
+        /* zoomed, the picture spills out over the whole screen; the name, close and caption stay on top */
+        overflow: visible;
         /* the view handles pinch and drag itself, so the page doesn't zoom instead */
         touch-action: none;
       }

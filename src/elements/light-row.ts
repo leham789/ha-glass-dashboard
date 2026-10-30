@@ -1,6 +1,7 @@
 import { css, html } from 'lit';
 import { type HomeAssistant, isUnavailable } from '../ha.js';
 import { brightnessPct } from '../light-colour.js';
+import { haptic } from '../motion.js';
 import type { RoomLight } from '../rooms.js';
 import './glass-icon.js';
 
@@ -20,7 +21,7 @@ export function lightRow(hass: HomeAssistant, l: RoomLight) {
     class="row ${l.on ? 'on' : ''}"
     ?disabled=${offline}
     aria-pressed=${l.on ? 'true' : 'false'}
-    @click=${() => hass.callService('light', l.on ? 'turn_off' : 'turn_on', { entity_id: l.id })}
+    @click=${() => (haptic('light'), hass.callService('light', l.on ? 'turn_off' : 'turn_on', { entity_id: l.id }))}
   >
     <span class="fill" style="width: ${fill}%"></span>
     <span class="bulb"><glass-icon name="lightbulb" size="18"></glass-icon></span>

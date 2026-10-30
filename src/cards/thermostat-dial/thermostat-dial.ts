@@ -4,7 +4,9 @@ import { customElement, property, state } from 'lit/decorators.js';
 import { tokens } from '../../tokens.js';
 import { ensureFonts } from '../../fonts.js';
 import { type HomeAssistant, type LovelaceCardConfig, isUnavailable, registerCard } from '../../ha.js';
+import { haptic } from '../../motion.js';
 import './thermostat-dial-editor.js';
+import '../../elements/glass-roll.js';
 
 export interface ThermostatDialConfig extends LovelaceCardConfig {
   entity: string;
@@ -132,7 +134,7 @@ export class GlassThermostatDial extends GlassElement {
                   <circle cx=${kx.toFixed(1)} cy=${ky.toFixed(1)} r="11" fill="var(--glass-ink)" stroke="var(--glass-ink)" stroke-width="2"></circle>`}
         </svg>
         <span class="centre">
-          <span class="target">${off ? 'Off' : `${fmt(target)}°`}</span>
+          <span class="target">${off ? 'Off' : html`<glass-roll .value=${target} text="${fmt(target)}°"></glass-roll>`}</span>
           <span class="now">${nowLine}</span>
         </span>
       </div>
@@ -145,7 +147,7 @@ export class GlassThermostatDial extends GlassElement {
                   type="button"
                   class=${m === e.state ? 'current' : ''}
                   aria-pressed=${m === e.state ? 'true' : 'false'}
-                  @click=${() => this.hass!.callService('climate', 'set_hvac_mode', { entity_id: e.entity_id, hvac_mode: m })}
+                  @click=${() => (haptic('selection'), this.hass!.callService('climate', 'set_hvac_mode', { entity_id: e.entity_id, hvac_mode: m }))}
                 >
                   ${modeName(m)}
                 </button>`,
@@ -161,7 +163,7 @@ export class GlassThermostatDial extends GlassElement {
                 type="button"
                 class=${p === a.preset_mode ? 'on' : ''}
                 aria-pressed=${p === a.preset_mode ? 'true' : 'false'}
-                @click=${() => this.hass!.callService('climate', 'set_preset_mode', { entity_id: e.entity_id, preset_mode: p })}
+                @click=${() => (haptic('selection'), this.hass!.callService('climate', 'set_preset_mode', { entity_id: e.entity_id, preset_mode: p }))}
               >
                 ${presetName(p)}
               </button>`,
@@ -181,6 +183,8 @@ export class GlassThermostatDial extends GlassElement {
   private setTarget(value: number) {
     const { min, max, step } = this.limits();
     const next = Math.min(max, Math.max(min, Math.round(value / step) * step));
+    // A tick for each step, whether from − / + or dragging round the dial.
+    if (next !== (this.pending ?? this.hass!.states[this.config!.entity].attributes.temperature)) haptic('selection');
     this.pending = next;
     window.clearTimeout(this.timer);
     this.timer = window.setTimeout(async () => {

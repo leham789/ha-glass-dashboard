@@ -5,6 +5,8 @@ import { tokens } from '../../tokens.js';
 import { ensureFonts } from '../../fonts.js';
 import { type HomeAssistant, type LovelaceCardConfig, isUnavailable, openMoreInfo, registerCard } from '../../ha.js';
 import './thermostat-row-editor.js';
+import { haptic } from '../../motion.js';
+import '../../elements/glass-roll.js';
 
 export interface ThermostatRowConfig extends LovelaceCardConfig {
   entity: string;
@@ -70,7 +72,9 @@ export class GlassThermostatRow extends GlassElement {
     return html`<section aria-label="Room heating">
       <button type="button" class="info" @click=${() => openMoreInfo(this, this.config!.entity)}>
         <span class="label">${label}</span>
-        <span class="value">${off ? 'Off' : typeof target === 'number' ? `${fmt(target)}°` : '–'}</span>
+        <span class="value"
+          >${off ? 'Off' : typeof target === 'number' ? html`<glass-roll .value=${target} text="${fmt(target)}°"></glass-roll>` : '–'}</span
+        >
       </button>
       <span class="buttons">
         <button type="button" class="minus" aria-label="Lower temperature" ?disabled=${off} @click=${() => this.step(-1)}>−</button>
@@ -84,6 +88,7 @@ export class GlassThermostatRow extends GlassElement {
     const step = a.target_temp_step ?? 0.5;
     const from = this.pending ?? a.temperature ?? a.current_temperature ?? 18;
     const next = Math.min(a.max_temp ?? 30, Math.max(a.min_temp ?? 5, Math.round((from + dir * step) / step) * step));
+    if (next !== from) haptic('selection');
     this.pending = next;
     window.clearTimeout(this.timer);
     this.timer = window.setTimeout(async () => {

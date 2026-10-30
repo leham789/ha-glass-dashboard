@@ -8,6 +8,7 @@ import { shortName } from '../../rooms.js';
 import { clock, duration } from '../../time.js';
 import '../../elements/glass-icon.js';
 import './doors-editor.js';
+import { attentionStyles } from '../../motion.js';
 
 export interface DoorsConfig extends LovelaceCardConfig {
   /** Door and window sensors. Default: every one in HA. */
@@ -93,7 +94,7 @@ export class GlassDoors extends GlassElement {
       ${this.config.title
         ? html`<header>
             <h1>${this.config.title}</h1>
-            <span class="pill ${open ? 'attention' : 'ok'}"
+            <span class="pill ${open ? 'attention ringing' : 'ok'}"
               ><span class="dot"></span>${open ? `${open} ${noun}${open > 1 ? 's' : ''} open` : `All ${noun}s shut`}</span
             >
           </header>`
@@ -123,6 +124,7 @@ export class GlassDoors extends GlassElement {
 
   static styles = [
     tokens,
+    attentionStyles,
     css`
       :host {
         display: flex;

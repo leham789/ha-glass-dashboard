@@ -5,6 +5,7 @@ import { tokens } from '../../tokens.js';
 import { ensureFonts } from '../../fonts.js';
 import { type HomeAssistant, type LovelaceCardConfig, isUnavailable, registerCard, reportVisibility } from '../../ha.js';
 import { nameInRoom } from '../../rooms.js';
+import { haptic } from '../../motion.js';
 import './room-alert-editor.js';
 
 export interface RoomAlertConfig extends LovelaceCardConfig {
@@ -76,7 +77,7 @@ export class GlassRoomAlert extends GlassElement {
       </span>
       <button
         type="button"
-        @click=${() => this.hass!.callService('homeassistant', 'turn_on', { entity_id: this.config!.switch })}
+        @click=${() => (haptic('light'), this.hass!.callService('homeassistant', 'turn_on', { entity_id: this.config!.switch }))}
       >
         Power on
       </button>

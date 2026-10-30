@@ -7,6 +7,7 @@ import { type IconName } from '../icons.js';
 import { LOW_BATTERY, batteries } from '../batteries.js';
 import { areaEntityIds, areaOf, roomSummary, shortName } from '../rooms.js';
 import { onPrefsChange, prefs, updatePrefs } from '../prefs.js';
+import { haptic } from '../motion.js';
 
 type Action = 'off' | 'dim' | 'warm';
 
@@ -133,6 +134,7 @@ export class GlassRoomOptionsSheet extends GlassSheet {
 
   private run(action: Action, ids: string[]) {
     const hass = this.hass!;
+    haptic('light');
     if (action === 'off') hass.callService('light', 'turn_off', { entity_id: ids });
     if (action === 'dim') hass.callService('light', 'turn_on', { entity_id: ids, brightness_pct: 30 });
     if (action === 'warm') hass.callService('light', 'turn_on', { entity_id: ids, color_temp_kelvin: 2700 });

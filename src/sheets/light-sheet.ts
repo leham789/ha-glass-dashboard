@@ -6,6 +6,7 @@ import type { IconName } from '../icons.js';
 import { brightnessPct, groupMembers, isLightOn, lightLook } from '../light-colour.js';
 import { nameInRoom } from '../rooms.js';
 import { clock } from '../time.js';
+import { haptic } from '../motion.js';
 
 const COLOUR_MODES = ['hs', 'rgb', 'rgbw', 'rgbww', 'xy'];
 const WHITES: [string, number][] = [['Warm', 2700], ['Neutral', 4000], ['Cool', 6500]];
@@ -84,7 +85,7 @@ export class GlassLightSheet extends GlassEntitySheet {
             aria-checked=${on ? 'true' : 'false'}
             aria-label="Power"
             ?disabled=${off}
-            @click=${() => this.hass!.callService('light', on ? 'turn_off' : 'turn_on', { entity_id: e.entity_id })}
+            @click=${() => (haptic('light'), this.hass!.callService('light', on ? 'turn_off' : 'turn_on', { entity_id: e.entity_id }))}
           ></button>
         </span>
       </div>
@@ -183,7 +184,7 @@ export class GlassLightSheet extends GlassEntitySheet {
               const m = this.hass!.states[id];
               const mOn = m?.state === 'on';
               const pct = brightnessPct(m) ?? (mOn ? 100 : 0);
-              return html`<button type="button" class="member ${m && m.state !== 'unavailable' ? '' : 'faded'}" aria-pressed=${mOn ? 'true' : 'false'} @click=${() => this.hass!.callService('light', 'toggle', { entity_id: id })}>
+              return html`<button type="button" class="member ${m && m.state !== 'unavailable' ? '' : 'faded'}" aria-pressed=${mOn ? 'true' : 'false'} @click=${() => (haptic('light'), this.hass!.callService('light', 'toggle', { entity_id: id }))}>
                 <span class="mfill" style="width: ${mOn ? pct : 0}%"></span>
                 <span class="micon ${mOn ? 'lit' : ''}"><glass-icon name="lightbulb" size="19"></glass-icon></span>
                 <span class="mname">${m ? nameInRoom(this.hass!, m) : id}</span>

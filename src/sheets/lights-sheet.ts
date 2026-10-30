@@ -4,6 +4,7 @@ import { GlassSheet } from '../elements/glass-sheet.js';
 import { isUnavailable } from '../ha.js';
 import { lightRow, lightRowStyles } from '../elements/light-row.js';
 import { type RoomLight, lightsByArea } from '../rooms.js';
+import { haptic } from '../motion.js';
 
 type Filter = 'On' | 'All' | 'Offline';
 
@@ -77,10 +78,12 @@ export class GlassLightsSheet extends GlassSheet {
 
   private allOff(ids: string[]) {
     this.saved = ids;
+    haptic('light');
     this.hass!.callService('light', 'turn_off', { entity_id: ids });
   }
 
   private undo() {
+    haptic('light');
     this.hass!.callService('light', 'turn_on', { entity_id: this.saved! });
     this.saved = undefined;
   }

@@ -2,6 +2,7 @@ import { css, html, type CSSResultGroup, type TemplateResult } from 'lit';
 import { GlassElement, openOverlays } from '../glass-element.js';
 import { property, state } from 'lit/decorators.js';
 import { tokens } from '../tokens.js';
+import { haptic } from '../motion.js';
 import type { HomeAssistant } from '../ha.js';
 import type { IconName } from '../icons.js';
 import './glass-icon.js';
@@ -13,10 +14,20 @@ import './glass-icon.js';
  * Sheets are added to <body> rather than drawn inside a card, so nothing in
  * HA's layout can clip them. Use `GlassSheet.open(tag, hass)` to show one;
  * the opener keeps its `hass` current until it closes.
+ *
+ * Swipe it away like an iOS sheet: drag down by the top bar, or anywhere on
+ * it while its content is scrolled to the top (a pull-down past the top turns
+ * into closing). It follows the finger and the dim behind it lightens as it
+ * goes; let go past a quarter of its height, or with a downward flick, and it
+ * closes, otherwise it settles back. Dragged up, it gives a little and returns.
  */
 export abstract class GlassSheet extends GlassElement {
   @property({ attribute: false }) hass?: HomeAssistant;
   @state() private shown = false;
+  /** A drag in progress: where it started, and recent finger positions for the flick speed. */
+  private drag?: { from: number; at: { y: number; t: number }[] };
+  /** A touch on the content that may become a drag once it's clearly a pull down from the top. */
+  private pull?: { x: number; y: number };
 
   protected abstract sheetTitle: string;
   /** A second line under the title, e.g. the room. */
@@ -38,6 +49,7 @@ export abstract class GlassSheet extends GlassElement {
     const sheet = document.createElement(tag) as T;
     sheet.hass = hass;
     document.body.appendChild(sheet);
+    haptic('light');
     return sheet;
   }
 
@@ -70,6 +82,118 @@ export abstract class GlassSheet extends GlassElement {
     if (e.key === 'Escape') this.close();
   };
 
+  private get sheetEl(): HTMLElement | null {
+    return this.renderRoot.querySelector<HTMLElement>('.sheet');
+  }
+
+  private get backdropEl(): HTMLElement | null {
+    return this.renderRoot.querySelector<HTMLElement>('.backdrop');
+  }
+
+  protected firstUpdated(): void {
+    // Touch listeners on the content, not passive, so a pull down from the top can stop
+    // the content scrolling and move the sheet instead.
+    const scroll = this.renderRoot.querySelector<HTMLElement>('.scroll')!;
+    scroll.addEventListener('touchstart', this.onPullStart, { passive: true });
+    scroll.addEventListener('touchmove', this.onPullMove, { passive: false });
+    scroll.addEventListener('touchend', this.onPullEnd);
+    scroll.addEventListener('touchcancel', this.onPullEnd);
+  }
+
+  private dragBegin(y: number) {
+    this.drag = { from: y, at: [{ y, t: performance.now() }] };
+  }
+
+  /** The sheet follows the finger with no easing; the dim lightens as it goes down. */
+  private dragTo(y: number) {
+    const sheet = this.sheetEl;
+    const drag = this.drag;
+    if (!sheet || !drag) return;
+    const now = performance.now();
+    drag.at.push({ y, t: now });
+    while (drag.at.length > 2 && now - drag.at[0].t > 100) drag.at.shift();
+    const dy = y - drag.from;
+    // Up, it gives a little (at most 20px) and resists the further you go.
+    const offset = dy >= 0 ? dy : -Math.min(20, Math.sqrt(-dy) * 2);
+    sheet.style.transition = 'none';
+    sheet.style.transform = `translate(-50%, ${offset}px)`;
+    const backdrop = this.backdropEl;
+    if (backdrop) {
+      backdrop.style.transition = 'none';
+      backdrop.style.opacity = String(1 - Math.min(1, Math.max(0, offset) / sheet.offsetHeight));
+    }
+  }
+
+  private dragEnd() {
+    const sheet = this.sheetEl;
+    const drag = this.drag;
+    this.drag = undefined;
+    if (!sheet || !drag) return;
+    const last = drag.at[drag.at.length - 1];
+    const first = drag.at[0];
+    const dy = last.y - drag.from;
+    // How fast the finger was going at the end, in px per ms (down is positive).
+    const speed = (last.y - first.y) / Math.max(1, last.t - first.t);
+    // Hand back to the stylesheet, which eases on from here: closed, or back in place.
+    sheet.style.transition = '';
+    sheet.style.transform = '';
+    const backdrop = this.backdropEl;
+    if (backdrop) {
+      backdrop.style.transition = '';
+      backdrop.style.opacity = '';
+    }
+    if (dy > sheet.offsetHeight / 4 || (dy > 10 && speed > 0.5)) this.close();
+  }
+
+  // The top bar: a drag from anywhere on it but the close button.
+  private onDragStart(e: PointerEvent) {
+    if (e.button !== 0 || (e.target as Element).closest('button')) return;
+    this.dragBegin(e.clientY);
+    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+  }
+
+  private onDragMove(e: PointerEvent) {
+    if (this.drag) this.dragTo(e.clientY);
+  }
+
+  private onDragEnd() {
+    if (this.drag) this.dragEnd();
+  }
+
+  // The content: a touch becomes a drag once it's clearly heading down while the
+  // content is at its top. Sideways, upwards, or on a slider, it's left alone.
+  private onPullStart = (e: TouchEvent) => {
+    const t = e.touches[0];
+    const onSlider = (e.target as Element).closest?.('input[type="range"]');
+    this.pull = e.touches.length === 1 && !onSlider ? { x: t.clientX, y: t.clientY } : undefined;
+  };
+
+  private onPullMove = (e: TouchEvent) => {
+    const t = e.touches[0];
+    if (this.drag) {
+      e.preventDefault();
+      this.dragTo(t.clientY);
+      return;
+    }
+    const pull = this.pull;
+    if (!pull) return;
+    const dx = t.clientX - pull.x;
+    const dy = t.clientY - pull.y;
+    const atTop = (e.currentTarget as HTMLElement).scrollTop <= 0;
+    if (dy > 6 && dy > Math.abs(dx) && atTop) {
+      e.preventDefault();
+      this.pull = undefined;
+      this.dragBegin(t.clientY);
+    } else if (Math.abs(dx) > 6 || dy < -6) {
+      this.pull = undefined;
+    }
+  };
+
+  private onPullEnd = () => {
+    this.pull = undefined;
+    if (this.drag) this.dragEnd();
+  };
+
   render() {
     return html`
       <div class="backdrop ${this.shown ? 'shown' : ''}" @click=${() => this.close()}></div>
@@ -80,8 +204,14 @@ export abstract class GlassSheet extends GlassElement {
         tabindex="-1"
         aria-labelledby="title"
       >
-        <!-- stays at the top, frosted, while the rest scrolls under it -->
-        <div class="top">
+        <!-- stays at the top while the rest scrolls under it; drag it down to close -->
+        <div
+          class="sheet-top"
+          @pointerdown=${this.onDragStart}
+          @pointermove=${this.onDragMove}
+          @pointerup=${this.onDragEnd}
+          @pointercancel=${this.onDragEnd}
+        >
           <span class="handle" aria-hidden="true"></span>
           <header>
             <span class="title">
@@ -96,7 +226,7 @@ export abstract class GlassSheet extends GlassElement {
             </button>
           </header>
         </div>
-        ${this.renderBody()}
+        <div class="scroll">${this.renderBody()}</div>
       </section>
     `;
   }
@@ -127,9 +257,7 @@ export abstract class GlassSheet extends GlassElement {
         width: 100%;
         max-width: 480px;
         max-height: calc(100% - 54px);
-        overflow-y: auto;
-        overscroll-behavior: contain;
-        padding: 0 var(--glass-space-edge) calc(40px + env(safe-area-inset-bottom, 0px));
+        overflow: hidden;
         border-radius: var(--glass-radius-sheet) var(--glass-radius-sheet) 0 0;
         background: var(--glass-sheet);
         border-top: 1px solid var(--glass-surface-border);
@@ -138,7 +266,8 @@ export abstract class GlassSheet extends GlassElement {
         -webkit-backdrop-filter: blur(30px);
         display: flex;
         flex-direction: column;
-        gap: 18px;
+        /* the top bar's height: handle (10 + 5) + gap 18 + title 64 */
+        --bar: 97px;
         transform: translate(-50%, 100%);
         transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
       }
@@ -154,30 +283,46 @@ export abstract class GlassSheet extends GlassElement {
           transition: none;
         }
       }
-      .top {
-        position: sticky;
+      /* not ".top": sheets use that for their own rows */
+      .sheet-top {
+        position: absolute;
         top: 0;
+        left: 0;
+        right: 0;
         z-index: 1;
-        margin: 0 calc(-1 * var(--glass-space-edge)) -12px;
-        padding: 10px var(--glass-space-edge) 12px;
+        padding: 10px var(--glass-space-edge) 0;
         display: flex;
         flex-direction: column;
         gap: 18px;
-        /* frosts in over the first 24px of scrolling, so at rest it's the sheet itself
-           (browsers without scroll timelines just keep it frosted) */
-        animation: frost linear both;
-        animation-timeline: scroll();
-        animation-range: 0 24px;
+        touch-action: none; /* the drag is ours, not the page's scroll */
+        /* no band behind it: the handle, title and close float over what scrolls under,
+           and taps between them reach the content */
+        pointer-events: none;
       }
-      @keyframes frost {
-        from {
-          background-color: transparent;
-        }
-        to {
-          background-color: var(--glass-sheet);
-          backdrop-filter: blur(30px);
-          -webkit-backdrop-filter: blur(30px);
-        }
+      .sheet-top > * {
+        pointer-events: auto;
+      }
+      /* Everything below the top bar scrolls here, starting just under it. Apple's soft
+         scroll edge: content fades out as it scrolls up towards the title and close, so
+         the sheet itself shows behind them; nothing is painted over it, so nothing behind
+         the bar changes. At rest the content starts below the fade. */
+      .scroll {
+        flex: 1 1 auto;
+        min-height: 0;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        box-sizing: border-box;
+        padding: calc(var(--bar) + 18px) var(--glass-space-edge) calc(40px + env(safe-area-inset-bottom, 0px));
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+        -webkit-mask-image: linear-gradient(to bottom, transparent calc(var(--bar) - 12px), #000 calc(var(--bar) + 18px));
+        mask-image: linear-gradient(to bottom, transparent calc(var(--bar) - 12px), #000 calc(var(--bar) + 18px));
+      }
+      .title,
+      .close {
+        backdrop-filter: blur(24px);
+        -webkit-backdrop-filter: blur(24px);
       }
       .handle {
         align-self: center;

@@ -6,6 +6,7 @@ import { ensureFonts } from '../../fonts.js';
 import { type HomeAssistant, type LovelaceCardConfig, isUnavailable, openMoreInfo, registerCard } from '../../ha.js';
 import { type PrinterEntities, type PrinterPhase, minutesOf, printerState } from '../../printer.js';
 import { ago } from '../../time.js';
+import { haptic, attentionStyles } from '../../motion.js';
 import '../../elements/glass-icon.js';
 import './printer-card-editor.js';
 
@@ -148,7 +149,7 @@ export class GlassPrinter extends GlassElement {
       <span class="head">
         <h2 id="h">${title}</h2>
         <span class="right">
-          <span class="pill ${pill.tone}"><span class="dot"></span>${pill.text}</span>
+          <span class="pill ${pill.tone} ${pill === PILL.done ? 'ringing' : ''}"><span class="dot"></span>${pill.text}</span>
           ${!p.showFull
             ? html`<button type="button" class="collapse" aria-label="Collapse printer card" @click=${() => (this.expanded = false)}>
                 <glass-icon name="chevron-up" size="16" stroke="1.8"></glass-icon>
@@ -168,7 +169,7 @@ export class GlassPrinter extends GlassElement {
                   type="button"
                   class="light"
                   aria-pressed=${lightOn ? 'true' : 'false'}
-                  @click=${() => hass.callService('light', lightOn ? 'turn_off' : 'turn_on', { entity_id: c.chamber_light })}
+                  @click=${() => (haptic('light'), hass.callService('light', lightOn ? 'turn_off' : 'turn_on', { entity_id: c.chamber_light }))}
                 >
                   Chamber light · ${lightOn ? 'On' : 'Off'}
                 </button>`
@@ -197,6 +198,7 @@ export class GlassPrinter extends GlassElement {
 
   static styles = [
     tokens,
+    attentionStyles,
     css`
       :host {
         display: block;

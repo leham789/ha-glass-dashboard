@@ -5,6 +5,7 @@ import { tokens } from '../../tokens.js';
 import { ensureFonts } from '../../fonts.js';
 import { type HomeAssistant, type LovelaceCardConfig, navigate, registerCard } from '../../ha.js';
 import { type RoomSummary, roomSummary } from '../../rooms.js';
+import { haptic } from '../../motion.js';
 import '../../elements/glass-icon.js';
 import './room-tile-editor.js';
 
@@ -79,6 +80,7 @@ export class GlassRoomTile extends GlassElement {
 export function toggleRoomLights(hass: HomeAssistant, room: RoomSummary): void {
   const reachable = room.lights.filter((l) => hass.states[l.id]?.state !== 'unavailable').map((l) => l.id);
   if (!reachable.length) return;
+  haptic('light');
   hass.callService('light', room.onCount ? 'turn_off' : 'turn_on', { entity_id: reachable });
 }
 

@@ -1,11 +1,14 @@
 import { css, html, nothing, type PropertyValues } from 'lit';
-import { GlassElement } from '../../glass-element.js';
+import { GlassElement, openOverlays } from '../../glass-element.js';
 import { customElement, property, state } from 'lit/decorators.js';
 import { tokens } from '../../tokens.js';
 import { ensureFonts } from '../../fonts.js';
 import { type HomeAssistant, type LovelaceCardConfig, registerCard } from '../../ha.js';
 import { roomSummary } from '../../rooms.js';
 import './room-temps-editor.js';
+import { GlassSheet } from '../../elements/glass-sheet.js';
+import type { GlassTempsSheet } from '../../sheets/temps-sheet.js';
+import '../../sheets/temps-sheet.js';
 
 export interface RoomTempsConfig extends LovelaceCardConfig {
   title?: string;
@@ -58,6 +61,13 @@ export class GlassRoomTemps extends GlassElement {
     return this.watched.some((id) => old.states[id] !== this.hass!.states[id]);
   }
 
+  /** The whole card opens the room temperatures pop-up, one at a time. */
+  private openTemps = () => {
+    if ([...openOverlays].some((o) => o instanceof GlassSheet)) return;
+    const sheet = GlassSheet.open<GlassTempsSheet>('glass-temps-sheet', this.hass!);
+    sheet.excludeAreas = this.config?.exclude_areas ?? [];
+  };
+
   render() {
     if (!this.config || !this.hass) return nothing;
     const exclude = this.config.exclude_areas ?? [];
@@ -69,6 +79,7 @@ export class GlassRoomTemps extends GlassElement {
     if (!rooms.length) return nothing;
 
     return html`<section aria-labelledby="h">
+      <button type="button" class="open" aria-label="Room temperatures" @click=${this.openTemps}></button>
       <span class="top">
         <h2 id="h">${this.config.title ?? 'By room'}</h2>
         <span class="legend">${LOW}° · comfort · ${HIGH}°</span>
@@ -93,7 +104,25 @@ export class GlassRoomTemps extends GlassElement {
       :host {
         display: block;
       }
+      .top,
+      .row {
+        pointer-events: none;
+      }
+      /* the whole card is the button; what's drawn on it lets taps through */
+      .open {
+        all: unset;
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+        cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
+      }
+      .open:focus-visible {
+        outline: 2px solid var(--glass-ink);
+        outline-offset: 2px;
+      }
       section {
+        position: relative;
         box-sizing: border-box;
         padding: var(--glass-space-edge) var(--glass-space-edge) 8px;
         border-radius: var(--glass-radius-card);

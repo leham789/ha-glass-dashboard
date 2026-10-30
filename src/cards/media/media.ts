@@ -5,6 +5,7 @@ import { tokens } from '../../tokens.js';
 import { ensureFonts } from '../../fonts.js';
 import { type HomeAssistant, type LovelaceCardConfig, isUnavailable, openMoreInfo, registerCard } from '../../ha.js';
 import { nameInRoom } from '../../rooms.js';
+import { haptic } from '../../motion.js';
 import '../../elements/glass-icon.js';
 import './media-editor.js';
 
@@ -80,7 +81,7 @@ export class GlassMedia extends GlassElement {
           class="play"
           aria-label=${playing ? 'Pause' : 'Play'}
           ?disabled=${isUnavailable(p) || p.state === 'off'}
-          @click=${() => this.hass!.callService('media_player', 'media_play_pause', { entity_id: p.entity_id })}
+          @click=${() => (haptic('light'), this.hass!.callService('media_player', 'media_play_pause', { entity_id: p.entity_id }))}
         >
           <glass-icon name=${playing ? 'pause' : 'play'} size="18" stroke="2" solid></glass-icon>
         </button>
@@ -109,6 +110,7 @@ export class GlassMedia extends GlassElement {
   private toggle(id: string, on: boolean) {
     const domain = id.split('.')[0];
     const service = on ? 'turn_off' : 'turn_on';
+    haptic('light');
     if (domain === 'remote' || domain === 'media_player') this.hass!.callService(domain, service, { entity_id: id });
     else this.hass!.callService('homeassistant', service, { entity_id: id });
   }

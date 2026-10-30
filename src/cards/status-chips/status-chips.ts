@@ -19,6 +19,7 @@ import '../../sheets/temps-sheet.js';
 import '../../sheets/batteries-sheet.js';
 import '../../elements/glass-icon.js';
 import './status-chips-editor.js';
+import { attentionStyles } from '../../motion.js';
 
 export interface StatusChipsConfig extends LovelaceCardConfig, PrinterEntities {
   /** The printer's short name for its chip, e.g. "P1S". */
@@ -103,7 +104,7 @@ export class GlassStatusChips extends GlassElement {
       ${this.chips().map(
         (c) => html`<button
           type="button"
-          class="chip ${c.attention ? 'attention' : ''}"
+          class="chip ${c.attention ? 'attention' : ''} ${c.key === 'open' ? 'ringing' : ''}"
           ?disabled=${!c.onTap}
           @click=${c.onTap}
         >
@@ -215,6 +216,7 @@ export class GlassStatusChips extends GlassElement {
 
   static styles = [
     tokens,
+    attentionStyles,
     css`
       :host {
         display: block;

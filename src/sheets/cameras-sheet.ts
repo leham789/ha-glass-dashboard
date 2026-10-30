@@ -8,6 +8,7 @@ import { type HassEntity, isUnavailable, openMoreInfo } from '../ha.js';
 import { shortName } from '../rooms.js';
 import { eventSnapshot } from '../snapshots.js';
 import { ago, clock } from '../time.js';
+import { haptic } from '../motion.js';
 
 /** What the sheet needs to know about each camera (a camera card's settings). */
 export interface SheetCamera {
@@ -213,7 +214,7 @@ export class GlassCamerasSheet extends GlassSheet {
               class="light ${lightOn ? 'on' : ''}"
               aria-pressed=${lightOn ? 'true' : 'false'}
               ?disabled=${isUnavailable(light)}
-              @click=${() => hass.callService('homeassistant', lightOn ? 'turn_off' : 'turn_on', { entity_id: c.light })}
+              @click=${() => (haptic('light'), hass.callService('homeassistant', lightOn ? 'turn_off' : 'turn_on', { entity_id: c.light }))}
             >
               <glass-icon name="lightbulb" size="18" stroke="1.7"></glass-icon>${shortName(light, '')} · ${lightOn ? 'On' : 'Off'}
             </button></div>`

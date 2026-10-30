@@ -6,6 +6,7 @@ import { ensureFonts } from '../../fonts.js';
 import { type HomeAssistant, type LovelaceCardConfig, isUnavailable, registerCard } from '../../ha.js';
 import { formatValue } from '../../format.js';
 import { nameInRoom } from '../../rooms.js';
+import { haptic } from '../../motion.js';
 import './switch-rows-editor.js';
 
 export interface SwitchRowsConfig extends LovelaceCardConfig {
@@ -98,7 +99,7 @@ export class GlassSwitchRows extends GlassElement {
             aria-checked=${on ? 'true' : 'false'}
             aria-label=${name}
             ?disabled=${offline}
-            @click=${() => hass.callService('homeassistant', on ? 'turn_off' : 'turn_on', { entity_id: id })}
+            @click=${() => (haptic('light'), hass.callService('homeassistant', on ? 'turn_off' : 'turn_on', { entity_id: id }))}
           >
             <span class="knob"></span>
           </button>

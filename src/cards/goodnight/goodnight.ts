@@ -4,6 +4,7 @@ import { customElement, property, query, state } from 'lit/decorators.js';
 import { tokens } from '../../tokens.js';
 import { ensureFonts } from '../../fonts.js';
 import { type HomeAssistant, type LovelaceCardConfig, isUnavailable, registerCard, reportVisibility } from '../../ha.js';
+import { haptic } from '../../motion.js';
 import { roomSummary, shortName } from '../../rooms.js';
 import '../../elements/glass-icon.js';
 import './goodnight-editor.js';
@@ -179,6 +180,7 @@ export class GlassGoodnight extends GlassElement {
           <button
             type="button"
             class="knob ${this.dragging ? 'dragging' : ''}"
+            data-no-press
             style="transform: translateX(${x}px)"
             aria-label=${done ? 'Undo Goodnight' : 'Goodnight: turn off the lights'}
             @pointerdown=${this.onDown}
@@ -204,7 +206,10 @@ export class GlassGoodnight extends GlassElement {
   private onMove(e: PointerEvent) {
     if (!this.dragging || !this.track) return;
     const travel = this.track.clientWidth - 68;
-    this.drag = Math.min(1, Math.max(0, (e.clientX - this.startX) / travel));
+    const drag = Math.min(1, Math.max(0, (e.clientX - this.startX) / travel));
+    // A bump as the knob reaches the point where letting go confirms.
+    if (drag >= CONFIRM_AT && this.drag < CONFIRM_AT) haptic('medium');
+    this.drag = drag;
   }
 
   private onUp() {
@@ -225,6 +230,7 @@ export class GlassGoodnight extends GlassElement {
     const hass = this.hass!;
     const ids = this.summary().onIds.filter((id) => !isUnavailable(hass.states[id]));
     this.saved = ids;
+    haptic('success');
     if (this.config?.script) {
       hass.callService('script', 'turn_on', { entity_id: this.config.script });
     } else if (ids.length) {
@@ -233,6 +239,7 @@ export class GlassGoodnight extends GlassElement {
   }
 
   private undo() {
+    haptic('light');
     if (this.saved?.length) this.hass!.callService('light', 'turn_on', { entity_id: this.saved });
     this.saved = undefined;
   }

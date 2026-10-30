@@ -5,6 +5,7 @@ import { styleMap } from 'lit/directives/style-map.js';
 import { tokens } from '../../tokens.js';
 import { ensureFonts } from '../../fonts.js';
 import { type HomeAssistant, type LovelaceCardConfig, isUnavailable, openMoreInfo, registerCard } from '../../ha.js';
+import { haptic, sweep } from '../../motion.js';
 import { brightnessPct, groupMembers, isLightOn, lightLook } from '../../light-colour.js';
 import type { IconName } from '../../icons.js';
 import '../../elements/glass-icon.js';
@@ -29,6 +30,9 @@ export class GlassLightTile extends GlassElement {
 
   private holdTimer?: number;
   private held = false;
+  /** Where the last tap landed, so turning on can spread from there. */
+  private tap?: { x: number; y: number; at: number };
+  private wasOn?: boolean;
 
   static getConfigElement() {
     return document.createElement('glass-light-tile-editor');
@@ -102,6 +106,17 @@ export class GlassLightTile extends GlassElement {
     `;
   }
 
+  protected updated(): void {
+    const entity = this.hass?.states[this.config!.entity];
+    const on = isLightOn(entity, this.hass!.states);
+    // Turned on by a tap here: the colour spreads out from the finger.
+    if (on && this.wasOn === false && this.tap && performance.now() - this.tap.at < 3000) {
+      const tile = this.renderRoot.querySelector<HTMLElement>('.tile');
+      if (tile) sweep(tile, this.tap.x, this.tap.y, lightLook(entity, true).background);
+    }
+    if (entity) this.wasOn = on;
+  }
+
   private stateText(): string {
     const entity = this.hass?.states[this.config!.entity];
     if (isUnavailable(entity)) return 'Offline';
@@ -118,6 +133,8 @@ export class GlassLightTile extends GlassElement {
   private onPointerDown(e: PointerEvent) {
     if (e.button !== 0) return;
     this.held = false;
+    const box = (e.currentTarget as HTMLElement).getBoundingClientRect();
+    this.tap = { x: e.clientX - box.left, y: e.clientY - box.top, at: performance.now() };
     this.holdTimer = window.setTimeout(() => {
       this.held = true;
       openMoreInfo(this, this.config!.entity);
@@ -138,7 +155,8 @@ export class GlassLightTile extends GlassElement {
     // so tapping it must turn it on.
     const entity = this.hass?.states[this.config!.entity];
     const service = isLightOn(entity, this.hass!.states) ? 'turn_off' : 'turn_on';
-    this.hass?.callService('light', service, { entity_id: this.config!.entity });
+    haptic('light');
+    this.hass?.callService('light', service, { entity_id: this.config!.entity }).catch(() => haptic('warning'));
   }
 
   static styles = [
@@ -161,12 +179,14 @@ export class GlassLightTile extends GlassElement {
         flex-direction: column;
         justify-content: space-between;
         gap: 12px;
+        position: relative;
+        overflow: hidden;
         cursor: pointer;
         user-select: none;
         -webkit-user-select: none;
         -webkit-tap-highlight-color: transparent;
         touch-action: manipulation;
-        transition: background 0.25s ease, box-shadow 0.25s ease, transform 0.1s ease;
+        transition: background 0.25s ease, box-shadow 0.25s ease;
       }
       .tile:not(.off) {
         color: #121316; /* lit tiles keep the bulb colour, so their text stays dark */
@@ -175,9 +195,6 @@ export class GlassLightTile extends GlassElement {
         backdrop-filter: blur(24px);
         -webkit-backdrop-filter: blur(24px);
       }
-      .tile:active:not(:disabled) {
-        transform: scale(0.98);
-      }
       .tile:focus-visible {
         outline: 2px solid var(--glass-ink);
         outline-offset: 2px;
@@ -185,6 +202,11 @@ export class GlassLightTile extends GlassElement {
       .tile:disabled {
         opacity: 0.5;
         cursor: default;
+      }
+      .top,
+      .name {
+        position: relative; /* above the colour spreading in */
+        z-index: 1;
       }
       .top {
         display: flex;
@@ -208,6 +230,7 @@ export class GlassLightTile extends GlassElement {
         font-size: var(--glass-text-caption);
       }
       .name {
+        display: block;
         font-size: var(--glass-text-tile-title);
         white-space: nowrap;
         overflow: hidden;
