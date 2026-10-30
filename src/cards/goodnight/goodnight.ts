@@ -2,7 +2,7 @@ import { LitElement, css, html, nothing, type PropertyValues } from 'lit';
 import { customElement, property, query, state } from 'lit/decorators.js';
 import { tokens } from '../../tokens.js';
 import { ensureFonts } from '../../fonts.js';
-import { type HomeAssistant, type LovelaceCardConfig, fireEvent, isUnavailable, registerCard } from '../../ha.js';
+import { type HomeAssistant, type LovelaceCardConfig, isUnavailable, registerCard, reportVisibility } from '../../ha.js';
 import { roomSummary, shortName } from '../../rooms.js';
 import '../../elements/glass-icon.js';
 import './goodnight-editor.js';
@@ -84,13 +84,7 @@ export class GlassGoodnight extends LitElement {
   }
 
   protected updated(): void {
-    // Tell HA when the card comes and goes, so its slot in the layout does too
-    // (the same signal HA's own conditional cards use).
-    const visible = this.visible();
-    if (visible === this.hasAttribute('hidden')) {
-      this.toggleAttribute('hidden', !visible);
-      fireEvent(this, 'card-visibility-changed', { value: visible });
-    }
+    reportVisibility(this, this.visible());
   }
 
   /** The covered areas: chosen ones, or every area on the lowest floor. */

@@ -39,6 +39,16 @@ show_after: "22:00"                              # optional
 show_until: "05:00"                              # optional
 ```
 
+### Now playing · `custom:glass-now-playing`
+
+Only appears while something is playing or paused, and shows the most recent player. It has the artwork, where it's playing ("Apple TV · Plex · Living Room"), the title, a progress bar and play/pause. Tap the card to open that room's view, or Home Assistant's player controls.
+
+```yaml
+type: custom:glass-now-playing
+entities: [media_player.living_room_apple_tv, media_player.sonos_living_room]  # optional, default all
+room_path: /glass/{area}                                                       # optional
+```
+
 ### Menu · `custom:glass-menu`
 
 The bottom menu: Home, Rooms, Energy and Security. The screen you're on is the dark pill with its name, and the others are icons. It floats over the bottom of the screen. Any view in the same dashboard that isn't Home, Energy or Security counts as a room, and **Rooms** reopens the last room you viewed on that device. Leave out a path to hide that item.

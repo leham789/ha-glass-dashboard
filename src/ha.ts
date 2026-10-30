@@ -68,6 +68,16 @@ export function navigate(path: string): void {
   window.dispatchEvent(new CustomEvent('location-changed', { detail: { replace: false } }));
 }
 
+/**
+ * For cards that come and go (Goodnight, Now playing): hides the card and tells
+ * HA, so its slot in the layout goes too (the signal HA's conditional cards use).
+ */
+export function reportVisibility(card: HTMLElement, visible: boolean): void {
+  if (visible !== card.hasAttribute('hidden')) return;
+  card.toggleAttribute('hidden', !visible);
+  fireEvent(card, 'card-visibility-changed', { value: visible });
+}
+
 /** Opens HA's built-in more-info dialog for an entity. */
 export function openMoreInfo(node: HTMLElement, entityId: string): void {
   fireEvent(node, 'hass-more-info', { entityId });

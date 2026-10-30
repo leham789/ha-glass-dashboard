@@ -24,6 +24,14 @@ const defs: Def[] = [
   ['light.hallway_ceiling', 'off', { friendly_name: 'Hallway Ceiling' }, 'hallway'],
   ['binary_sensor.front_door_contact', 'off', { friendly_name: 'Front Door Contact', device_class: 'door' }, 'hallway'],
   ['media_player.sonos_kitchen', 'idle', { friendly_name: 'Sonos Kitchen' }, 'kitchen'],
+  ['media_player.living_room_apple_tv', 'playing', {
+    friendly_name: 'Living Room Apple TV',
+    app_name: 'Plex',
+    media_title: 'Backseat Driver',
+    media_duration: 5400,
+    media_position: 2052,
+    media_position_updated_at: new Date().toISOString(),
+  }, 'living_room'],
   // Office (upstairs): a room sensor plus a 3D printer's own temperatures
   ['light.office_hue', 'on', { friendly_name: 'Office Hue', color_mode: 'color_temp', color_temp_kelvin: 5000, brightness: 255 }, 'office'],
   ['light.blue_example', 'on', { friendly_name: 'Blue example', color_mode: 'xy', rgb_color: [110, 150, 255], brightness: 178 }, 'office'],
@@ -99,6 +107,13 @@ function makeHass(states: Record<string, HassEntity>): HomeAssistant {
     async callService(domain, service, data) {
       const targets = [data?.entity_id].flat() as string[];
       log(`${domain}.${service} → ${targets.join(', ')}`);
+      if (domain === 'media_player' && service === 'media_play_pause') {
+        const p = hass.states[targets[0]];
+        const state = p.state === 'playing' ? 'paused' : 'playing';
+        hass = makeHass({ ...hass.states, [p.entity_id]: { ...p, state, last_changed: new Date().toISOString() } });
+        render();
+        return;
+      }
       if (domain !== 'light') return;
       // Like HA: switching a group switches its reachable members too.
       const state = service === 'turn_on' ? 'on' : 'off';
@@ -125,6 +140,7 @@ function add(containerId: string, type: string, config: Record<string, unknown>)
 
 add('chips', 'glass-status-chips', { security_path: '/dev/security', energy_path: '/dev/energy' });
 add('goodnight', 'glass-goodnight', { areas: ['living_room', 'hallway', 'kitchen', 'office'], always_show: true });
+add('playing', 'glass-now-playing', {});
 add('rooms', 'glass-rooms', {});
 add('menu', 'glass-menu', {
   home_path: location.pathname,

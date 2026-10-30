@@ -9,6 +9,8 @@ export class GlassIcon extends LitElement {
   @property() name: IconName = 'lightbulb';
   @property({ type: Number }) size = 20;
   @property({ type: Number }) stroke = 1.6;
+  /** Fill the shape too, for solid icons such as play and pause. */
+  @property({ type: Boolean }) solid = false;
 
   static styles = css`
     :host {
@@ -22,7 +24,7 @@ export class GlassIcon extends LitElement {
       width=${this.size}
       height=${this.size}
       viewBox="0 0 24 24"
-      fill="none"
+      fill=${this.solid ? 'currentColor' : 'none'}
       stroke="currentColor"
       stroke-width=${this.stroke}
       stroke-linecap="round"
