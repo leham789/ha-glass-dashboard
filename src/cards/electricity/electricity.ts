@@ -97,15 +97,14 @@ export class GlassElectricity extends GlassElement {
     const max = Math.max(...(u?.hours ?? [0]), 0.001);
 
     return html`<section aria-labelledby="h">
+      <button type="button" class="open" aria-label="Electricity details" @click=${() => openMoreInfo(this, this.config!.energy)}></button>
       <span class="top">
         <span class="head">
           <h2 id="h">${this.config.title ?? 'Electricity today'}</h2>
           <span class="big">${big}</span>
           ${line ? html`<span class="line">${line}</span>` : nothing}
         </span>
-        <button type="button" class="icon" aria-label="Electricity details" @click=${() => openMoreInfo(this, this.config!.energy)}>
-          <glass-icon name="zap" size="18" stroke="1.7"></glass-icon>
-        </button>
+        <span class="icon" aria-hidden="true"><glass-icon name="zap" size="18" stroke="1.7"></glass-icon></span>
       </span>
       <span class="chart" role="img" aria-label="Electricity use each hour today">
         ${Array.from({ length: 24 }, (_, h) => {
@@ -123,7 +122,26 @@ export class GlassElectricity extends GlassElement {
       :host {
         display: block;
       }
+      .top,
+      .chart,
+      .axis {
+        pointer-events: none;
+      }
+      /* the whole card is the button; what's drawn on it lets taps through */
+      .open {
+        all: unset;
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+        cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
+      }
+      .open:focus-visible {
+        outline: 2px solid var(--glass-ink);
+        outline-offset: 2px;
+      }
       section {
+        position: relative;
         box-sizing: border-box;
         padding: var(--glass-space-edge);
         border-radius: var(--glass-radius-card);
@@ -158,7 +176,6 @@ export class GlassElectricity extends GlassElement {
         font-size: var(--glass-text-caption);
       }
       .icon {
-        all: unset;
         width: 44px;
         height: 44px;
         flex: none;
@@ -168,11 +185,6 @@ export class GlassElectricity extends GlassElement {
         display: flex;
         align-items: center;
         justify-content: center;
-        cursor: pointer;
-      }
-      .icon:focus-visible {
-        outline: 2px solid #fff;
-        outline-offset: 2px;
       }
       .chart {
         height: 104px;

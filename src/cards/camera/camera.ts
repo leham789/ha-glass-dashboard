@@ -108,12 +108,11 @@ export class GlassCamera extends GlassElement {
     return html`
       ${c.heading ? html`<h2>${c.heading}</h2>` : nothing}
       <section aria-label=${c.name ?? shortName(cam, '')}>
+        <button type="button" class="open" aria-label="Open cameras, ${c.name ?? shortName(cam, '')}" @click=${() => this.openCameras()}></button>
         <div class="view">
           ${src && !offline ? html`<img src=${src} alt="" loading="lazy" />` : html`<span class="none">${offline ? 'Camera offline' : 'No picture'}</span>`}
           <span class="badge"><span class="dot ${recording ? 'rec' : offline ? 'off' : 'live'}"></span>${offline ? 'Offline' : recording ? 'Recording' : 'Live'}</span>
-          <button type="button" class="expand" aria-label="Open cameras" @click=${() => this.openCameras()}>
-            <glass-icon name="maximize-2" size="16" stroke="1.8"></glass-icon>
-          </button>
+          <span class="expand" aria-hidden="true"><glass-icon name="maximize-2" size="16" stroke="1.8"></glass-icon></span>
         </div>
         <div class="foot">
           <span class="info">
@@ -152,6 +151,7 @@ export class GlassCamera extends GlassElement {
         font-weight: 400;
       }
       section {
+        position: relative;
         box-sizing: border-box;
         padding: 8px 8px 16px;
         border-radius: var(--glass-radius-card);
@@ -210,8 +210,24 @@ export class GlassCamera extends GlassElement {
       .dot.off {
         background: #8a8d94;
       }
-      .expand {
+      .view,
+      .foot {
+        pointer-events: none;
+      }
+      /* the whole card is the button; what's drawn on it lets taps through */
+      .open {
         all: unset;
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+        cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
+      }
+      .open:focus-visible {
+        outline: 2px solid var(--glass-ink);
+        outline-offset: 2px;
+      }
+      .expand {
         position: absolute;
         top: 12px;
         right: 12px;
@@ -223,11 +239,6 @@ export class GlassCamera extends GlassElement {
         display: flex;
         align-items: center;
         justify-content: center;
-        cursor: pointer;
-      }
-      .expand:focus-visible {
-        outline: 2px solid #fff;
-        outline-offset: 2px;
       }
       .foot {
         display: flex;

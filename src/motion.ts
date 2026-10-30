@@ -17,7 +17,8 @@ export const reducedMotion = (): boolean => window.matchMedia?.('(prefers-reduce
  * the finger shrinks to 97% and comes back on release. It animates the CSS
  * `scale` property, so it adds to any transform the element already has and
  * leaves its own transitions alone. `data-no-press` opts an element out
- * (something you drag, like the Goodnight knob).
+ * (something you drag, like the Goodnight knob). A card-wide `.open` button
+ * is invisible, so pressing it shrinks the card it covers instead.
  */
 export function press(e: PointerEvent): void {
   if (e.button !== 0 || reducedMotion()) return;
@@ -25,7 +26,8 @@ export function press(e: PointerEvent): void {
     .composedPath()
     .find((n): n is HTMLElement => n instanceof HTMLElement && n.matches('button, a[href]'));
   if (!el?.animate || el.matches(':disabled, [data-no-press]')) return;
-  const down = el.animate([{ scale: '1' }, { scale: '0.97' }], { duration: 100, easing: 'ease', fill: 'forwards' });
+  const target = el.classList.contains('open') && el.parentElement ? el.parentElement : el;
+  const down = target.animate([{ scale: '1' }, { scale: '0.97' }], { duration: 100, easing: 'ease', fill: 'forwards' });
   const up = () => {
     window.removeEventListener('pointerup', up);
     window.removeEventListener('pointercancel', up);
