@@ -217,7 +217,7 @@ export class GlassHomeHeader extends GlassElement {
         line-height: 0.9;
         font-size: 104px;
         font-weight: 200;
-        letter-spacing: -5px;
+        letter-spacing: -4px;
       }
       .decimal {
         color: #8a8d94;

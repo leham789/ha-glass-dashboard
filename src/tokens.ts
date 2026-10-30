@@ -65,6 +65,7 @@ export const tokens = css`
     --glass-space-chip: 8px;
     --glass-space-tile-gap: 12px;
     --glass-space-tile: 16px;
+    --glass-space-small-tile: 12px;
     --glass-space-edge: 20px;
 
     /* Type */

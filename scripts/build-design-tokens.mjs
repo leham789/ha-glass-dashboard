@@ -54,6 +54,15 @@ const NAMES = [
   ['lights'],
   ['light-on', 'light-default'],
   ['light-fill', 'light-fill'],
+  ['light-warm', 'light-warm'],
+  ['light-cool', 'light-cool'],
+  ['light-off', 'light-off'],
+  ['room tiles'],
+  ['room-lit', 'room-lit'],
+  ['room-off', 'room-off'],
+  ['room-alert', 'room-alert'],
+  ['attention-text', 'attention-text'],
+  ['tile-shadow', 'tile-shadow'],
   ['shape (8-pt based; pills are always height ÷ 2)'],
   ['r-inset', 'radius-inset'],
   ['r-small-tile', 'radius-small-tile'],
@@ -64,6 +73,7 @@ const NAMES = [
   ['gap-chip', 'space-chip'],
   ['gap-tile', 'space-tile-gap'],
   ['pad-tile', 'space-tile'],
+  ['pad-small-tile', 'space-small-tile'],
   ['space', 'space-edge'],
 ];
 

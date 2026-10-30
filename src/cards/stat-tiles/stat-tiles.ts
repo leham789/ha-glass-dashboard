@@ -104,7 +104,7 @@ export class GlassStatTiles extends GlassElement {
         all: unset;
         box-sizing: border-box;
         height: 120px;
-        padding: 14px;
+        padding: var(--glass-space-small-tile);
         border-radius: var(--glass-radius-small-tile);
         background: rgba(var(--glass-surface-rgb), 0.78);
         border: 1px solid var(--glass-surface-border);
