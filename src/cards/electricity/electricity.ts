@@ -1,4 +1,5 @@
-import { LitElement, css, html, nothing, type PropertyValues } from 'lit';
+import { css, html, nothing, type PropertyValues } from 'lit';
+import { GlassElement } from '../../glass-element.js';
 import { customElement, property, state } from 'lit/decorators.js';
 import { tokens } from '../../tokens.js';
 import { ensureFonts } from '../../fonts.js';
@@ -25,7 +26,7 @@ const REFRESH_MS = 10 * 60 * 1000;
  * fills up to now and stays faint after.
  */
 @customElement('glass-electricity')
-export class GlassElectricity extends LitElement {
+export class GlassElectricity extends GlassElement {
   @property({ attribute: false }) hass?: HomeAssistant;
   @state() private config?: ElectricityConfig;
   @state() private usage?: DailyUsage;
@@ -163,7 +164,7 @@ export class GlassElectricity extends LitElement {
         flex: none;
         border-radius: 50%;
         background: var(--glass-ink);
-        color: #fff;
+        color: var(--glass-on-ink);
         display: flex;
         align-items: center;
         justify-content: center;

@@ -1,4 +1,5 @@
-import { LitElement, css, html, nothing, type PropertyValues } from 'lit';
+import { css, html, nothing, type PropertyValues } from 'lit';
+import { GlassElement } from '../../glass-element.js';
 import { customElement, property, state } from 'lit/decorators.js';
 import { tokens } from '../../tokens.js';
 import { ensureFonts } from '../../fonts.js';
@@ -37,7 +38,7 @@ interface Tile {
  * hours after. Two tiles share the row, one spans it, none hides the card.
  */
 @customElement('glass-around')
-export class GlassAround extends LitElement {
+export class GlassAround extends GlassElement {
   @property({ attribute: false }) hass?: HomeAssistant;
   @state() private config?: AroundConfig;
   @state() private now = new Date();

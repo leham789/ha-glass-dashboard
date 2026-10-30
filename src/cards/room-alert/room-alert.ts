@@ -1,4 +1,5 @@
-import { LitElement, css, html, nothing, type PropertyValues } from 'lit';
+import { css, html, nothing, type PropertyValues } from 'lit';
+import { GlassElement } from '../../glass-element.js';
 import { customElement, property, state } from 'lit/decorators.js';
 import { tokens } from '../../tokens.js';
 import { ensureFonts } from '../../fonts.js';
@@ -18,7 +19,7 @@ export interface RoomAlertConfig extends LovelaceCardConfig {
  * off ("Ceiling light is offline"), with a Power on button. Hidden otherwise.
  */
 @customElement('glass-room-alert')
-export class GlassRoomAlert extends LitElement {
+export class GlassRoomAlert extends GlassElement {
   @property({ attribute: false }) hass?: HomeAssistant;
   @state() private config?: RoomAlertConfig;
 
@@ -96,7 +97,7 @@ export class GlassRoomAlert extends LitElement {
         padding: 16px 16px 16px var(--glass-space-edge);
         border-radius: var(--glass-radius-card);
         background: var(--glass-room-alert);
-        border: 1px solid #f2b8a2;
+        border: 1px solid var(--glass-attention-edge);
         display: flex;
         align-items: center;
         gap: 14px;
@@ -112,7 +113,7 @@ export class GlassRoomAlert extends LitElement {
       }
       .why {
         font-size: var(--glass-text-caption);
-        color: #6b3a26;
+        color: var(--glass-attention-ink);
       }
       button {
         all: unset;
@@ -121,7 +122,7 @@ export class GlassRoomAlert extends LitElement {
         padding: 0 16px;
         border-radius: 24px;
         background: var(--glass-ink);
-        color: #fff;
+        color: var(--glass-on-ink);
         font-size: var(--glass-text-chip);
         cursor: pointer;
       }

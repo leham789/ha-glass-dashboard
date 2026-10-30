@@ -1,4 +1,5 @@
-import { LitElement, css, html, nothing, type PropertyValues } from 'lit';
+import { css, html, nothing, type PropertyValues } from 'lit';
+import { GlassElement } from '../../glass-element.js';
 import { customElement, property, state } from 'lit/decorators.js';
 import { tokens } from '../../tokens.js';
 import { ensureFonts } from '../../fonts.js';
@@ -16,7 +17,7 @@ const SEND_AFTER_MS = 800;
  * with − and + buttons. Taps add up and are sent together once you stop.
  */
 @customElement('glass-thermostat-row')
-export class GlassThermostatRow extends LitElement {
+export class GlassThermostatRow extends GlassElement {
   @property({ attribute: false }) hass?: HomeAssistant;
   @state() private config?: ThermostatRowConfig;
   /** The target while you're tapping, before it's sent. */
@@ -142,12 +143,12 @@ export class GlassThermostatRow extends LitElement {
         cursor: pointer;
       }
       .buttons .minus {
-        background: #fff;
-        border: 1px solid rgba(18, 19, 22, 0.12);
+        background: var(--glass-solid);
+        border: 1px solid rgba(var(--glass-line-rgb), 0.12);
       }
       .buttons .plus {
         background: var(--glass-ink);
-        color: #fff;
+        color: var(--glass-on-ink);
       }
       .buttons button:disabled {
         opacity: 0.4;

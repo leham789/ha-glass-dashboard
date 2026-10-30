@@ -1,4 +1,5 @@
-import { LitElement, css, html, nothing, svg, type PropertyValues } from 'lit';
+import { css, html, nothing, svg, type PropertyValues } from 'lit';
+import { GlassElement } from '../../glass-element.js';
 import { customElement, property, state } from 'lit/decorators.js';
 import { tokens } from '../../tokens.js';
 import { ensureFonts } from '../../fonts.js';
@@ -21,7 +22,7 @@ const R = 120;
  * the target in the middle with how warm it is now, and the heating modes.
  */
 @customElement('glass-thermostat-dial')
-export class GlassThermostatDial extends LitElement {
+export class GlassThermostatDial extends GlassElement {
   @property({ attribute: false }) hass?: HomeAssistant;
   @state() private config?: ThermostatDialConfig;
   @state() private pending?: number;
@@ -122,7 +123,7 @@ export class GlassThermostatDial extends LitElement {
               <stop offset="1" stop-color="#E0683A"></stop>
             </linearGradient>
           </defs>
-          <path d="M 40 170 A 120 120 0 0 1 280 170" stroke="rgba(18,19,22,0.08)" stroke-width="14" stroke-linecap="round" fill="none"></path>
+          <path d="M 40 170 A 120 120 0 0 1 280 170" stroke="currentColor" stroke-opacity="0.08" stroke-width="14" stroke-linecap="round" fill="none"></path>
           ${off
             ? nothing
             : svg`<path d="M 40 170 A 120 120 0 0 1 ${kx.toFixed(1)} ${ky.toFixed(1)}" stroke="url(#heat)" stroke-width="14" stroke-linecap="round" fill="none"></path>
@@ -214,7 +215,7 @@ export class GlassThermostatDial extends LitElement {
         box-sizing: border-box;
         padding: var(--glass-space-edge);
         border-radius: var(--glass-radius-card);
-        background: rgba(255, 255, 255, 0.74);
+        background: rgba(var(--glass-surface-rgb), 0.74);
         border: 1px solid var(--glass-surface-border);
         box-shadow: 0 20px 50px rgba(160, 90, 80, 0.12);
         backdrop-filter: blur(24px);
@@ -310,12 +311,12 @@ export class GlassThermostatDial extends LitElement {
         cursor: pointer;
       }
       .controls > .minus {
-        background: #fff;
-        border: 1px solid rgba(18, 19, 22, 0.12);
+        background: var(--glass-solid);
+        border: 1px solid rgba(var(--glass-line-rgb), 0.12);
       }
       .controls > .plus {
         background: var(--glass-ink);
-        color: #fff;
+        color: var(--glass-on-ink);
       }
       .controls > button:disabled {
         opacity: 0.4;
@@ -326,7 +327,7 @@ export class GlassThermostatDial extends LitElement {
         gap: 6px;
         padding: 4px;
         border-radius: 26px;
-        background: rgba(18, 19, 22, 0.06);
+        background: rgba(var(--glass-line-rgb), 0.06);
       }
       .modes button {
         all: unset;
@@ -337,7 +338,7 @@ export class GlassThermostatDial extends LitElement {
         cursor: pointer;
       }
       .modes button.current {
-        background: #fff;
+        background: var(--glass-raised);
       }
       button:focus-visible {
         outline: 2px solid var(--glass-ink);

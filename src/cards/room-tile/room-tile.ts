@@ -1,4 +1,5 @@
-import { LitElement, css, html, nothing, type PropertyValues } from 'lit';
+import { css, html, nothing, type PropertyValues } from 'lit';
+import { GlassElement } from '../../glass-element.js';
 import { customElement, property, state } from 'lit/decorators.js';
 import { tokens } from '../../tokens.js';
 import { ensureFonts } from '../../fonts.js';
@@ -19,7 +20,7 @@ export interface RoomTileConfig extends LovelaceCardConfig {
  * bulb button that switches all its lights. Tapping the tile opens the room.
  */
 @customElement('glass-room-tile')
-export class GlassRoomTile extends LitElement {
+export class GlassRoomTile extends GlassElement {
   @property({ attribute: false }) hass?: HomeAssistant;
   @state() private config?: RoomTileConfig;
 
@@ -141,7 +142,7 @@ export function roomTileStyles() {
       min-height: 176px;
       padding: var(--glass-space-tile);
       border-radius: var(--glass-radius-tile);
-      border: 1px solid rgba(255, 255, 255, 0.9);
+      border: 1px solid var(--glass-surface-border);
       box-shadow: var(--glass-tile-shadow);
       backdrop-filter: blur(20px);
       -webkit-backdrop-filter: blur(20px);
@@ -218,14 +219,14 @@ export function roomTileStyles() {
       height: 8px;
       flex: none;
       border-radius: 50%;
-      background: rgba(18, 19, 22, 0.15);
+      background: rgba(var(--glass-line-rgb), 0.15);
     }
     .dot.on {
       background: var(--glass-ink);
     }
     .rule {
       flex: 1;
-      border-top: 1px dashed rgba(18, 19, 22, 0.18);
+      border-top: 1px dashed rgba(var(--glass-line-rgb), 0.18);
       margin-left: 4px;
     }
     .foot {
@@ -243,7 +244,7 @@ export function roomTileStyles() {
       height: 44px;
       flex: none;
       border-radius: 50%;
-      border: 1px solid rgba(18, 19, 22, 0.1);
+      border: 1px solid rgba(var(--glass-line-rgb), 0.1);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -254,6 +255,7 @@ export function roomTileStyles() {
     }
     .bulb.on {
       background: var(--glass-accent);
+      color: #121316;
     }
     .bulb:focus-visible {
       outline: 2px solid var(--glass-ink);

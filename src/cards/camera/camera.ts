@@ -1,4 +1,5 @@
-import { LitElement, css, html, nothing, type PropertyValues } from 'lit';
+import { css, html, nothing, type PropertyValues } from 'lit';
+import { GlassElement } from '../../glass-element.js';
 import { customElement, property, state } from 'lit/decorators.js';
 import { tokens } from '../../tokens.js';
 import { ensureFonts } from '../../fonts.js';
@@ -27,7 +28,7 @@ const RECENT_MOTION_MS = 5 * 60_000;
  * Motion / Clear pill.
  */
 @customElement('glass-camera')
-export class GlassCamera extends LitElement {
+export class GlassCamera extends GlassElement {
   @property({ attribute: false }) hass?: HomeAssistant;
   @state() private config?: CameraConfig;
   @state() private tick = Date.now();
@@ -257,11 +258,11 @@ export class GlassCamera extends LitElement {
       }
       .pill.motion {
         background: var(--glass-attention-tint);
-        color: #8a3a1c;
+        color: var(--glass-attention-ink);
       }
       .pill.clear {
         background: var(--glass-success-tint);
-        color: #1e6e36;
+        color: var(--glass-success-ink);
       }
     `,
   ];

@@ -1,4 +1,5 @@
-import { LitElement, css, html, nothing, type PropertyValues } from 'lit';
+import { css, html, nothing, type PropertyValues } from 'lit';
+import { GlassElement } from '../../glass-element.js';
 import { customElement, property, state } from 'lit/decorators.js';
 import { tokens } from '../../tokens.js';
 import { ensureFonts } from '../../fonts.js';
@@ -20,7 +21,7 @@ const HIGH = 26;
  * cold → comfort → warm scale with a marker, and the temperature.
  */
 @customElement('glass-room-temps')
-export class GlassRoomTemps extends LitElement {
+export class GlassRoomTemps extends GlassElement {
   @property({ attribute: false }) hass?: HomeAssistant;
   @state() private config?: RoomTempsConfig;
   private watched: string[] = [];
@@ -96,7 +97,7 @@ export class GlassRoomTemps extends LitElement {
         box-sizing: border-box;
         padding: var(--glass-space-edge) var(--glass-space-edge) 8px;
         border-radius: var(--glass-radius-card);
-        background: rgba(255, 255, 255, 0.62);
+        background: rgba(var(--glass-surface-rgb), 0.62);
         border: 1px solid var(--glass-surface-border);
         backdrop-filter: blur(20px);
         -webkit-backdrop-filter: blur(20px);
@@ -123,7 +124,7 @@ export class GlassRoomTemps extends LitElement {
         align-items: center;
         gap: 12px;
         height: 56px;
-        border-top: 1px solid rgba(18, 19, 22, 0.07);
+        border-top: 1px solid rgba(var(--glass-line-rgb), 0.07);
       }
       .name {
         width: 96px;

@@ -1,4 +1,5 @@
-import { LitElement, css, html, nothing, svg, type PropertyValues } from 'lit';
+import { css, html, nothing, svg, type PropertyValues } from 'lit';
+import { GlassElement } from '../../glass-element.js';
 import { customElement, property, state } from 'lit/decorators.js';
 import { tokens } from '../../tokens.js';
 import { ensureFonts } from '../../fonts.js';
@@ -35,7 +36,7 @@ const REFRESH_MS = 10_000;
  * compact row that opens the full card when tapped.
  */
 @customElement('glass-printer')
-export class GlassPrinter extends LitElement {
+export class GlassPrinter extends GlassElement {
   @property({ attribute: false }) hass?: HomeAssistant;
   @state() private config?: PrinterCardConfig;
   /** Opened by hand while idle. */
@@ -176,10 +177,10 @@ export class GlassPrinter extends LitElement {
         : nothing}
       <div class="progress">
         <svg width="76" height="76" viewBox="0 0 76 76" role="img" aria-label="Print ${pct}% complete">
-          <circle cx="38" cy="38" r="32" stroke="rgba(18,19,22,0.08)" stroke-width="8" fill="none"></circle>
+          <circle cx="38" cy="38" r="32" stroke="currentColor" stroke-opacity="0.08" stroke-width="8" fill="none"></circle>
           ${svg`<circle cx="38" cy="38" r="32" stroke=${p.phase === 'done' ? '#2FB457' : '#3B7DD8'} stroke-width="8" fill="none"
             stroke-linecap="round" stroke-dasharray="${(pct / 100) * circumference} ${circumference}" transform="rotate(-90 38 38)"></circle>`}
-          <text x="38" y="43" text-anchor="middle" font-family="Outfit, sans-serif" font-size="16" fill="#121316">${pct}%</text>
+          <text x="38" y="43" text-anchor="middle" font-family="Outfit, sans-serif" font-size="16" fill="currentColor">${pct}%</text>
         </svg>
         <span class="lines">
           <span class="l1">${line1}</span>
@@ -221,7 +222,7 @@ export class GlassPrinter extends LitElement {
         height: 52px;
         flex: none;
         border-radius: 50%;
-        background: #f1f1f4;
+        background: var(--glass-neutral-tint);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -243,7 +244,7 @@ export class GlassPrinter extends LitElement {
         box-sizing: border-box;
         padding: var(--glass-space-edge);
         border-radius: var(--glass-radius-card);
-        background: rgba(255, 255, 255, 0.8);
+        background: rgba(var(--glass-surface-rgb), 0.8);
         border: 1px solid var(--glass-surface-border);
         box-shadow: 0 18px 44px rgba(40, 80, 30, 0.1);
         backdrop-filter: blur(24px);
@@ -283,28 +284,28 @@ export class GlassPrinter extends LitElement {
         border-radius: 50%;
       }
       .pill.info {
-        background: #e3eefb;
-        color: #1f4e8c;
+        background: var(--glass-info-tint);
+        color: var(--glass-info-ink);
       }
       .pill.info .dot {
         background: var(--glass-info);
       }
       .pill.success {
         background: var(--glass-success-tint);
-        color: #1e6e36;
+        color: var(--glass-success-ink);
       }
       .pill.success .dot {
         background: #2fa84f;
       }
       .pill.attention {
         background: var(--glass-attention-tint);
-        color: #8a3a1c;
+        color: var(--glass-attention-ink);
       }
       .pill.attention .dot {
         background: var(--glass-attention);
       }
       .pill.neutral {
-        background: #f1f1f4;
+        background: var(--glass-neutral-tint);
         color: var(--glass-text-secondary);
       }
       .pill.neutral .dot {
@@ -315,7 +316,7 @@ export class GlassPrinter extends LitElement {
         width: 36px;
         height: 36px;
         border-radius: 50%;
-        background: #f1f1f4;
+        background: var(--glass-neutral-tint);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -384,6 +385,7 @@ export class GlassPrinter extends LitElement {
         padding: 0 12px;
         border-radius: 18px;
         background: rgba(255, 255, 255, 0.9);
+        color: #121316; /* sits on the camera image in both themes */
         font-size: var(--glass-text-small);
         display: flex;
         align-items: center;

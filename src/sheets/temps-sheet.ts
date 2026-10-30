@@ -138,7 +138,7 @@ export class GlassTempsSheet extends GlassSheet {
         gap: 4px;
         padding: 4px;
         border-radius: 26px;
-        background: rgba(18, 19, 22, 0.06);
+        background: rgba(var(--glass-line-rgb), 0.06);
       }
       .segmented button {
         all: unset;
@@ -150,7 +150,7 @@ export class GlassTempsSheet extends GlassSheet {
         cursor: pointer;
       }
       .segmented button.current {
-        background: #fff;
+        background: var(--glass-raised);
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
       }
       .grid {
@@ -229,7 +229,7 @@ export class GlassTempsSheet extends GlassSheet {
         height: 56px;
         border-radius: 28px;
         background: var(--glass-ink);
-        color: #fff;
+        color: var(--glass-on-ink);
         display: flex;
         align-items: center;
         justify-content: center;

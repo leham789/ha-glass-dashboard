@@ -1,4 +1,5 @@
-import { LitElement, css, html, nothing, type PropertyValues } from 'lit';
+import { css, html, nothing, type PropertyValues } from 'lit';
+import { GlassElement } from '../../glass-element.js';
 import { customElement, property, state } from 'lit/decorators.js';
 import { tokens } from '../../tokens.js';
 import { ensureFonts } from '../../fonts.js';
@@ -21,7 +22,7 @@ export interface MediaConfig extends LovelaceCardConfig {
  * as small buttons underneath. Dark for a TV, light for music.
  */
 @customElement('glass-media')
-export class GlassMedia extends LitElement {
+export class GlassMedia extends GlassElement {
   @property({ attribute: false }) hass?: HomeAssistant;
   @state() private config?: MediaConfig;
 
@@ -131,7 +132,7 @@ export class GlassMedia extends LitElement {
         color: #fff;
         --muted: rgba(255, 255, 255, 0.75);
         --play-bg: #fff;
-        --play-fg: var(--glass-ink);
+        --play-fg: #121316; /* the dark card stays dark in both themes */
         --chip-border: rgba(255, 255, 255, 0.3);
         --chip-on: rgba(255, 255, 255, 0.12);
       }
@@ -143,9 +144,9 @@ export class GlassMedia extends LitElement {
         color: var(--glass-ink);
         --muted: var(--glass-text-muted);
         --play-bg: var(--glass-ink);
-        --play-fg: #fff;
-        --chip-border: rgba(18, 19, 22, 0.12);
-        --chip-on: #fff;
+        --play-fg: var(--glass-on-ink);
+        --chip-border: rgba(var(--glass-line-rgb), 0.12);
+        --chip-on: var(--glass-solid);
       }
       .top {
         display: flex;

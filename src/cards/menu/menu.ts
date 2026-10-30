@@ -1,4 +1,5 @@
-import { LitElement, css, html, nothing } from 'lit';
+import { css, html, nothing } from 'lit';
+import { GlassElement } from '../../glass-element.js';
 import { customElement, property, state } from 'lit/decorators.js';
 import { tokens } from '../../tokens.js';
 import { ensureFonts } from '../../fonts.js';
@@ -31,7 +32,7 @@ const LAST_ROOM_KEY = 'glass-menu-last-room';
  * dashboard counts as a room, so Rooms reopens the last room you viewed.
  */
 @customElement('glass-menu')
-export class GlassMenu extends LitElement {
+export class GlassMenu extends GlassElement {
   @property({ attribute: false }) hass?: HomeAssistant;
   @state() private config?: MenuConfig;
   @state() private path = location.pathname;
@@ -142,7 +143,7 @@ export class GlassMenu extends LitElement {
         height: 72px;
         padding: 8px;
         border-radius: 36px;
-        background: rgba(255, 255, 255, 0.7);
+        background: rgba(var(--glass-surface-rgb), 0.7);
         border: 1px solid var(--glass-surface-border);
         box-shadow: 0 16px 40px rgba(20, 30, 20, 0.14);
         backdrop-filter: blur(24px);
@@ -182,7 +183,7 @@ export class GlassMenu extends LitElement {
       button.current {
         padding: 0 22px;
         background: var(--glass-ink);
-        color: #fff;
+        color: var(--glass-on-ink);
       }
       button:focus-visible {
         outline: 2px solid var(--glass-ink);

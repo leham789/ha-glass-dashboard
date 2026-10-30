@@ -132,7 +132,7 @@ export class GlassLightsSheet extends GlassSheet {
         padding: 0 20px;
         border-radius: 26px;
         background: var(--glass-ink);
-        color: #fff;
+        color: var(--glass-on-ink);
         font-size: var(--glass-text-body);
         display: flex;
         align-items: center;
@@ -144,7 +144,7 @@ export class GlassLightsSheet extends GlassSheet {
         gap: 4px;
         padding: 4px;
         border-radius: 26px;
-        background: rgba(18, 19, 22, 0.06);
+        background: rgba(var(--glass-line-rgb), 0.06);
       }
       .filters button {
         all: unset;
@@ -156,7 +156,7 @@ export class GlassLightsSheet extends GlassSheet {
         cursor: pointer;
       }
       .filters button.current {
-        background: #fff;
+        background: var(--glass-raised);
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
       }
       .group {
@@ -181,7 +181,7 @@ export class GlassLightsSheet extends GlassSheet {
         padding: 0 16px 0 10px;
         border-radius: 32px;
         border: 1px solid var(--glass-hairline);
-        background: #fff;
+        background: var(--glass-solid);
         display: flex;
         align-items: center;
         gap: 12px;
@@ -198,7 +198,7 @@ export class GlassLightsSheet extends GlassSheet {
         top: 0;
         bottom: 0;
         border-radius: 32px;
-        background: linear-gradient(90deg, #f6e3b0 0%, #f7c66b 100%);
+        background: var(--glass-light-fill);
         transition: width 0.25s ease;
       }
       .bulb {
@@ -207,13 +207,13 @@ export class GlassLightsSheet extends GlassSheet {
         height: 44px;
         flex: none;
         border-radius: 50%;
-        background: #f1f1f4;
+        background: var(--glass-neutral-tint);
         display: flex;
         align-items: center;
         justify-content: center;
       }
       .row.on .bulb {
-        background: rgba(255, 255, 255, 0.75);
+        background: rgba(var(--glass-surface-rgb), 0.75);
       }
       .name {
         position: relative;

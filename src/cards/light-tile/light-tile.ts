@@ -1,4 +1,5 @@
-import { LitElement, css, html, nothing, type PropertyValues } from 'lit';
+import { css, html, nothing, type PropertyValues } from 'lit';
+import { GlassElement } from '../../glass-element.js';
 import { customElement, property, state } from 'lit/decorators.js';
 import { styleMap } from 'lit/directives/style-map.js';
 import { tokens } from '../../tokens.js';
@@ -22,7 +23,7 @@ const HOLD_MS = 500;
  * Colour follows the light colour rule in light-colour.ts.
  */
 @customElement('glass-light-tile')
-export class GlassLightTile extends LitElement {
+export class GlassLightTile extends GlassElement {
   @property({ attribute: false }) hass?: HomeAssistant;
   @state() private config?: LightTileConfig;
 
@@ -167,6 +168,9 @@ export class GlassLightTile extends LitElement {
         touch-action: manipulation;
         transition: background 0.25s ease, box-shadow 0.25s ease, transform 0.1s ease;
       }
+      .tile:not(.off) {
+        color: #121316; /* lit tiles keep the bulb colour, so their text stays dark */
+      }
       .tile.off {
         backdrop-filter: blur(24px);
         -webkit-backdrop-filter: blur(24px);
@@ -192,13 +196,13 @@ export class GlassLightTile extends LitElement {
         height: 40px;
         box-sizing: border-box;
         border-radius: 50%;
-        border: 1px solid rgba(18, 19, 22, 0.25);
+        border: 1px solid rgba(var(--glass-line-rgb), 0.25);
         display: flex;
         align-items: center;
         justify-content: center;
       }
       .off .bulb {
-        border-color: rgba(18, 19, 22, 0.12);
+        border-color: rgba(var(--glass-line-rgb), 0.12);
       }
       .state {
         font-size: var(--glass-text-caption);

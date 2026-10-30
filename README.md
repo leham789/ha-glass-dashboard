@@ -355,6 +355,8 @@ Download `ha-glass-dashboard.js` from the latest release, put it in `/config/www
 
 ## Theming
 
+The cards follow Home Assistant's light and dark mode on their own. When HA's dark theme is on (your profile's theme setting, or "Auto" with a dark device), every card and pop-up switches to its dark colours, with no set-up needed.
+
 Every colour, radius and size is a CSS variable starting with `--glass-`, so you can override them from a Home Assistant theme. For example:
 
 ```yaml
@@ -367,8 +369,10 @@ glass-radius-tile: 24px
 ```bash
 npm install
 npm run dev     # preview the cards with mock data at /dev/index.html
-npm run build   # writes dist/ha-glass-dashboard.js
+npm run build   # writes dist/ha-glass-dashboard.js and design/tokens.css
 ```
+
+`src/tokens.ts` is the one place colours, radii and spacing are defined. The build also writes `design/tokens.css` from it, which the design canvas uses, so the design and the cards always match (publish that file to the canvas after changing a token).
 
 ## Credits
 

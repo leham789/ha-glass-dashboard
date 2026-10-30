@@ -181,7 +181,7 @@ export class GlassRoomOptionsSheet extends GlassSheet {
         height: 92px;
         padding: 12px;
         border-radius: var(--glass-radius-small-tile);
-        background: #fff;
+        background: var(--glass-solid);
         display: flex;
         flex-direction: column;
         justify-content: space-between;
@@ -189,7 +189,7 @@ export class GlassRoomOptionsSheet extends GlassSheet {
       }
       .actions button.dark {
         background: var(--glass-ink);
-        color: #fff;
+        color: var(--glass-on-ink);
       }
       .actions button:disabled {
         opacity: 0.5;
@@ -204,7 +204,7 @@ export class GlassRoomOptionsSheet extends GlassSheet {
       }
       .group {
         border-radius: var(--glass-radius-tile);
-        background: rgba(255, 255, 255, 0.75);
+        background: rgba(var(--glass-surface-rgb), 0.75);
         padding: 16px 16px 6px;
         display: flex;
         flex-direction: column;
@@ -233,7 +233,7 @@ export class GlassRoomOptionsSheet extends GlassSheet {
         display: flex;
         align-items: center;
         gap: 12px;
-        border-top: 1px solid rgba(18, 19, 22, 0.07);
+        border-top: 1px solid rgba(var(--glass-line-rgb), 0.07);
       }
       .row.first {
         border-top: none;
@@ -249,7 +249,7 @@ export class GlassRoomOptionsSheet extends GlassSheet {
         display: flex;
         align-items: center;
         gap: 12px;
-        border-top: 1px solid rgba(18, 19, 22, 0.07);
+        border-top: 1px solid rgba(var(--glass-line-rgb), 0.07);
         cursor: pointer;
       }
       .row.link .n {
@@ -270,7 +270,7 @@ export class GlassRoomOptionsSheet extends GlassSheet {
         color: var(--glass-text-muted);
       }
       .sub.warn {
-        color: #8a3a1c;
+        color: var(--glass-attention-ink);
       }
       .devices {
         font-size: var(--glass-text-caption);
@@ -284,7 +284,7 @@ export class GlassRoomOptionsSheet extends GlassSheet {
         height: 32px;
         flex: none;
         border-radius: 16px;
-        background: rgba(18, 19, 22, 0.15);
+        background: rgba(var(--glass-line-rgb), 0.15);
         cursor: pointer;
         transition: background 0.2s ease;
       }

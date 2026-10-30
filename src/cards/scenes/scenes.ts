@@ -1,4 +1,5 @@
-import { LitElement, css, html, nothing, type PropertyValues } from 'lit';
+import { css, html, nothing, type PropertyValues } from 'lit';
+import { GlassElement } from '../../glass-element.js';
 import { customElement, property, state } from 'lit/decorators.js';
 import { tokens } from '../../tokens.js';
 import { ensureFonts } from '../../fonts.js';
@@ -34,7 +35,7 @@ const DEFAULT_LOOK: Look = { bg: 'linear-gradient(160deg, #FFFFFF 0%, #EDEEF1 10
  * named in the corner ("Relax is on"). Colours follow the scene's name.
  */
 @customElement('glass-scenes')
-export class GlassScenes extends LitElement {
+export class GlassScenes extends GlassElement {
   @property({ attribute: false }) hass?: HomeAssistant;
   @state() private config?: ScenesConfig;
 
@@ -162,7 +163,7 @@ export class GlassScenes extends LitElement {
         display: flex;
         align-items: flex-end;
         font-size: var(--glass-text-caption);
-        color: var(--glass-ink);
+        color: #121316; /* scene colours are pastel in both themes */
         cursor: pointer;
         -webkit-tap-highlight-color: transparent;
       }

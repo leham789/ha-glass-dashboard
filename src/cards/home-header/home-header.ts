@@ -1,4 +1,5 @@
-import { LitElement, css, html, nothing, type PropertyValues } from 'lit';
+import { css, html, nothing, type PropertyValues } from 'lit';
+import { GlassElement } from '../../glass-element.js';
 import { customElement, property, state } from 'lit/decorators.js';
 import { tokens } from '../../tokens.js';
 import { ensureFonts } from '../../fonts.js';
@@ -22,7 +23,7 @@ export interface HomeHeaderConfig extends LovelaceCardConfig {
  * chips for the room, outside and humidity.
  */
 @customElement('glass-home-header')
-export class GlassHomeHeader extends LitElement {
+export class GlassHomeHeader extends GlassElement {
   @property({ attribute: false }) hass?: HomeAssistant;
   @state() private config?: HomeHeaderConfig;
   @state() private now = new Date();
@@ -178,9 +179,9 @@ export class GlassHomeHeader extends LitElement {
         height: 48px;
         flex: none;
         border-radius: 50%;
-        border: 2px solid #fff;
+        border: 2px solid var(--glass-solid);
         background: var(--glass-ink) center / cover;
-        color: #fff;
+        color: var(--glass-on-ink);
         font-size: var(--glass-text-tile-title);
         display: flex;
         align-items: center;
@@ -233,7 +234,7 @@ export class GlassHomeHeader extends LitElement {
         height: 32px;
         padding: 0 12px;
         border-radius: 16px;
-        background: rgba(255, 255, 255, 0.7);
+        background: rgba(var(--glass-surface-rgb), 0.7);
         display: flex;
         align-items: center;
         gap: 6px;
@@ -241,7 +242,7 @@ export class GlassHomeHeader extends LitElement {
       }
       .chip.subject {
         background: var(--glass-ink);
-        color: #fff;
+        color: var(--glass-on-ink);
       }
     `,
   ];

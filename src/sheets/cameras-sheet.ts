@@ -401,7 +401,7 @@ export class GlassCamerasSheet extends GlassSheet {
         width: 8px;
         height: 8px;
         border-radius: 4px;
-        background: rgba(18, 19, 22, 0.2);
+        background: rgba(var(--glass-line-rgb), 0.2);
         cursor: pointer;
         transition: width 0.25s ease;
       }
@@ -415,7 +415,7 @@ export class GlassCamerasSheet extends GlassSheet {
         height: 3px;
         overflow: hidden;
         border-radius: 2px;
-        background: rgba(18, 19, 22, 0.1);
+        background: rgba(var(--glass-line-rgb), 0.1);
       }
       .bar {
         position: absolute;
@@ -438,7 +438,7 @@ export class GlassCamerasSheet extends GlassSheet {
       }
       .group {
         border-radius: var(--glass-radius-tile);
-        background: rgba(255, 255, 255, 0.75);
+        background: rgba(var(--glass-surface-rgb), 0.75);
         padding: 6px 16px;
       }
       .row {
@@ -467,7 +467,7 @@ export class GlassCamerasSheet extends GlassSheet {
         height: 32px;
         flex: none;
         border-radius: 16px;
-        background: rgba(18, 19, 22, 0.15);
+        background: rgba(var(--glass-line-rgb), 0.15);
         cursor: pointer;
         transition: background 0.2s ease;
       }
@@ -583,16 +583,17 @@ export class GlassCamerasSheet extends GlassSheet {
         cursor: pointer;
       }
       .light {
-        background: #fff;
+        background: var(--glass-solid);
         border: 1px solid var(--glass-hairline);
       }
       .light.on {
+        color: #121316;
         background: linear-gradient(150deg, #fefaf0 0%, #f8ebcb 100%);
         border-color: #f2dfb4;
       }
       .primary {
         background: var(--glass-ink);
-        color: #fff;
+        color: var(--glass-on-ink);
       }
       button:focus-visible {
         outline: 2px solid var(--glass-ink);

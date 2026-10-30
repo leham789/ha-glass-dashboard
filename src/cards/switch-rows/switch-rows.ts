@@ -1,4 +1,5 @@
-import { LitElement, css, html, nothing, type PropertyValues } from 'lit';
+import { css, html, nothing, type PropertyValues } from 'lit';
+import { GlassElement } from '../../glass-element.js';
 import { customElement, property, state } from 'lit/decorators.js';
 import { tokens } from '../../tokens.js';
 import { ensureFonts } from '../../fonts.js';
@@ -19,7 +20,7 @@ export interface SwitchRowsConfig extends LovelaceCardConfig {
  * the plug's own power and energy sensors.
  */
 @customElement('glass-switch-rows')
-export class GlassSwitchRows extends LitElement {
+export class GlassSwitchRows extends GlassElement {
   @property({ attribute: false }) hass?: HomeAssistant;
   @state() private config?: SwitchRowsConfig;
   private watched: string[] = [];
@@ -157,7 +158,7 @@ export class GlassSwitchRows extends LitElement {
         height: 32px;
         flex: none;
         border-radius: 16px;
-        background: rgba(18, 19, 22, 0.15);
+        background: rgba(var(--glass-line-rgb), 0.15);
         cursor: pointer;
         transition: background 0.2s ease;
       }

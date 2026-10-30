@@ -13,10 +13,10 @@ export function tempBand(t: number): Band {
 }
 
 const BANDS: Record<Band, { pillBg: string; pillFg: string; tint?: string }> = {
-  Cold: { pillBg: '#E3EEFB', pillFg: '#1F4E8C', tint: '156, 195, 242' },
-  Cool: { pillBg: '#F1F1F4', pillFg: '#45484F' },
-  Comfy: { pillBg: '#F1F1F4', pillFg: '#45484F' },
-  Warm: { pillBg: '#FCEDE6', pillFg: '#8A3A1C', tint: '247, 170, 120' },
+  Cold: { pillBg: 'var(--glass-info-tint)', pillFg: 'var(--glass-info-ink)', tint: '156, 195, 242' },
+  Cool: { pillBg: 'var(--glass-neutral-tint)', pillFg: 'var(--glass-text-secondary)' },
+  Comfy: { pillBg: 'var(--glass-neutral-tint)', pillFg: 'var(--glass-text-secondary)' },
+  Warm: { pillBg: 'var(--glass-attention-tint)', pillFg: 'var(--glass-attention-ink)', tint: '247, 170, 120' },
   Hot: { pillBg: '#FDE7E7', pillFg: '#9B1C1C', tint: '229, 72, 77' },
 };
 

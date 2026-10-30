@@ -7,8 +7,9 @@
   "scripts": {
     "icons": "node scripts/build-icons.mjs",
     "dev": "npm run icons && vite",
-    "build": "npm run icons && tsc --noEmit && vite build",
-    "typecheck": "tsc --noEmit"
+    "build": "npm run icons && npm run design-tokens && tsc --noEmit && vite build",
+    "typecheck": "tsc --noEmit",
+    "design-tokens": "node scripts/build-design-tokens.mjs"
   },
   "dependencies": {
     "@fontsource-variable/outfit": "5.3.0",

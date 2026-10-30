@@ -1,4 +1,5 @@
-import { LitElement, css, html, nothing, type PropertyValues } from 'lit';
+import { css, html, nothing, type PropertyValues } from 'lit';
+import { GlassElement } from '../../glass-element.js';
 import { customElement, property, state } from 'lit/decorators.js';
 import { tokens } from '../../tokens.js';
 import { ensureFonts } from '../../fonts.js';
@@ -21,7 +22,7 @@ const HOLD_MS = 500;
  * hold for HA's own controls. Scrolls sideways.
  */
 @customElement('glass-favourites')
-export class GlassFavourites extends LitElement {
+export class GlassFavourites extends GlassElement {
   @property({ attribute: false }) hass?: HomeAssistant;
   @state() private config?: FavouritesConfig;
   private holdTimer?: number;
@@ -153,7 +154,7 @@ export class GlassFavourites extends LitElement {
         padding: 0 18px;
         border-radius: 22px;
         border: 1px solid var(--glass-surface-border);
-        background: rgba(255, 255, 255, 0.7);
+        background: rgba(var(--glass-surface-rgb), 0.7);
         font-size: var(--glass-text-body);
         display: flex;
         align-items: center;
@@ -166,7 +167,7 @@ export class GlassFavourites extends LitElement {
       button.on {
         background: var(--glass-ink);
         border-color: var(--glass-ink);
-        color: #fff;
+        color: var(--glass-on-ink);
       }
       button:disabled {
         opacity: 0.5;

@@ -1,4 +1,5 @@
-import { LitElement, css, html, nothing, type PropertyValues } from 'lit';
+import { css, html, nothing, type PropertyValues } from 'lit';
+import { GlassElement } from '../../glass-element.js';
 import { customElement, property, state } from 'lit/decorators.js';
 import { tokens } from '../../tokens.js';
 import { ensureFonts } from '../../fonts.js';
@@ -20,7 +21,7 @@ export interface RoomLightsConfig extends LovelaceCardConfig {
  * Fills itself from the area, so new lights appear without editing the dashboard.
  */
 @customElement('glass-room-lights')
-export class GlassRoomLights extends LitElement {
+export class GlassRoomLights extends GlassElement {
   @property({ attribute: false }) hass?: HomeAssistant;
   @state() private config?: RoomLightsConfig;
   private tiles = new Map<string, GlassLightTile>();

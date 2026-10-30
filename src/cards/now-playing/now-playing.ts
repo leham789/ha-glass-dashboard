@@ -1,4 +1,5 @@
-import { LitElement, css, html, nothing, type PropertyValues } from 'lit';
+import { css, html, nothing, type PropertyValues } from 'lit';
+import { GlassElement } from '../../glass-element.js';
 import { customElement, property, state } from 'lit/decorators.js';
 import { tokens } from '../../tokens.js';
 import { ensureFonts } from '../../fonts.js';
@@ -28,7 +29,7 @@ export interface NowPlayingConfig extends LovelaceCardConfig {
  * Tap the card to open the player's room (or HA's player controls).
  */
 @customElement('glass-now-playing')
-export class GlassNowPlaying extends LitElement {
+export class GlassNowPlaying extends GlassElement {
   @property({ attribute: false }) hass?: HomeAssistant;
   @state() private config?: NowPlayingConfig;
   @state() private tick = 0;
@@ -160,7 +161,7 @@ export class GlassNowPlaying extends LitElement {
         box-sizing: border-box;
         padding: 14px;
         border-radius: var(--glass-radius-card);
-        background: rgba(255, 255, 255, 0.6);
+        background: rgba(var(--glass-surface-rgb), 0.6);
         border: 1px solid var(--glass-surface-border);
         backdrop-filter: blur(20px);
         -webkit-backdrop-filter: blur(20px);
@@ -224,7 +225,7 @@ export class GlassNowPlaying extends LitElement {
         height: 3px;
         margin-top: 6px;
         border-radius: 2px;
-        background: rgba(18, 19, 22, 0.12);
+        background: rgba(var(--glass-line-rgb), 0.12);
       }
       .bar > span {
         position: absolute;
@@ -242,7 +243,7 @@ export class GlassNowPlaying extends LitElement {
         flex: none;
         border-radius: 50%;
         background: var(--glass-ink);
-        color: #fff;
+        color: var(--glass-on-ink);
         display: flex;
         align-items: center;
         justify-content: center;

@@ -1,4 +1,5 @@
-import { LitElement, css, html, nothing, type PropertyValues } from 'lit';
+import { css, html, nothing, type PropertyValues } from 'lit';
+import { GlassElement } from '../../glass-element.js';
 import { customElement, property, state } from 'lit/decorators.js';
 import { tokens } from '../../tokens.js';
 import { ensureFonts } from '../../fonts.js';
@@ -29,7 +30,7 @@ const STORAGE_KEY = 'glass-rooms-floor';
  * with a switcher. Nothing to set up; new areas and floors appear on their own.
  */
 @customElement('glass-rooms')
-export class GlassRooms extends LitElement {
+export class GlassRooms extends GlassElement {
   @property({ attribute: false }) hass?: HomeAssistant;
   @state() private config?: RoomsConfig;
   @state() private floor?: string = readStoredFloor();
@@ -155,7 +156,7 @@ export class GlassRooms extends LitElement {
         gap: 4px;
         padding: 4px;
         border-radius: 22px;
-        background: rgba(255, 255, 255, 0.6);
+        background: rgba(var(--glass-surface-rgb), 0.6);
       }
       .floors button {
         all: unset;
@@ -170,7 +171,7 @@ export class GlassRooms extends LitElement {
       }
       .floors button.current {
         background: var(--glass-ink);
-        color: #fff;
+        color: var(--glass-on-ink);
       }
       .floors button:focus-visible {
         outline: 2px solid var(--glass-ink);

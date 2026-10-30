@@ -1,4 +1,5 @@
-import { LitElement, css, html, nothing, type PropertyValues } from 'lit';
+import { css, html, nothing, type PropertyValues } from 'lit';
+import { GlassElement } from '../../glass-element.js';
 import { customElement, property, state } from 'lit/decorators.js';
 import { tokens } from '../../tokens.js';
 import { ensureFonts } from '../../fonts.js';
@@ -27,7 +28,7 @@ export interface RoomHeaderConfig extends LovelaceCardConfig {
  * big "4/6 on", with its climate and what's playing on the right.
  */
 @customElement('glass-room-header')
-export class GlassRoomHeader extends LitElement {
+export class GlassRoomHeader extends GlassElement {
   @property({ attribute: false }) hass?: HomeAssistant;
   @state() private config?: RoomHeaderConfig;
   private watched: string[] = [];
@@ -183,7 +184,7 @@ export class GlassRoomHeader extends LitElement {
         padding: 4px;
         border-radius: 24px;
         border: 1px solid var(--glass-surface-border);
-        background: rgba(255, 255, 255, 0.6);
+        background: rgba(var(--glass-surface-rgb), 0.6);
         overflow-x: auto;
         scrollbar-width: none;
         -webkit-mask-image: linear-gradient(90deg, #000 80%, transparent 100%);
@@ -207,7 +208,7 @@ export class GlassRoomHeader extends LitElement {
       }
       a[aria-current='page'] {
         background: var(--glass-ink);
-        color: #fff;
+        color: var(--glass-on-ink);
       }
       a:focus-visible {
         outline: 2px solid var(--glass-ink);

@@ -4,6 +4,9 @@
 import '../src/index.js';
 import type { EntityRegistryEntry, HassEntity, HomeAssistant } from '../src/ha.js';
 
+// ?dark in the URL previews HA's dark theme.
+const DARK = new URLSearchParams(location.search).has('dark');
+
 type Def = [id: string, state: string, attrs?: Record<string, unknown>, area?: string, device?: string];
 
 /** When some things last changed, in minutes ago (everything else: an hour ago). */
@@ -196,6 +199,7 @@ let hass: HomeAssistant = makeHass(states);
 function makeHass(states: Record<string, HassEntity>): HomeAssistant {
   return {
     states,
+    themes: { darkMode: DARK },
     entities,
     devices: {
       lr_climate: { id: 'lr_climate', name: 'Living Room Thermometer' },
@@ -329,6 +333,19 @@ function log(text: string) {
 }
 
 export function start() {
+  if (DARK) {
+    document.body.style.background = '#141518';
+    document.body.style.color = '#f2f3f5';
+  }
+  // A small Light / Dark switch for the preview pages.
+  const toggle = document.createElement('a');
+  const url = new URL(location.href);
+  if (DARK) url.searchParams.delete('dark');
+  else url.searchParams.set('dark', '');
+  toggle.href = url.toString();
+  toggle.textContent = DARK ? 'Light' : 'Dark';
+  toggle.setAttribute('style', 'position:fixed;top:12px;right:12px;z-index:10;padding:6px 12px;border-radius:14px;font:13px Outfit,system-ui,sans-serif;text-decoration:none;background:#121316;color:#fff');
+  document.body.appendChild(toggle);
   window.addEventListener('hass-more-info', (e) => log(`more-info → ${(e as CustomEvent).detail.entityId}`));
   render();
 }

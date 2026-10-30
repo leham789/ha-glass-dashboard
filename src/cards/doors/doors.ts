@@ -1,4 +1,5 @@
-import { LitElement, css, html, nothing, type PropertyValues } from 'lit';
+import { css, html, nothing, type PropertyValues } from 'lit';
+import { GlassElement } from '../../glass-element.js';
 import { customElement, property, state } from 'lit/decorators.js';
 import { tokens } from '../../tokens.js';
 import { ensureFonts } from '../../fonts.js';
@@ -25,7 +26,7 @@ const OPENINGS = new Set(['door', 'window', 'garage_door', 'opening']);
  * with one pill for the whole house.
  */
 @customElement('glass-doors')
-export class GlassDoors extends LitElement {
+export class GlassDoors extends GlassElement {
   @property({ attribute: false }) hass?: HomeAssistant;
   @state() private config?: DoorsConfig;
   @state() private now = new Date();
@@ -156,14 +157,14 @@ export class GlassDoors extends LitElement {
       }
       .pill.attention {
         background: var(--glass-attention-tint);
-        color: #8a3a1c;
+        color: var(--glass-attention-ink);
       }
       .pill.attention .dot {
         background: var(--glass-attention);
       }
       .pill.ok {
         background: var(--glass-success-tint);
-        color: #1e6e36;
+        color: var(--glass-success-ink);
       }
       .pill.ok .dot {
         background: #2fa84f;
@@ -200,7 +201,7 @@ export class GlassDoors extends LitElement {
       }
       .tile.open {
         background: var(--glass-attention-tint);
-        border-color: #f2b8a2;
+        border-color: var(--glass-attention-edge);
       }
       .tile:focus-visible {
         outline: 2px solid var(--glass-ink);
@@ -216,7 +217,7 @@ export class GlassDoors extends LitElement {
         width: 40px;
         height: 40px;
         border-radius: 50%;
-        border: 1px solid rgba(18, 19, 22, 0.15);
+        border: 1px solid rgba(var(--glass-line-rgb), 0.15);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -226,7 +227,7 @@ export class GlassDoors extends LitElement {
         color: var(--glass-text-secondary);
       }
       .open .state {
-        color: #8a3a1c;
+        color: var(--glass-attention-ink);
       }
       .bottom {
         display: flex;

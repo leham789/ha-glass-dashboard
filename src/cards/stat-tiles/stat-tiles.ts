@@ -1,4 +1,5 @@
-import { LitElement, css, html, nothing, type PropertyValues } from 'lit';
+import { css, html, nothing, type PropertyValues } from 'lit';
+import { GlassElement } from '../../glass-element.js';
 import { customElement, property, state } from 'lit/decorators.js';
 import { tokens } from '../../tokens.js';
 import { ensureFonts } from '../../fonts.js';
@@ -28,7 +29,7 @@ export interface StatTilesConfig extends LovelaceCardConfig {
  * ("£1.36", "20.4p", "612") with what it is underneath.
  */
 @customElement('glass-stat-tiles')
-export class GlassStatTiles extends LitElement {
+export class GlassStatTiles extends GlassElement {
   @property({ attribute: false }) hass?: HomeAssistant;
   @state() private config?: StatTilesConfig;
 
@@ -105,7 +106,7 @@ export class GlassStatTiles extends LitElement {
         height: 120px;
         padding: 14px;
         border-radius: var(--glass-radius-small-tile);
-        background: rgba(255, 255, 255, 0.78);
+        background: rgba(var(--glass-surface-rgb), 0.78);
         border: 1px solid var(--glass-surface-border);
         display: flex;
         flex-direction: column;
@@ -116,7 +117,7 @@ export class GlassStatTiles extends LitElement {
       button.dark {
         background: var(--glass-ink);
         border-color: var(--glass-ink);
-        color: #fff;
+        color: var(--glass-on-ink);
       }
       button:focus-visible {
         outline: 2px solid var(--glass-ink);
@@ -142,7 +143,7 @@ export class GlassStatTiles extends LitElement {
         text-overflow: ellipsis;
       }
       .dark .label {
-        color: rgba(255, 255, 255, 0.75);
+        color: color-mix(in srgb, var(--glass-on-ink) 75%, transparent);
       }
     `,
   ];

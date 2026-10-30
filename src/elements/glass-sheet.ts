@@ -1,4 +1,5 @@
-import { LitElement, css, html, type CSSResultGroup, type TemplateResult } from 'lit';
+import { css, html, type CSSResultGroup, type TemplateResult } from 'lit';
+import { GlassElement } from '../glass-element.js';
 import { property, state } from 'lit/decorators.js';
 import { tokens } from '../tokens.js';
 import type { HomeAssistant } from '../ha.js';
@@ -13,7 +14,7 @@ import './glass-icon.js';
  * HA's layout can clip them. Use `GlassSheet.open(tag, hass)` to show one;
  * the opener keeps its `hass` current until it closes.
  */
-export abstract class GlassSheet extends LitElement {
+export abstract class GlassSheet extends GlassElement {
   @property({ attribute: false }) hass?: HomeAssistant;
   @state() private shown = false;
 
@@ -94,7 +95,7 @@ export abstract class GlassSheet extends LitElement {
       .backdrop {
         position: absolute;
         inset: 0;
-        background: rgba(18, 19, 22, 0.25);
+        background: rgba(var(--glass-line-rgb), 0.25);
         opacity: 0;
         transition: opacity 0.25s ease;
       }
@@ -113,7 +114,7 @@ export abstract class GlassSheet extends LitElement {
         overscroll-behavior: contain;
         padding: 10px var(--glass-space-edge) calc(40px + env(safe-area-inset-bottom, 0px));
         border-radius: var(--glass-radius-sheet) var(--glass-radius-sheet) 0 0;
-        background: rgba(248, 248, 250, 0.86);
+        background: var(--glass-sheet);
         border-top: 1px solid var(--glass-surface-border);
         box-shadow: 0 -20px 60px rgba(20, 20, 40, 0.15);
         backdrop-filter: blur(30px);
@@ -141,7 +142,7 @@ export abstract class GlassSheet extends LitElement {
         width: 40px;
         height: 5px;
         border-radius: 3px;
-        background: rgba(18, 19, 22, 0.18);
+        background: rgba(var(--glass-line-rgb), 0.18);
       }
       header {
         display: flex;
@@ -154,7 +155,7 @@ export abstract class GlassSheet extends LitElement {
         box-sizing: border-box;
         padding: 0 8px;
         border-radius: 32px;
-        background: rgba(255, 255, 255, 0.85);
+        background: rgba(var(--glass-surface-rgb), 0.85);
         display: flex;
         align-items: center;
         gap: 12px;
@@ -163,6 +164,7 @@ export abstract class GlassSheet extends LitElement {
         width: 48px;
         height: 48px;
         border-radius: 50%;
+        color: #121316; /* pastel circle in both themes */
         display: flex;
         align-items: center;
         justify-content: center;
@@ -178,7 +180,7 @@ export abstract class GlassSheet extends LitElement {
         height: 64px;
         flex: none;
         border-radius: 50%;
-        background: rgba(255, 255, 255, 0.85);
+        background: rgba(var(--glass-surface-rgb), 0.85);
         display: flex;
         align-items: center;
         justify-content: center;

@@ -63,6 +63,8 @@ export interface HomeAssistant {
   /** The signed-in HA user. */
   user?: { id: string; name: string };
   locale?: { language: string };
+  /** HA's active theme; `darkMode` is true when the dark theme is in use. */
+  themes?: { darkMode?: boolean };
 }
 
 export interface LovelaceCardConfig {

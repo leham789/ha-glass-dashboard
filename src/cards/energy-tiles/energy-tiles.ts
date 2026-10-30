@@ -1,4 +1,5 @@
-import { LitElement, css, html, nothing, type PropertyValues } from 'lit';
+import { css, html, nothing, type PropertyValues } from 'lit';
+import { GlassElement } from '../../glass-element.js';
 import { customElement, property, state } from 'lit/decorators.js';
 import { tokens } from '../../tokens.js';
 import { ensureFonts } from '../../fonts.js';
@@ -31,7 +32,7 @@ const CURRENCY: Record<string, string> = { GBP: '£', EUR: '€', USD: '$' };
  * right now, a dot chart of the last 12 hours, and what today has cost).
  */
 @customElement('glass-energy-tiles')
-export class GlassEnergyTiles extends LitElement {
+export class GlassEnergyTiles extends GlassElement {
   @property({ attribute: false }) hass?: HomeAssistant;
   @state() private config?: EnergyTilesConfig;
   @state() private hours: number[] = [];
@@ -236,7 +237,7 @@ export class GlassEnergyTiles extends LitElement {
         flex: none;
         border-radius: 50%;
         background: var(--glass-ink);
-        color: #fff;
+        color: var(--glass-on-ink);
         display: flex;
         align-items: center;
         justify-content: center;

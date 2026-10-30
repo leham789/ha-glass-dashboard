@@ -1,4 +1,5 @@
-import { LitElement, css, html, nothing, type PropertyValues } from 'lit';
+import { css, html, nothing, type PropertyValues } from 'lit';
+import { GlassElement } from '../../glass-element.js';
 import { customElement, property, state } from 'lit/decorators.js';
 import { tokens } from '../../tokens.js';
 import { ensureFonts } from '../../fonts.js';
@@ -33,7 +34,7 @@ const COLOUR_MODES = new Set(['hs', 'rgb', 'rgbw', 'rgbww', 'xy']);
  * for lights that can change colour. Colour opens HA's colour picker.
  */
 @customElement('glass-brightness')
-export class GlassBrightness extends LitElement {
+export class GlassBrightness extends GlassElement {
   @property({ attribute: false }) hass?: HomeAssistant;
   @state() private config?: BrightnessConfig;
   /** The value while dragging, before HA confirms it. */
@@ -167,7 +168,7 @@ export class GlassBrightness extends LitElement {
         position: relative;
         height: 72px;
         border-radius: 36px;
-        background: rgba(18, 19, 22, 0.06);
+        background: rgba(var(--glass-line-rgb), 0.06);
         overflow: hidden;
       }
       .fill {
@@ -176,7 +177,7 @@ export class GlassBrightness extends LitElement {
         top: 0;
         bottom: 0;
         border-radius: 36px;
-        background: linear-gradient(90deg, #f6e3b0 0%, #f7c66b 100%);
+        background: var(--glass-light-fill);
       }
       .sun {
         position: absolute;
@@ -209,7 +210,7 @@ export class GlassBrightness extends LitElement {
         height: 56px;
         border-radius: var(--glass-radius-inset);
         border: 1px solid var(--glass-hairline);
-        background: #fff;
+        background: var(--glass-solid);
         display: flex;
         flex-direction: column;
         align-items: center;

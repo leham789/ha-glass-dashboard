@@ -1,4 +1,5 @@
-import { LitElement, css, html, nothing, type PropertyValues } from 'lit';
+import { css, html, nothing, type PropertyValues } from 'lit';
+import { GlassElement } from '../../glass-element.js';
 import { customElement, property, query, state } from 'lit/decorators.js';
 import { tokens } from '../../tokens.js';
 import { ensureFonts } from '../../fonts.js';
@@ -29,7 +30,7 @@ const CONFIRM_AT = 0.85;
  * your script); it then says it's done, and tapping undoes it.
  */
 @customElement('glass-goodnight')
-export class GlassGoodnight extends LitElement {
+export class GlassGoodnight extends GlassElement {
   @property({ attribute: false }) hass?: HomeAssistant;
   @state() private config?: GoodnightConfig;
   /** Lights Goodnight switched off, for Undo. Set means "done". */
@@ -282,7 +283,7 @@ export class GlassGoodnight extends LitElement {
         width: 70%;
         height: 1px;
         margin-top: 8px;
-        background: rgba(18, 19, 22, 0.15);
+        background: rgba(var(--glass-line-rgb), 0.15);
       }
       .count {
         display: flex;
@@ -305,7 +306,7 @@ export class GlassGoodnight extends LitElement {
         height: 68px;
         padding: 6px;
         border-radius: 34px;
-        background: rgba(18, 19, 22, 0.06);
+        background: rgba(var(--glass-line-rgb), 0.06);
         display: flex;
         align-items: center;
         user-select: none;

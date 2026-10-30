@@ -1,4 +1,5 @@
-import { LitElement, css, html, nothing, type PropertyValues } from 'lit';
+import { css, html, nothing, type PropertyValues } from 'lit';
+import { GlassElement } from '../../glass-element.js';
 import { customElement, property, state } from 'lit/decorators.js';
 import { tokens } from '../../tokens.js';
 import { ensureFonts } from '../../fonts.js';
@@ -41,7 +42,7 @@ const OPENINGS = new Set(['door', 'window', 'garage_door', 'opening']);
  * the spread of room temperatures, and low batteries. One line; scrolls sideways.
  */
 @customElement('glass-status-chips')
-export class GlassStatusChips extends LitElement {
+export class GlassStatusChips extends GlassElement {
   @property({ attribute: false }) hass?: HomeAssistant;
   @state() private config?: StatusChipsConfig;
 
@@ -100,7 +101,7 @@ export class GlassStatusChips extends LitElement {
           ?disabled=${!c.onTap}
           @click=${c.onTap}
         >
-          <span class="icon" style="background: ${c.iconBg}"><glass-icon name=${c.icon} size="15" stroke="1.8"></glass-icon></span>
+          <span class="icon" style="background: ${c.iconBg}; color: ${c.iconBg.includes('neutral') ? 'var(--glass-ink)' : '#121316'}"><glass-icon name=${c.icon} size="15" stroke="1.8"></glass-icon></span>
           ${c.label}
         </button>`,
       )}
@@ -138,7 +139,7 @@ export class GlassStatusChips extends LitElement {
       key: 'lights',
       label: lightsOn === 1 ? '1 light on' : lightsOn ? `${lightsOn} lights on` : 'All lights off',
       icon: 'lightbulb',
-      iconBg: lightsOn ? 'var(--glass-accent)' : '#F1F1F4',
+      iconBg: lightsOn ? 'var(--glass-accent)' : 'var(--glass-neutral-tint)',
       onTap: () => this.openLights(),
     });
 
@@ -209,7 +210,7 @@ export class GlassStatusChips extends LitElement {
         height: 40px;
         padding: 0 14px 0 6px;
         border-radius: 20px;
-        background: rgba(255, 255, 255, 0.55);
+        background: rgba(var(--glass-surface-rgb), 0.55);
         border: 1px solid var(--glass-surface-border);
         display: flex;
         align-items: center;
@@ -224,7 +225,7 @@ export class GlassStatusChips extends LitElement {
       }
       .chip.attention {
         background: var(--glass-attention-tint);
-        border-color: #f2b8a2;
+        border-color: var(--glass-attention-edge);
       }
       .chip:focus-visible {
         outline: 2px solid var(--glass-ink);

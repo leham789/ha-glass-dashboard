@@ -1,4 +1,5 @@
-import { LitElement, css, html, nothing } from 'lit';
+import { css, html, nothing } from 'lit';
+import { GlassElement } from '../../glass-element.js';
 import { customElement, property, state } from 'lit/decorators.js';
 import { tokens } from '../../tokens.js';
 import { ensureFonts } from '../../fonts.js';
@@ -11,7 +12,7 @@ export interface TitleConfig extends LovelaceCardConfig {
 
 /** A screen's title, in the pack's Screen title style ("Heating & Energy"). */
 @customElement('glass-title')
-export class GlassTitle extends LitElement {
+export class GlassTitle extends GlassElement {
   @property({ attribute: false }) hass?: HomeAssistant;
   @state() private config?: TitleConfig;
 
