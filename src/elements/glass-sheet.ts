@@ -208,9 +208,29 @@ export abstract class GlassSheet extends GlassElement {
         flex-direction: column;
         gap: 18px;
         touch-action: none; /* the drag is ours, not the page's scroll */
-        /* no band behind it: only the title and close float over what scrolls under,
+        /* no band behind it: the handle, title and close float over what scrolls under,
            and taps between them reach the content */
         pointer-events: none;
+      }
+      /* Apple's soft scroll edge: behind the controls, the sheet's own colour fading
+         smoothly to clear about 24px below them, so content scrolling under them softens
+         away with no hard line. (No blur: a blur can't fade out, it stops at an edge.)
+         Invisible at rest; it eases in over the first 24px of scrolling (browsers that
+         can't tie it to scrolling just keep it on). */
+      .sheet-top::before {
+        content: '';
+        position: absolute;
+        inset: 0 0 -24px;
+        z-index: -1;
+        pointer-events: none;
+        background: linear-gradient(
+          to bottom,
+          rgb(var(--glass-sheet-rgb)) 0%,
+          rgb(var(--glass-sheet-rgb)) 50%,
+          rgba(var(--glass-sheet-rgb), 0.7) 70%,
+          rgba(var(--glass-sheet-rgb), 0.3) 85%,
+          rgba(var(--glass-sheet-rgb), 0) 100%
+        );
       }
       .sheet-top > * {
         pointer-events: auto;
@@ -220,27 +240,27 @@ export abstract class GlassSheet extends GlassElement {
         backdrop-filter: blur(24px);
         -webkit-backdrop-filter: blur(24px);
       }
-      /* Once something scrolls under them (the first 24px of scrolling), the title and
-         close firm up and lift with a soft shadow, and the handle fades away. Only where
-         the browser can tie animation to scrolling; elsewhere they stay as they are. */
+      /* Once something scrolls under them (the first 24px of scrolling), the soft edge
+         eases in and the title and close firm up and lift with a soft shadow. Only where
+         the browser can tie animation to scrolling. */
       @supports (animation-timeline: scroll()) {
-        .handle,
+        .sheet-top::before,
         .title,
         .close {
           animation: linear both;
           animation-timeline: scroll();
           animation-range: 0 24px;
         }
-        .handle {
-          animation-name: handle-away;
+        .sheet-top::before {
+          animation-name: edge-in;
         }
         .title,
         .close {
           animation-name: lift;
         }
       }
-      @keyframes handle-away {
-        to {
+      @keyframes edge-in {
+        from {
           opacity: 0;
         }
       }
