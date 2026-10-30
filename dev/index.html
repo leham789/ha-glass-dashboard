@@ -20,18 +20,27 @@
       flex-direction: column;
       gap: 20px;
     }
-    h1 { margin: 0; font-size: 28px; font-weight: 400; letter-spacing: -0.4px; }
+    h1 { margin: 16px 0 0; font-size: 28px; font-weight: 400; letter-spacing: -0.4px; }
     p { margin: 0; font-size: 13px; color: #5f626a; }
     .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
-    #log { min-height: 18px; }
+    #log {
+      position: sticky;
+      bottom: 12px;
+      min-height: 18px;
+      padding: 10px 14px;
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.85);
+    }
   </style>
 </head>
 <body>
   <main>
+    <p>Mock Home Assistant data. Tap things; what would be sent to HA shows at the bottom.</p>
+    <h1>Rooms</h1>
+    <div id="rooms"></div>
     <h1>Light tile</h1>
-    <p>Mock Home Assistant data. Tap a tile to toggle it; hold to open more-info.</p>
     <div class="grid" id="tiles"></div>
-    <p id="log"></p>
+    <p id="log">Nothing sent yet</p>
   </main>
   <script type="module" src="./main.ts"></script>
 </body>

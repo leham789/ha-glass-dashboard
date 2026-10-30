@@ -2,9 +2,36 @@
 
 A frosted-glass, mobile-first card pack for Home Assistant. Every card has a visual editor, so nothing needs YAML.
 
-> Early days: this release has one card. More are on the way.
+> Early days: more cards are on the way.
 
 ## Cards
+
+### Rooms · `custom:glass-rooms`
+
+Every area in your home as a room tile, grouped by floor with a Down / Up / Outside style switcher. It reads your Home Assistant areas and floors, so new rooms appear on their own. There's nothing to set up.
+
+```yaml
+type: custom:glass-rooms
+exclude_areas: [server_room]   # optional
+room_path: /glass/{area}       # optional: open a view per room
+```
+
+### Room tile · `custom:glass-room-tile`
+
+One area on its own. It shows:
+
+- how many of its lights are on ("4 of 6"), with a dot per light
+- one line of context: an open door or window first (the tile turns peach), otherwise the temperature and humidity, then a door, media player or motion sensor
+- a bulb button that turns all the room's lights off, or all on
+
+A light group (such as a Hue room) isn't counted twice when its lights are in the room too. For the temperature, the tile uses the sensor chosen for the area in **Settings › Areas**. If none is chosen, it uses the room's own climate sensor, not one built into another device such as a 3D printer.
+
+```yaml
+type: custom:glass-room-tile
+area: living_room
+navigation_path: /glass/living   # optional
+exclude_entities: [light.p1s_chamber_light]  # optional
+```
 
 ### Light tile · `custom:glass-light-tile`
 

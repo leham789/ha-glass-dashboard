@@ -34,6 +34,13 @@ export const tokens = css`
     --glass-light-cool-glow: 170, 190, 220;
     --glass-light-off: rgba(255, 255, 255, 0.5);
 
+    /* Room tiles */
+    --glass-room-lit: rgba(255, 255, 255, 0.88);
+    --glass-room-off: rgba(255, 255, 255, 0.4);
+    --glass-room-alert: rgba(252, 237, 230, 0.9);
+    --glass-attention-text: #9a3e22;
+    --glass-tile-shadow: 0 10px 30px rgba(30, 20, 60, 0.06);
+
     /* Radius */
     --glass-radius-inset: 16px;
     --glass-radius-small-tile: 24px;

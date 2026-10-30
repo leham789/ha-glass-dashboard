@@ -11,8 +11,41 @@ export interface HassEntity {
   last_updated: string;
 }
 
+/** Registry entries HA's frontend keeps on `hass` (areas, floors, devices, entities). */
+export interface EntityRegistryEntry {
+  entity_id: string;
+  area_id?: string | null;
+  device_id?: string | null;
+  hidden?: boolean;
+  entity_category?: string | null;
+}
+
+export interface DeviceRegistryEntry {
+  id: string;
+  area_id?: string | null;
+}
+
+export interface AreaRegistryEntry {
+  area_id: string;
+  name: string;
+  floor_id?: string | null;
+  icon?: string | null;
+  temperature_entity_id?: string | null;
+  humidity_entity_id?: string | null;
+}
+
+export interface FloorRegistryEntry {
+  floor_id: string;
+  name: string;
+  level?: number | null;
+}
+
 export interface HomeAssistant {
   states: Record<string, HassEntity>;
+  entities: Record<string, EntityRegistryEntry>;
+  devices: Record<string, DeviceRegistryEntry>;
+  areas: Record<string, AreaRegistryEntry>;
+  floors: Record<string, FloorRegistryEntry>;
   callService(domain: string, service: string, data?: Record<string, unknown>): Promise<unknown>;
   locale?: { language: string };
 }
@@ -25,6 +58,12 @@ export interface LovelaceCardConfig {
 /** Fires a DOM event the way HA's own elements do (bubbles across shadow roots). */
 export function fireEvent(node: HTMLElement, type: string, detail?: unknown): void {
   node.dispatchEvent(new CustomEvent(type, { detail, bubbles: true, composed: true }));
+}
+
+/** Goes to another dashboard view without reloading, the way HA's own cards do. */
+export function navigate(path: string): void {
+  history.pushState(null, '', path);
+  window.dispatchEvent(new CustomEvent('location-changed', { detail: { replace: false } }));
 }
 
 /** Opens HA's built-in more-info dialog for an entity. */
