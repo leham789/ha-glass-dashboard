@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Glass cards · preview</title>
+  <style>
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: #edeef1;
+      font-family: 'Outfit', system-ui, sans-serif;
+      color: #121316;
+    }
+    main {
+      max-width: 390px;
+      margin: 0 auto;
+      padding: 32px 20px 64px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    h1 { margin: 0; font-size: 28px; font-weight: 400; letter-spacing: -0.4px; }
+    p { margin: 0; font-size: 13px; color: #5f626a; }
+    .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+    #log { min-height: 18px; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Light tile</h1>
+    <p>Mock Home Assistant data. Tap a tile to toggle it; hold to open more-info.</p>
+    <div class="grid" id="tiles"></div>
+    <p id="log"></p>
+  </main>
+  <script type="module" src="./main.ts"></script>
+</body>
+</html>

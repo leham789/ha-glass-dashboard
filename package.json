@@ -1,0 +1,20 @@
+{
+  "name": "ha-glass-dashboard",
+  "version": "0.1.0",
+  "description": "Frosted-glass, mobile-first Home Assistant dashboard",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "icons": "node scripts/build-icons.mjs",
+    "dev": "npm run icons && vite",
+    "build": "npm run icons && tsc --noEmit && vite build",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "lit": "3.2.1"
+  },
+  "devDependencies": {
+    "typescript": "5.6.3",
+    "vite": "5.4.11"
+  }
+}
