@@ -8,6 +8,7 @@ export class GlassBrightnessEditor extends GlassFormEditor<BrightnessConfig> {
     return [
       { name: 'entity', label: 'Light or light group', required: true, selector: { entity: { domain: 'light' } } },
       { name: 'name', label: 'Name (optional)', selector: { text: {} } },
+      { name: 'lamps', label: "Show the group's lights as small tiles underneath", selector: { boolean: {} } },
     ];
   }
 }

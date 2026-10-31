@@ -9,10 +9,14 @@ import { haptic } from '../../motion.js';
 import './scenes-editor.js';
 
 export interface ScenesConfig extends LovelaceCardConfig {
-  /** Scenes (or scripts), in order. */
-  entities: string[];
+  /** Scenes (or scripts), in order. Each can carry a hint line: { entity, hint: Cool white }. */
+  entities: (string | { entity: string; hint?: string })[];
   title?: string;
+  /** Inside a card with "… is on" (default), or the tiles on their own, taller, with each hint. */
+  style?: 'card' | 'plain';
 }
+
+const idOf = (e: ScenesConfig['entities'][number]) => (typeof e === 'string' ? e : e.entity);
 
 interface Look {
   bg: string;
@@ -34,6 +38,7 @@ const DEFAULT_LOOK: Look = { bg: 'linear-gradient(160deg, #FFFFFF 0%, #EDEEF1 10
 /**
  * Scene tiles, three across. The one you ran last gets a dark ring and is
  * named in the corner ("Relax is on"). Colours follow the scene's name.
+ * Plain: the tiles on their own under a heading, each with a hint line.
  */
 @customElement('glass-scenes')
 export class GlassScenes extends GlassElement {
@@ -69,7 +74,7 @@ export class GlassScenes extends GlassElement {
   protected shouldUpdate(changed: PropertyValues): boolean {
     if (!changed.has('hass') || changed.size > 1 || !this.config) return true;
     const old = changed.get('hass') as HomeAssistant | undefined;
-    return !old || this.config.entities.some((id) => old.states[id] !== this.hass!.states[id]);
+    return !old || this.config.entities.map(idOf).some((id) => old.states[id] !== this.hass!.states[id]);
   }
 
   /** The scene run most recently (a scene's state is when it last ran). */
@@ -81,16 +86,21 @@ export class GlassScenes extends GlassElement {
 
   render() {
     if (!this.config || !this.hass) return nothing;
-    const scenes = this.config.entities.map((id) => this.hass!.states[id]).filter(Boolean);
+    const scenes = this.config.entities.map((e) => this.hass!.states[idOf(e)]).filter(Boolean);
+    const hint = (e: HassEntity) => {
+      const c = this.config!.entities.find((x) => idOf(x) === e.entity_id);
+      return typeof c === 'object' ? c.hint : undefined;
+    };
+    const plain = this.config.style === 'plain';
     const active = this.active(scenes);
     // Words every scene shares, like the room's name, are noise on a tile ("Bedroom Relax" → "Relax").
     const names = distinctNames(scenes.map((e) => shortName(e, '')));
     const name = (e: HassEntity) => names[scenes.indexOf(e)];
 
-    return html`<section aria-labelledby="h">
+    return html`<section aria-labelledby="h" class=${plain ? 'plain' : ''}>
       <span class="top">
         <h2 id="h">${this.config.title ?? 'Scenes'}</h2>
-        ${active ? html`<span class="note">${name(active)} is on</span>` : nothing}
+        ${active && !plain ? html`<span class="note">${name(active)} is on</span>` : nothing}
       </span>
       <div class="grid">
         ${scenes.map((e) => {
@@ -104,7 +114,8 @@ export class GlassScenes extends GlassElement {
             ?disabled=${e.state === 'unavailable'}
             @click=${() => this.run(e.entity_id)}
           >
-            ${name(e)}
+            ${plain && hint(e) ? html`<span class="hint" aria-hidden="true">${hint(e)}</span>` : nothing}
+            <span class="name">${name(e)}</span>
           </button>`;
         })}
       </div>
@@ -135,6 +146,15 @@ export class GlassScenes extends GlassElement {
         display: flex;
         flex-direction: column;
         gap: 14px;
+      }
+      section.plain {
+        padding: 0;
+        border: none;
+        background: none;
+        box-shadow: none;
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
+        gap: 12px;
       }
       .top {
         display: flex;
@@ -171,6 +191,20 @@ export class GlassScenes extends GlassElement {
       }
       button.dark {
         color: #fff;
+      }
+      .plain button {
+        height: 100px;
+        flex-direction: column;
+        justify-content: space-between;
+        align-items: stretch;
+      }
+      .plain .name {
+        margin-top: auto;
+        font-size: var(--glass-text-body);
+      }
+      .hint {
+        font-size: var(--glass-text-small);
+        opacity: 0.8;
       }
       button.current {
         box-shadow: inset 0 0 0 2px var(--glass-ink);

@@ -3,7 +3,8 @@ import { GlassElement } from '../../glass-element.js';
 import { customElement, property, state } from 'lit/decorators.js';
 import { tokens } from '../../tokens.js';
 import { ensureFonts } from '../../fonts.js';
-import { type HomeAssistant, type LovelaceCardConfig, registerCard } from '../../ha.js';
+import { type HomeAssistant, type LovelaceCardConfig, isUnavailable, registerCard } from '../../ha.js';
+import { lightRow, lightRowStyles } from '../../elements/light-row.js';
 import { roomSummary } from '../../rooms.js';
 import { loadPrefs, onPrefsChange, prefs } from '../../prefs.js';
 import type { GlassLightTile } from '../light-tile/light-tile.js';
@@ -14,11 +15,15 @@ export interface RoomLightsConfig extends LovelaceCardConfig {
   area: string;
   exclude_entities?: string[];
   title?: string;
+  /** Tiles two across (default), or rows inside a card for a room with a few lights. */
+  layout?: 'tiles' | 'rows';
 }
 
 /**
- * Every light in a room as a light tile, two across, under a "Lights" heading.
- * Fills itself from the area, so new lights appear without editing the dashboard.
+ * Every light in a room as a light tile, two across, under a "Lights" heading,
+ * with any offline light as one line underneath. Or, set to rows, every light
+ * as a row inside a card. Fills itself from the area, so new lights appear
+ * without editing the dashboard.
  */
 @customElement('glass-room-lights')
 export class GlassRoomLights extends GlassElement {
@@ -75,9 +80,19 @@ export class GlassRoomLights extends GlassElement {
     const room = roomSummary(this.hass, this.config.area, hidden);
     this.watched = room.watch;
     if (!room.lights.length) return nothing;
+    const title = this.config.title ?? 'Lights';
+    if (this.config.layout === 'rows') {
+      return html`<section class="card" aria-labelledby="h">
+        <h2 id="h">${title}</h2>
+        ${room.lights.map((l) => lightRow(this.hass!, l))}
+      </section>`;
+    }
+    const offline = room.lights.filter((l) => isUnavailable(this.hass!.states[l.id]));
+    const reachable = room.lights.filter((l) => !offline.includes(l));
     return html`<section aria-labelledby="h">
-      <h2 id="h">${this.config.title ?? 'Lights'} <span>tap to toggle, hold for colour</span></h2>
-      <div class="grid">${room.lights.map((l) => this.tile(l.id))}</div>
+      <h2 id="h">${title} <span>tap to toggle, hold for colour</span></h2>
+      ${reachable.length ? html`<div class="grid">${reachable.map((l) => this.tile(l.id))}</div>` : nothing}
+      ${offline.length ? html`<span class="offline"><i></i>${offlineLine(offline.map((l) => l.name))}</span>` : nothing}
     </section>`;
   }
 
@@ -95,6 +110,7 @@ export class GlassRoomLights extends GlassElement {
 
   static styles = [
     tokens,
+    lightRowStyles,
     css`
       :host {
         display: block;
@@ -118,8 +134,37 @@ export class GlassRoomLights extends GlassElement {
         grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
         gap: var(--glass-space-tile-gap);
       }
+      .card {
+        padding: var(--glass-space-edge);
+        border-radius: var(--glass-radius-card);
+        background: var(--glass-surface);
+        border: 1px solid var(--glass-surface-border);
+        backdrop-filter: blur(24px);
+        -webkit-backdrop-filter: blur(24px);
+        gap: 12px;
+      }
+      .offline {
+        font-size: var(--glass-text-caption);
+        color: var(--glass-text-muted);
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .offline i {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: var(--glass-attention);
+      }
     `,
   ];
+}
+
+/** "Ceiling Nook is offline", "Lamp and Strip are offline", "3 lights are offline". */
+function offlineLine(names: string[]): string {
+  if (names.length === 1) return `${names[0]} is offline`;
+  if (names.length === 2) return `${names[0]} and ${names[1]} are offline`;
+  return `${names.length} lights are offline`;
 }
 
 registerCard({

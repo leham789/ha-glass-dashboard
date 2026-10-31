@@ -26,6 +26,8 @@ import './cards/title/title.js';
 import './cards/printer/printer-card.js';
 import './cards/switch-rows/switch-rows.js';
 import './cards/room-alert/room-alert.js';
+import './cards/room-climate/room-climate.js';
+import './cards/room-devices/room-devices.js';
 // Our own pop-ups in place of HA's more-info dialog.
 import './sheets/entity-sheets.js';
 

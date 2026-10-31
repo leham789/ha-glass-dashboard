@@ -8,6 +8,11 @@ export class GlassScenesEditor extends GlassFormEditor<ScenesConfig> {
     return [
       { name: 'entities', label: 'Scenes, in order', required: true, selector: { entity: { domain: ['scene', 'script'], multiple: true } } },
       { name: 'title', label: 'Title (default: Scenes)', selector: { text: {} } },
+      {
+        name: 'style',
+        label: 'Style (hint lines are set in YAML: { entity, hint })',
+        selector: { select: { mode: 'list', options: [{ value: 'card', label: 'In a card, with which one is on' }, { value: 'plain', label: 'On their own, with a hint line' }] } },
+      },
     ];
   }
 }

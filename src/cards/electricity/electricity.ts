@@ -15,13 +15,15 @@ export interface ElectricityConfig extends LovelaceCardConfig {
   /** Today's cost, e.g. from your supplier's integration (optional). */
   cost?: string;
   title?: string;
+  /** Electricity (green) or gas (the heating colours, with a flame). */
+  fuel?: 'electricity' | 'gas';
 }
 
 const DOTS = 10;
 const REFRESH_MS = 10 * 60 * 1000;
 
 /**
- * Today's electricity: what it's cost, how much you've used and how that
+ * Today's electricity or gas: what it's cost, how much you've used and how that
  * compares with yesterday by this time, and an hour-by-hour dot chart that
  * fills up to now and stays faint after.
  */
@@ -95,18 +97,20 @@ export class GlassElectricity extends GlassElement {
     const line = [cost && u ? `${u.today.toFixed(1)} kWh` : '', compare].filter(Boolean).join(' · ');
     const nowHour = new Date().getHours();
     const max = Math.max(...(u?.hours ?? [0]), 0.001);
+    const gas = this.config.fuel === 'gas';
+    const fuel = gas ? 'Gas' : 'Electricity';
 
-    return html`<section aria-labelledby="h">
-      <button type="button" class="open" aria-label="Electricity details" @click=${() => openMoreInfo(this, this.config!.energy)}></button>
+    return html`<section aria-labelledby="h" class=${gas ? 'gas' : ''}>
+      <button type="button" class="open" aria-label="${fuel} details" @click=${() => openMoreInfo(this, this.config!.energy)}></button>
       <span class="top">
         <span class="head">
-          <h2 id="h">${this.config.title ?? 'Electricity today'}</h2>
+          <h2 id="h">${this.config.title ?? `${fuel} today`}</h2>
           <span class="big">${big}</span>
           ${line ? html`<span class="line">${line}</span>` : nothing}
         </span>
-        <span class="icon" aria-hidden="true"><glass-icon name="zap" size="18" stroke="1.7"></glass-icon></span>
+        <span class="icon" aria-hidden="true"><glass-icon name=${gas ? 'flame' : 'zap'} size="18" stroke="1.7"></glass-icon></span>
       </span>
-      <span class="chart" role="img" aria-label="Electricity use each hour today">
+      <span class="chart" role="img" aria-label="${fuel} use each hour today">
         ${Array.from({ length: 24 }, (_, h) => {
           const level = u && h <= nowHour ? Math.round(((u.hours[h] ?? 0) / max) * DOTS) : 0;
           return html`<span class="col">${Array.from({ length: DOTS }, (_, k) => html`<span class="d ${k < level ? 'on' : ''}"></span>`)}</span>`;
@@ -150,6 +154,13 @@ export class GlassElectricity extends GlassElement {
         display: flex;
         flex-direction: column;
         gap: 18px;
+      }
+      section.gas {
+        background: linear-gradient(160deg, #c98579 0%, #b0675e 55%, #c59a72 100%);
+        box-shadow: 0 20px 44px rgba(160, 90, 80, 0.25);
+      }
+      .gas .axis {
+        color: #fff;
       }
       .top {
         display: flex;
@@ -225,8 +236,8 @@ function comparison(today: number, yesterday: number): string {
 
 registerCard({
   type: 'glass-electricity',
-  name: 'Glass · Electricity today',
-  description: 'Today’s cost and use, compared with yesterday, with an hourly dot chart.',
+  name: 'Glass · Energy today',
+  description: 'Today’s electricity or gas: cost and use, compared with yesterday, with an hourly dot chart.',
 });
 
 declare global {

@@ -15,7 +15,10 @@ add('printer', 'glass-printer', {
   bed_temp: 'sensor.p1s_bed_temperature',
   ams_humidity: 'sensor.p1s_ams_humidity',
 });
-add('power', 'glass-switch-rows', { entities: ['switch.office_pc', 'switch.office_monitor_plug'] });
+add('lights', 'glass-room-lights', { area: 'office', layout: 'rows' });
+add('power', 'glass-switch-rows', {
+  entities: ['switch.office_pc', 'switch.office_monitor_plug', { entity: 'switch.office_ceiling_mains', secondary: 'Mains switch for the ceiling bulb' }],
+});
 add('menu', 'glass-menu', {
   home_path: '/dev/index.html',
   rooms_path: '/dev/room.html',

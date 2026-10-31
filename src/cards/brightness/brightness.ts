@@ -4,7 +4,9 @@ import { customElement, property, state } from 'lit/decorators.js';
 import { tokens } from '../../tokens.js';
 import { ensureFonts } from '../../fonts.js';
 import { type HomeAssistant, type LovelaceCardConfig, isUnavailable, openMoreInfo, registerCard } from '../../ha.js';
-import { brightnessPct, isLightOn } from '../../light-colour.js';
+import { styleMap } from 'lit/directives/style-map.js';
+import { brightnessPct, groupMembers, isLightOn, lightLook } from '../../light-colour.js';
+import { distinctNames, shortName } from '../../rooms.js';
 import '../../elements/glass-icon.js';
 import './brightness-editor.js';
 
@@ -12,6 +14,8 @@ export interface BrightnessConfig extends LovelaceCardConfig {
   /** A light or light group, e.g. the room's Hue group. */
   entity: string;
   name?: string;
+  /** Show the group's own lights as small tiles underneath, for a room with a few lamps. */
+  lamps?: boolean;
 }
 
 interface Tone {
@@ -31,7 +35,8 @@ const COLOUR_MODES = new Set(['hs', 'rgb', 'rgbw', 'rgbww', 'xy']);
 /**
  * A room's main dimmer: a big slider whose fill is the brightness (drag to
  * zero to switch off), and Warm / Neutral / Cool / Colour presets underneath
- * for lights that can change colour. Colour opens HA's colour picker.
+ * for lights that can change colour. Colour opens HA's colour picker. With
+ * lamps on, the group's lights sit underneath as small tiles, three across.
  */
 @customElement('glass-brightness')
 export class GlassBrightness extends GlassElement {
@@ -69,7 +74,35 @@ export class GlassBrightness extends GlassElement {
   protected shouldUpdate(changed: PropertyValues): boolean {
     if (!changed.has('hass') || changed.size > 1 || !this.config) return true;
     const old = changed.get('hass') as HomeAssistant | undefined;
-    return !old || old.states[this.config.entity] !== this.hass!.states[this.config.entity];
+    const ids = [this.config.entity, ...(this.config.lamps ? (groupMembers(this.hass!.states[this.config.entity]) ?? []) : [])];
+    return !old || ids.some((id) => old.states[id] !== this.hass!.states[id]);
+  }
+
+  /** The group's lights as small tiles, coloured like light tiles. Tap to toggle. */
+  private renderLamps() {
+    const states = this.hass!.states;
+    const members = (groupMembers(states[this.config!.entity]) ?? []).map((id) => states[id]).filter(Boolean);
+    if (!members.length) return nothing;
+    const names = distinctNames(members.map((m) => shortName(m, '')));
+    return html`<div class="lamps">
+      ${members.map((m, i) => {
+        const offline = isUnavailable(m);
+        const lit = !offline && isLightOn(m, states);
+        const look = lightLook(m, lit);
+        const pct = brightnessPct(m);
+        return html`<button
+          type="button"
+          class="lamp ${lit ? 'on' : ''}"
+          style=${styleMap({ background: look.background, boxShadow: look.shadow })}
+          ?disabled=${offline}
+          aria-pressed=${lit ? 'true' : 'false'}
+          @click=${() => this.hass!.callService('light', lit ? 'turn_off' : 'turn_on', { entity_id: m.entity_id })}
+        >
+          <span class="bulb"><glass-icon name="lightbulb" size="17"></glass-icon></span>
+          <span class="lname">${names[i]}<span>${offline ? 'Offline' : lit ? (pct === undefined ? 'On' : `${pct}%`) : 'Off'}</span></span>
+        </button>`;
+      })}
+    </div>`;
   }
 
   render() {
@@ -120,6 +153,7 @@ export class GlassBrightness extends GlassElement {
             )}
           </div>`
         : nothing}
+      ${this.config.lamps ? this.renderLamps() : nothing}
     </section>`;
   }
 
@@ -198,6 +232,59 @@ export class GlassBrightness extends GlassElement {
       .track:has(input:focus-visible) {
         outline: 2px solid var(--glass-ink);
         outline-offset: 2px;
+      }
+      .lamps {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 10px;
+      }
+      .lamp {
+        all: unset;
+        box-sizing: border-box;
+        height: 112px;
+        padding: 12px;
+        border-radius: var(--glass-radius-small-tile);
+        border: 1px solid var(--glass-hairline);
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        cursor: pointer;
+        transition: background 0.25s ease, box-shadow 0.25s ease;
+        -webkit-tap-highlight-color: transparent;
+      }
+      .lamp.on {
+        color: #121316; /* lit colours are pastel in both themes */
+      }
+      .lamp:disabled {
+        opacity: 0.5;
+        cursor: default;
+      }
+      .lamp:focus-visible {
+        outline: 2px solid var(--glass-ink);
+        outline-offset: 2px;
+      }
+      .lamp .bulb {
+        width: 36px;
+        height: 36px;
+        box-sizing: border-box;
+        border-radius: 50%;
+        border: 1px solid rgba(var(--glass-line-rgb), 0.15);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .lname {
+        display: flex;
+        flex-direction: column;
+        line-height: 1.2;
+        font-size: var(--glass-text-body);
+      }
+      .lname span {
+        font-size: var(--glass-text-small);
+        color: var(--glass-text-muted);
+      }
+      .lamp.on .lname span {
+        color: rgba(18, 19, 22, 0.65);
       }
       .tones {
         display: grid;
