@@ -27,6 +27,8 @@ export interface RoomSummary {
   humidity?: number;
   /** Its climate sensor has gone quiet: "Last heard 3 h ago". The readings stay, but don't count in averages. */
   quiet?: string;
+  /** The sensor the room's temperature comes from, to open its pop-up. */
+  temperatureId?: string;
   /** Every entity this summary read, so a card only re-renders when one changes. */
   watch: string[];
 }
@@ -69,6 +71,7 @@ export function roomSummary(hass: HomeAssistant, areaId: string, exclude: string
     temperature,
     humidity,
     quiet,
+    temperatureId: tempEntity?.entity_id,
     watch: [...ids, ...members, ...chosen],
   };
 }

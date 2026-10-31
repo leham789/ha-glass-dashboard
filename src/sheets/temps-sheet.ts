@@ -2,7 +2,7 @@ import { css, html, nothing, type CSSResultGroup } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { styleMap } from 'lit/directives/style-map.js';
 import { GlassSheet } from '../elements/glass-sheet.js';
-import { navigate } from '../ha.js';
+import { navigate, openMoreInfo } from '../ha.js';
 import { type Band, QUIET_LOOK, bandStyle, tempBand } from '../climate.js';
 import { roomSummary } from '../rooms.js';
 
@@ -69,7 +69,15 @@ export class GlassTempsSheet extends GlassSheet {
         ${rooms.map((r) => {
           const band = r.quiet ? 'Not reporting' : tempBand(r.temperature!);
           const look = r.quiet ? QUIET_LOOK : bandStyle(band as Band);
-          return html`<div class="tile ${r.quiet ? 'quiet' : ''}" style=${styleMap({ background: look.background })}>
+          // Tap a room for its temperature sensor's pop-up: history and facts.
+          return html`<button
+            type="button"
+            class="tile ${r.quiet ? 'quiet' : ''}"
+            style=${styleMap({ background: look.background })}
+            aria-label="${r.name} temperature"
+            ?disabled=${!r.temperatureId}
+            @click=${() => r.temperatureId && openMoreInfo(this, r.temperatureId)}
+          >
             <span class="top">
               <span class="name">${r.name}</span>
               <span class="pill" style=${styleMap({ background: look.pillBg, color: look.pillFg })}>${band}</span>
@@ -85,7 +93,7 @@ export class GlassTempsSheet extends GlassSheet {
                   ></span>
                 </span>`
               : html`<span></span>`}
-          </div>`;
+          </button>`;
         })}
       </div>
       ${!rooms.length
@@ -164,6 +172,9 @@ export class GlassTempsSheet extends GlassSheet {
         gap: var(--glass-space-tile-gap);
       }
       .tile {
+        all: unset;
+        cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
         box-sizing: border-box;
         height: 172px;
         padding: var(--glass-space-tile);
@@ -172,6 +183,10 @@ export class GlassTempsSheet extends GlassSheet {
         display: flex;
         flex-direction: column;
         justify-content: space-between;
+      }
+      .tile:focus-visible {
+        outline: 2px solid var(--glass-ink);
+        outline-offset: 2px;
       }
       .top {
         display: flex;

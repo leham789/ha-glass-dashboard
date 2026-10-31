@@ -3,7 +3,7 @@ import { GlassElement, openOverlays } from '../../glass-element.js';
 import { customElement, property, state } from 'lit/decorators.js';
 import { tokens } from '../../tokens.js';
 import { ensureFonts } from '../../fonts.js';
-import { type HomeAssistant, type LovelaceCardConfig, registerCard } from '../../ha.js';
+import { type HomeAssistant, type LovelaceCardConfig, openMoreInfo, registerCard } from '../../ha.js';
 import { roomSummary } from '../../rooms.js';
 import './room-temps-editor.js';
 import { GlassSheet } from '../../elements/glass-sheet.js';
@@ -90,7 +90,14 @@ export class GlassRoomTemps extends GlassElement {
       </span>
       ${rooms.map((r) => {
         const pos = Math.min(100, Math.max(0, ((r.temperature! - LOW) / (HIGH - LOW)) * 100));
-        return html`<div class="row ${r.quiet ? 'quiet' : ''}">
+        // A row opens that room's temperature sensor; anywhere else on the card opens Room temperatures.
+        return html`<button
+          type="button"
+          class="row ${r.quiet ? 'quiet' : ''}"
+          aria-label="${r.name} temperature"
+          ?disabled=${!r.temperatureId}
+          @click=${() => r.temperatureId && openMoreInfo(this, r.temperatureId)}
+        >
           <span class="name">
             <span>${r.name}</span>
             ${r.quiet
@@ -101,7 +108,7 @@ export class GlassRoomTemps extends GlassElement {
           </span>
           <span class="scale" aria-hidden="true"><span class="marker" style="left: ${pos}%"></span></span>
           <span class="temp">${r.temperature!.toFixed(1)}°</span>
-        </div>`;
+        </button>`;
       })}
     </section>`;
   }
@@ -118,8 +125,7 @@ export class GlassRoomTemps extends GlassElement {
       .quiet .scale {
         opacity: 0.35;
       }
-      .top,
-      .row {
+      .top {
         pointer-events: none;
       }
       /* the whole card is the button; what's drawn on it lets taps through */
@@ -163,11 +169,20 @@ export class GlassRoomTemps extends GlassElement {
         color: var(--glass-text-muted);
       }
       .row {
+        all: unset;
+        position: relative;
+        box-sizing: border-box;
+        cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
         display: flex;
         align-items: center;
         gap: 12px;
         height: 56px;
         border-top: 1px solid rgba(var(--glass-line-rgb), 0.07);
+      }
+      .row:focus-visible {
+        outline: 2px solid var(--glass-ink);
+        outline-offset: -2px;
       }
       /* 120 wide so "Last heard 3 h ago" stays on one line; every row the same, so the scales line up */
       .name {
