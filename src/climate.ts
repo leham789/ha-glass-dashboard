@@ -20,6 +20,9 @@ const BANDS: Record<Band, { pillBg: string; pillFg: string; tint?: string }> = {
   Hot: { pillBg: '#FDE7E7', pillFg: '#9B1C1C', tint: '229, 72, 77' },
 };
 
+/** A tile whose sensor has gone quiet: plain glass and a grey "Not reporting" pill. */
+export const QUIET_LOOK = { pillBg: 'var(--glass-neutral-tint)', pillFg: 'var(--glass-text-secondary)', background: 'var(--glass-surface)' };
+
 export function bandStyle(band: Band) {
   const b = BANDS[band];
   return {

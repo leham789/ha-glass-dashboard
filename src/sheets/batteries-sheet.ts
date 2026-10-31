@@ -4,6 +4,7 @@ import { GlassSheet } from '../elements/glass-sheet.js';
 import { openMoreInfo } from '../ha.js';
 import { batteryIcon } from '../climate.js';
 import { type Battery, LOW_BATTERY, batteries } from '../batteries.js';
+import { isQuiet, lastHeard } from '../stale.js';
 
 /**
  * The Batteries pop-up: how many are low, then every battery lowest first as
@@ -15,6 +16,11 @@ export class GlassBatteriesSheet extends GlassSheet {
   protected sheetTitle = 'Batteries';
   protected sheetIcon = 'battery-low' as const;
   protected sheetIconBg = '#CDB8F5';
+
+  // A battery sensor that's gone quiet is usually a flat battery: its last level fades and it says when it was last heard.
+  private quiet(id: string): boolean {
+    return isQuiet(this.hass!.states[id]);
+  }
 
   protected renderBody() {
     const all = batteries(this.hass!);
@@ -51,9 +57,13 @@ export class GlassBatteriesSheet extends GlassSheet {
           >
             <glass-icon name=${batteryIcon(b.level)} size="24"></glass-icon>
             <span class="info">
-              <span class="level">${b.level}%</span>
+              <span class="level" style=${this.quiet(b.id) ? 'opacity: 0.45' : ''}>${b.level}%</span>
               <span class="sub">${b.room}</span>
-              ${b.device ? html`<span class="sub">${b.device}</span>` : nothing}
+              ${this.quiet(b.id)
+                ? html`<span class="sub">${lastHeard(this.hass!.states[b.id])}</span>`
+                : b.device
+                  ? html`<span class="sub">${b.device}</span>`
+                  : nothing}
             </span>
           </button>`,
         )}

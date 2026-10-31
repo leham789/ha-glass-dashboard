@@ -3,7 +3,7 @@ import { customElement, property, state } from 'lit/decorators.js';
 import { styleMap } from 'lit/directives/style-map.js';
 import { GlassSheet } from '../elements/glass-sheet.js';
 import { navigate } from '../ha.js';
-import { bandStyle, tempBand } from '../climate.js';
+import { type Band, QUIET_LOOK, bandStyle, tempBand } from '../climate.js';
 import { roomSummary } from '../rooms.js';
 
 type Sort = 'Rooms' | 'Coldest' | 'Warmest';
@@ -30,15 +30,18 @@ export class GlassTempsSheet extends GlassSheet {
       .filter((r) => r.temperature !== undefined);
     if (this.sort === 'Coldest') rooms.sort((a, b) => a.temperature! - b.temperature!);
     if (this.sort === 'Warmest') rooms.sort((a, b) => b.temperature! - a.temperature!);
+    // A room whose sensor has gone quiet keeps its last reading, greyed, at the end, and doesn't count in the average.
+    rooms.sort((a, b) => Number(!!a.quiet) - Number(!!b.quiet));
+    const live = rooms.filter((r) => !r.quiet);
 
-    const average = rooms.length ? rooms.reduce((s, r) => s + r.temperature!, 0) / rooms.length : undefined;
+    const average = live.length ? live.reduce((s, r) => s + r.temperature!, 0) / live.length : undefined;
     const weather = Object.values(hass.states).find((e) => e.entity_id.startsWith('weather.'));
     const outside = weather?.attributes.temperature;
 
     return html`
       <div class="summary">
         <span class="avg">
-          <span class="label">House average</span>
+          <span class="label">${live.length < rooms.length ? `Average of ${live.length} rooms` : 'House average'}</span>
           <span class="n">${average === undefined ? '–' : `${average.toFixed(1)}°`}</span>
         </span>
         ${weather && typeof outside === 'number'
@@ -64,19 +67,21 @@ export class GlassTempsSheet extends GlassSheet {
       </div>
       <div class="grid">
         ${rooms.map((r) => {
-          const band = tempBand(r.temperature!);
-          const look = bandStyle(band);
-          return html`<div class="tile" style=${styleMap({ background: look.background })}>
+          const band = r.quiet ? 'Not reporting' : tempBand(r.temperature!);
+          const look = r.quiet ? QUIET_LOOK : bandStyle(band as Band);
+          return html`<div class="tile ${r.quiet ? 'quiet' : ''}" style=${styleMap({ background: look.background })}>
             <span class="top">
               <span class="name">${r.name}</span>
               <span class="pill" style=${styleMap({ background: look.pillBg, color: look.pillFg })}>${band}</span>
             </span>
             <span class="temp">${r.temperature!.toFixed(1)}°</span>
-            ${r.humidity !== undefined
+            ${r.humidity !== undefined || r.quiet
               ? html`<span class="hum">
-                  <span class="row"><span class="muted">Humidity</span><span>${Math.round(r.humidity)}%</span></span>
+                  <span class="row"
+                    ><span class="muted">${r.quiet ?? 'Humidity'}</span><span>${r.quiet || r.humidity === undefined ? '' : `${Math.round(r.humidity)}%`}</span></span
+                  >
                   <span class="scale" aria-hidden="true"
-                    ><span class="marker" style="left: ${Math.min(100, Math.max(0, r.humidity))}%"></span
+                    ><span class="marker" style="left: ${Math.min(100, Math.max(0, r.humidity ?? 0))}%"></span
                   ></span>
                 </span>`
               : html`<span></span>`}
@@ -207,6 +212,14 @@ export class GlassTempsSheet extends GlassSheet {
       }
       .muted {
         color: var(--glass-text-secondary);
+      }
+      /* a sensor that's gone quiet: its last reading stays, greyed */
+      .quiet .temp,
+      .quiet .value {
+        color: var(--glass-text-muted);
+      }
+      .quiet .scale {
+        opacity: 0.35;
       }
       .scale {
         position: relative;

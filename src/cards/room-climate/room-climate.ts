@@ -6,11 +6,13 @@ import { tokens } from '../../tokens.js';
 import { ensureFonts } from '../../fonts.js';
 import { type HomeAssistant, type LovelaceCardConfig, openMoreInfo, registerCard } from '../../ha.js';
 import { areaEntityIds, roomSummary } from '../../rooms.js';
-import { bandStyle, tempBand } from '../../climate.js';
+import { QUIET_LOOK, bandStyle, tempBand } from '../../climate.js';
 import { ago } from '../../time.js';
 import './room-climate-editor.js';
 
 export interface RoomClimateConfig extends LovelaceCardConfig {
+  /** Hours before a sensor counts as not reporting, by type or entity, e.g. { door: 24 }. Applies to the whole dashboard. */
+  quiet_hours?: Record<string, number>;
   area: string;
 }
 
@@ -71,13 +73,17 @@ export class GlassRoomClimate extends GlassElement {
     if (room.temperature === undefined && room.humidity === undefined) return nothing;
 
     const t = room.temperature;
-    const band = t !== undefined ? tempBand(t) : undefined;
-    const look = band ? bandStyle(band) : undefined;
+    // A sensor that's gone quiet keeps its last readings, greyed, with a grey pill and when it was last heard.
+    const quiet = room.quiet;
+    const band = quiet ? 'Not reporting' : t !== undefined ? tempBand(t) : undefined;
+    const look = quiet ? QUIET_LOOK : band ? bandStyle(band as ReturnType<typeof tempBand>) : undefined;
     // A bedroom says whether it's right for sleeping (16–19°); elsewhere, how fresh the reading is.
     const bedroom = /bed/i.test(room.name);
     const note =
       t === undefined
         ? ''
+        : quiet
+          ? quiet
         : bedroom
           ? t < 16
             ? 'A bit cold for sleep'
@@ -88,7 +94,7 @@ export class GlassRoomClimate extends GlassElement {
             ? `Updated ${ago(hass.states[tempId].last_changed)}`
             : '';
 
-    return html`<section aria-label="${room.name} climate">
+    return html`<section aria-label="${room.name} climate" class=${quiet ? 'quiet' : ''}>
       ${t !== undefined
         ? html`<button type="button" class="tile" style=${styleMap({ background: look!.background })} @click=${() => tempId && openMoreInfo(this, tempId)}>
             <span class="top"
@@ -104,7 +110,11 @@ export class GlassRoomClimate extends GlassElement {
             <span class="bottom">
               <span class="value">${Math.round(room.humidity)}%</span>
               <span class="scale" aria-hidden="true"><span class="marker" style="left: ${Math.min(100, Math.max(0, room.humidity))}%"></span></span>
-              ${Number.isFinite(pressure) ? html`<span class="note">${Math.round(pressure)} hPa pressure</span>` : nothing}
+              ${quiet
+                ? html`<span class="note">${quiet}</span>`
+                : Number.isFinite(pressure)
+                  ? html`<span class="note">${Math.round(pressure)} hPa pressure</span>`
+                  : nothing}
             </span>
           </button>`
         : nothing}
@@ -173,6 +183,12 @@ export class GlassRoomClimate extends GlassElement {
         font-weight: 300;
         letter-spacing: -1px;
         line-height: 1;
+      }
+      .quiet .value {
+        color: var(--glass-text-muted);
+      }
+      .quiet .scale {
+        opacity: 0.35;
       }
       .scale {
         position: relative;

@@ -65,10 +65,11 @@ export abstract class GlassEntitySheet extends GlassSheet {
   }
 
   /** The big reading: a value with its unit, or a word; a grey dash when there's none. */
-  protected renderReading(value: string | undefined, unit = '', caption = '', pill?: { text: string; tone: Tone }): TemplateResult {
+  /** `dim`: the sensor has gone quiet, so its last value shows greyed. */
+  protected renderReading(value: string | undefined, unit = '', caption = '', pill?: { text: string; tone: Tone }, dim = false): TemplateResult {
     return html`<div class="reading">
       <span class="left">
-        <span class="value ${value ? '' : 'none'}">
+        <span class="value ${value && !dim ? '' : 'none'}">
           ${value ? html`<span class="big">${value}</span>${unit ? html`<span class="unit">${unit}</span>` : nothing}` : html`<span class="big"><i class="nil"></i></span>`}
         </span>
         ${caption ? html`<span class="caption">${caption}</span>` : nothing}

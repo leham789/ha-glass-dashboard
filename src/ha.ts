@@ -9,6 +9,8 @@ export interface HassEntity {
   attributes: Record<string, any>;
   last_changed: string;
   last_updated: string;
+  /** When HA last heard from it, even if nothing changed (HA 2024.3+). */
+  last_reported?: string;
 }
 
 /** Registry entries HA's frontend keeps on `hass` (areas, floors, devices, entities). */

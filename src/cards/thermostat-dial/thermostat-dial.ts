@@ -7,6 +7,7 @@ import { type HomeAssistant, type LovelaceCardConfig, isUnavailable, registerCar
 import { haptic } from '../../motion.js';
 import './thermostat-dial-editor.js';
 import '../../elements/glass-roll.js';
+import { areaOf, roomSummary } from '../../rooms.js';
 
 export interface ThermostatDialConfig extends LovelaceCardConfig {
   entity: string;
@@ -62,13 +63,21 @@ export class GlassThermostatDial extends GlassElement {
   protected shouldUpdate(changed: PropertyValues): boolean {
     if (!changed.has('hass') || changed.size > 1 || !this.config) return true;
     const old = changed.get('hass') as HomeAssistant | undefined;
-    return !old || old.states[this.config.entity] !== this.hass!.states[this.config.entity];
+    return !old || old.states[this.config.entity] !== this.hass!.states[this.config.entity] || this.roomQuiet() !== this.shownQuiet;
+  }
+
+  /** The room's temperature sensor has gone quiet: "Last heard 3 h ago". */
+  private roomQuiet(): string | undefined {
+    const areaId = areaOf(this.hass!, this.config!.entity);
+    return areaId ? roomSummary(this.hass!, areaId).quiet : undefined;
   }
 
   private limits() {
     const a = this.hass!.states[this.config!.entity].attributes;
     return { min: a.min_temp ?? 10, max: a.max_temp ?? 30, step: a.target_temp_step ?? 0.5 };
   }
+
+  private shownQuiet?: string;
 
   render() {
     if (!this.config || !this.hass) return nothing;
@@ -83,11 +92,15 @@ export class GlassThermostatDial extends GlassElement {
 
     const status = isUnavailable(e) ? 'Offline' : off ? 'Heating off' : heating ? 'Heating' : 'Idle';
     const nowText = now === undefined ? '' : `Now ${now.toFixed(1)}°`;
-    const nowLine = off
-      ? [nowText, 'heating off'].filter(Boolean).join(' · ')
-      : now === undefined
-        ? ''
-        : `${nowText} · ${target > now ? 'warming up' : target < now ? 'warmer than target' : 'on target'}`;
+    const roomQuiet = this.roomQuiet();
+    this.shownQuiet = roomQuiet;
+    const nowLine = roomQuiet
+      ? `Room sensor ${roomQuiet.charAt(0).toLowerCase()}${roomQuiet.slice(1)}`
+      : off
+        ? [nowText, 'heating off'].filter(Boolean).join(' · ')
+        : now === undefined
+          ? ''
+          : `${nowText} · ${target > now ? 'warming up' : target < now ? 'warmer than target' : 'on target'}`;
 
     const frac = Math.min(1, Math.max(0, (target - min) / (max - min)));
     const th = Math.PI * (1 - frac);

@@ -2,6 +2,7 @@ import { LitElement, css, type CSSResultGroup, type CSSResultOrNative, type Prop
 import type { HomeAssistant } from './ha.js';
 import { GlassOffline } from './elements/glass-offline.js';
 import { press, sliderHaptic, sliderStart } from './motion.js';
+import { setQuietHours } from './stale.js';
 
 /**
  * Sheets and full-screen views that are open right now. They live in <body>,
@@ -29,7 +30,24 @@ const offlineStyles = css`
  * tick every tenth (motion.ts). Views themselves appear at once: no
  * animation on opening a page, so moving around stays snappy.
  */
+// Every card redraws now and then, so a sensor that has died (and so never changes) still shows as quiet,
+// and "3 h ago" stays true.
+const TICK_MS = 5 * 60 * 1000;
+const ticking = new Set<LitElement>();
+let tick: number | undefined;
+
 export class GlassElement extends LitElement {
+  connectedCallback(): void {
+    super.connectedCallback();
+    ticking.add(this);
+    tick ??= window.setInterval(() => ticking.forEach((el) => el.requestUpdate()), TICK_MS);
+  }
+
+  disconnectedCallback(): void {
+    ticking.delete(this);
+    super.disconnectedCallback();
+  }
+
   protected static finalizeStyles(styles?: CSSResultGroup): CSSResultOrNative[] {
     return [...super.finalizeStyles(styles), offlineStyles];
   }
@@ -45,6 +63,8 @@ export class GlassElement extends LitElement {
 
   // Before shouldUpdate, which most cards use to skip renders when their own entities haven't changed.
   protected performUpdate(): void {
+    // Any card's quiet_hours option raises how long a sensor can be quiet before it counts, for the whole dashboard.
+    setQuietHours((this as { config?: { quiet_hours?: Record<string, number> } }).config?.quiet_hours);
     const hass = (this as { hass?: HomeAssistant }).hass;
     if (hass) {
       this.toggleAttribute('offline', hass.connected === false);

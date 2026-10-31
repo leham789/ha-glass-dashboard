@@ -8,6 +8,10 @@ import type { EntityRegistryEntry, HassEntity, HomeAssistant } from '../src/ha.j
 const DARK = new URLSearchParams(location.search).has('dark');
 // ?offline: HA can't be reached; "Try now" brings it back.
 let connected = !new URLSearchParams(location.search).has('offline');
+// ?quiet: the Office climate sensor and the back door contact have gone quiet (Zigbee dropped them).
+const QUIET_MINS: Record<string, number> = new URLSearchParams(location.search).has('quiet')
+  ? { 'sensor.office_temperature': 190, 'sensor.office_humidity': 190, 'binary_sensor.back_door_contact': 800 }
+  : {};
 
 type Def = [id: string, state: string, attrs?: Record<string, unknown>, area?: string, device?: string];
 
@@ -206,7 +210,14 @@ const defs: Def[] = [
 const states = Object.fromEntries(
   defs.map(([entity_id, state, attributes = {}]) => [
     entity_id,
-    { entity_id, state, attributes, last_changed: minsAgo(CHANGED_MINS_AGO[entity_id] ?? 60), last_updated: '' } as HassEntity,
+    {
+      entity_id,
+      state,
+      attributes,
+      last_changed: minsAgo(CHANGED_MINS_AGO[entity_id] ?? 60),
+      last_updated: '',
+      last_reported: minsAgo(QUIET_MINS[entity_id] ?? 1),
+    } as HassEntity,
   ]),
 );
 const entities: Record<string, EntityRegistryEntry> = Object.fromEntries(

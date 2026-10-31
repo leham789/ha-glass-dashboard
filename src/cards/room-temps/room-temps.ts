@@ -11,6 +11,8 @@ import type { GlassTempsSheet } from '../../sheets/temps-sheet.js';
 import '../../sheets/temps-sheet.js';
 
 export interface RoomTempsConfig extends LovelaceCardConfig {
+  /** Hours before a sensor counts as not reporting, by type or entity, e.g. { door: 24 }. Applies to the whole dashboard. */
+  quiet_hours?: Record<string, number>;
   title?: string;
   exclude_areas?: string[];
 }
@@ -77,6 +79,8 @@ export class GlassRoomTemps extends GlassElement {
       .filter((r) => r.temperature !== undefined);
     this.watched = rooms.flatMap((r) => r.watch);
     if (!rooms.length) return nothing;
+    // a room whose sensor has gone quiet drops to the end, greyed, with when it was last heard
+    rooms.sort((a, b) => Number(!!a.quiet) - Number(!!b.quiet));
 
     return html`<section aria-labelledby="h">
       <button type="button" class="open" aria-label="Room temperatures" @click=${this.openTemps}></button>
@@ -86,10 +90,14 @@ export class GlassRoomTemps extends GlassElement {
       </span>
       ${rooms.map((r) => {
         const pos = Math.min(100, Math.max(0, ((r.temperature! - LOW) / (HIGH - LOW)) * 100));
-        return html`<div class="row">
+        return html`<div class="row ${r.quiet ? 'quiet' : ''}">
           <span class="name">
             <span>${r.name}</span>
-            ${r.humidity !== undefined ? html`<span class="hum">${Math.round(r.humidity)}% humidity</span>` : nothing}
+            ${r.quiet
+              ? html`<span class="hum">${r.quiet}</span>`
+              : r.humidity !== undefined
+                ? html`<span class="hum">${Math.round(r.humidity)}% humidity</span>`
+                : nothing}
           </span>
           <span class="scale" aria-hidden="true"><span class="marker" style="left: ${pos}%"></span></span>
           <span class="temp">${r.temperature!.toFixed(1)}°</span>
@@ -103,6 +111,12 @@ export class GlassRoomTemps extends GlassElement {
     css`
       :host {
         display: block;
+      }
+      .quiet .temp {
+        color: var(--glass-text-muted);
+      }
+      .quiet .scale {
+        opacity: 0.35;
       }
       .top,
       .row {
@@ -155,13 +169,19 @@ export class GlassRoomTemps extends GlassElement {
         height: 56px;
         border-top: 1px solid rgba(var(--glass-line-rgb), 0.07);
       }
+      /* 120 wide so "Last heard 3 h ago" stays on one line; every row the same, so the scales line up */
       .name {
-        width: 96px;
+        width: 120px;
         flex: none;
         display: flex;
         flex-direction: column;
         line-height: 1.2;
         font-size: var(--glass-text-body);
+        white-space: nowrap;
+      }
+      .name > span {
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
       .hum {
         font-size: var(--glass-text-small);

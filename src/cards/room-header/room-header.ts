@@ -18,6 +18,8 @@ import { EASE, haptic, reducedMotion } from '../../motion.js';
 let leaving: { left: number; width: number; at: number } | undefined;
 
 export interface RoomHeaderConfig extends LovelaceCardConfig {
+  /** Hours before a sensor counts as not reporting, by type or entity, e.g. { door: 24 }. Applies to the whole dashboard. */
+  quiet_hours?: Record<string, number>;
   /** This screen's room. */
   area: string;
   /** Each room's view, {area} = area id, e.g. "/glass/{area}". */
@@ -153,7 +155,7 @@ export class GlassRoomHeader extends GlassElement {
     // Lights hidden in Room options don't count on the room screen.
     const room = roomSummary(hass, this.config.area, prefs().hidden[this.config.area]);
     const extremes = this.extremes();
-    const playing = this.mediaLine() || extremes.line || this.remoteLine();
+    const playing = room.quiet ? `Climate sensor ${room.quiet.charAt(0).toLowerCase()}${room.quiet.slice(1)}` : this.mediaLine() || extremes.line || this.remoteLine();
     this.watched = [...room.watch, ...extremes.watch];
 
     const climate = [
@@ -187,7 +189,7 @@ export class GlassRoomHeader extends GlassElement {
             : html`<span class="big"><span class="n none">No lights</span></span>`}
         </span>
         <span class="right">
-          ${climate ? html`<span class="climate">${climate}</span>` : nothing}
+          ${climate ? html`<span class="climate ${room.quiet ? 'quiet' : ''}">${climate}</span>` : nothing}
           ${playing ? html`<span class="status">${playing}</span>` : nothing}
         </span>
       </section>
@@ -199,7 +201,7 @@ export class GlassRoomHeader extends GlassElement {
     const hass = this.hass!;
     const rooms = Object.keys(hass.areas ?? {})
       .map((id) => ({ id, s: roomSummary(hass, id) }))
-      .filter((r) => r.s.temperature !== undefined);
+      .filter((r) => r.s.temperature !== undefined && !r.s.quiet);
     const watch = rooms.flatMap((r) => r.s.watch.filter((id) => hass.states[id]?.attributes.device_class === 'temperature'));
     if (rooms.length < 3) return { line: '', watch };
     const sorted = [...rooms].sort((a, b) => a.s.temperature! - b.s.temperature!);
@@ -357,6 +359,9 @@ export class GlassRoomHeader extends GlassElement {
       }
       .climate {
         font-size: var(--glass-text-body);
+      }
+      .climate.quiet {
+        color: var(--glass-text-muted);
       }
       .status {
         font-size: var(--glass-text-caption);

@@ -10,6 +10,7 @@ import { LOW_BATTERY } from '../batteries.js';
 import { batteryIcon } from '../climate.js';
 import { formatValue } from '../format.js';
 import { ago, clock, duration } from '../time.js';
+import { heardAt, isQuiet, lastHeard } from '../stale.js';
 
 type Range = '24 h' | '7 days';
 type Shape = 'line' | 'bars' | 'timeline' | 'none';
@@ -203,10 +204,17 @@ export class GlassSensorSheet extends GlassEntitySheet {
       }
       caption = `Updated ${ago(e.last_updated || e.last_changed)}`;
     }
+    // Still has a value, but HA hasn't heard from it for longer than it should: the value stays, greyed,
+    // and a door never claims to be shut.
+    const quiet = !off && isQuiet(e);
+    if (quiet) {
+      caption = binary && value ? `${lastHeard(e)} · was ${value.toLowerCase()}` : lastHeard(e);
+      pill = { text: 'Not reporting', tone: 'neutral' };
+    }
 
     const c = this.chart;
     return html`
-      ${this.renderReading(value, unit, caption, pill)}
+      ${this.renderReading(value, unit, caption, pill, quiet)}
       ${c && c.shape !== 'none'
         ? html`<div class="card">
               <div class="card-head">
@@ -222,6 +230,7 @@ export class GlassSensorSheet extends GlassEntitySheet {
                 .values=${c.values}
                 .bands=${c.bands}
                 .fadedFrom=${c.fadedFrom}
+                .gapFrom=${quiet ? 1 - (Date.now() - Date.parse(heardAt(e))) / (this.range === '7 days' ? 7 * 86_400_000 : 86_400_000) : Infinity}
                 .min=${c.min}
                 .max=${c.max}
                 .hiLabel=${c.hi}

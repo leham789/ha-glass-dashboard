@@ -8,6 +8,7 @@ import { haptic } from '../../motion.js';
 import { roomSummary, shortName } from '../../rooms.js';
 import '../../elements/glass-icon.js';
 import './goodnight-editor.js';
+import { isQuiet } from '../../stale.js';
 
 export interface GoodnightConfig extends LovelaceCardConfig {
   /** Areas whose lights Goodnight turns off. Default: the lowest floor. */
@@ -111,7 +112,9 @@ export class GlassGoodnight extends GlassElement {
         id.startsWith('binary_sensor.') &&
         !hass.entities?.[id]?.hidden &&
         OPENINGS.has(hass.states[id].attributes.device_class) &&
-        hass.states[id].state === 'on',
+        hass.states[id].state === 'on' &&
+        // a contact that's gone quiet can't be trusted to say it's open
+        !isQuiet(hass.states[id]),
     );
     return {
       onIds: lights.filter((l) => l.on).map((l) => l.id),

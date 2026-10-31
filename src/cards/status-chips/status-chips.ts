@@ -14,6 +14,8 @@ import { batteryIcon } from '../../climate.js';
 import { type PrinterEntities, printerState } from '../../printer.js';
 import type { GlassPrinterSheet } from '../../sheets/printer-sheet.js';
 import '../../sheets/printer-sheet.js';
+import { isQuiet, quietSensors } from '../../stale.js';
+import '../../sheets/quiet-sheet.js';
 import '../../sheets/lights-sheet.js';
 import '../../sheets/temps-sheet.js';
 import '../../sheets/batteries-sheet.js';
@@ -22,6 +24,8 @@ import './status-chips-editor.js';
 import { attentionStyles } from '../../motion.js';
 
 export interface StatusChipsConfig extends LovelaceCardConfig, PrinterEntities {
+  /** Hours before a sensor counts as not reporting, by type or entity, e.g. { door: 24 }. Applies to the whole dashboard. */
+  quiet_hours?: Record<string, number>;
   /** The printer's short name for its chip, e.g. "P1S". */
   printer_name?: string;
   /** Where an open-door chip goes, e.g. the Security view. */
@@ -45,8 +49,8 @@ const OPENINGS = new Set(['door', 'window', 'garage_door', 'opening']);
 /**
  * Home's row of status chips, each a summary that opens more detail:
  * an open door (first, in peach, only while something is open), lights on,
- * the spread of room temperatures, low batteries, and a 3D printer while it
- * prints and for two hours after. One line; scrolls sideways.
+ * the spread of room temperatures, low batteries, sensors that have gone
+ * quiet, and a 3D printer while it prints and for two hours after. One line; scrolls sideways.
  */
 @customElement('glass-status-chips')
 export class GlassStatusChips extends GlassElement {
@@ -125,7 +129,9 @@ export class GlassStatusChips extends GlassElement {
         id.startsWith('binary_sensor.') &&
         !hass.entities?.[id]?.hidden &&
         OPENINGS.has(hass.states[id].attributes.device_class) &&
-        hass.states[id].state === 'on',
+        hass.states[id].state === 'on' &&
+        // a contact that's gone quiet can't be trusted to say open (or shut)
+        !isQuiet(hass.states[id]),
     );
     if (open.length) {
       const path = this.config?.security_path;
@@ -152,7 +158,10 @@ export class GlassStatusChips extends GlassElement {
 
     const temps = Object.values(hass.areas ?? {})
       .filter((a) => !exclude.includes(a.area_id))
-      .map((a) => roomSummary(hass, a.area_id).temperature)
+      .map((a) => roomSummary(hass, a.area_id))
+      // a room whose sensor has gone quiet doesn't count in the range
+      .filter((r) => !r.quiet)
+      .map((r) => r.temperature)
       .filter((t): t is number => t !== undefined)
       .map(Math.round);
     if (temps.length) {
@@ -176,6 +185,18 @@ export class GlassStatusChips extends GlassElement {
         icon: batteryIcon(all[0].level),
         iconBg: '#CDB8F5',
         onTap: () => this.openSheet('glass-batteries-sheet'),
+      });
+    }
+
+    // Only while a sensor has gone quiet. Grey: a device dropping out isn't something to fix in a hurry.
+    const { quiet } = quietSensors(hass);
+    if (quiet.length) {
+      chips.push({
+        key: 'quiet',
+        label: quiet.length === 1 ? '1 sensor not reporting' : `${quiet.length} sensors not reporting`,
+        icon: 'wifi-off',
+        iconBg: 'var(--glass-neutral-tint)',
+        onTap: () => this.openSheet('glass-quiet-sheet'),
       });
     }
 

@@ -9,8 +9,11 @@ import { clock, duration } from '../../time.js';
 import '../../elements/glass-icon.js';
 import './doors-editor.js';
 import { attentionStyles } from '../../motion.js';
+import { isQuiet, lastHeard } from '../../stale.js';
 
 export interface DoorsConfig extends LovelaceCardConfig {
+  /** Hours before a sensor counts as not reporting, by type or entity, e.g. { door: 24 }. Applies to the whole dashboard. */
+  quiet_hours?: Record<string, number>;
   /** Door and window sensors. Default: every one in HA. */
   entities?: string[];
   /** A screen title above, with an overall pill ("1 door open"), e.g. "Security". */
@@ -87,15 +90,21 @@ export class GlassDoors extends GlassElement {
     const doors = this.ids()
       .map((id) => this.hass!.states[id])
       .filter(Boolean);
-    const open = doors.filter((d) => d.state === 'on').length;
+    // A contact that's gone quiet can't be trusted to say open or shut, so the header and its tile say so instead.
+    const quiet = doors.filter((d) => isQuiet(d)).length;
+    const open = doors.filter((d) => d.state === 'on' && !isQuiet(d)).length;
     const noun = doors.every((d) => d.attributes.device_class === 'window') ? 'window' : 'door';
 
     return html`
       ${this.config.title
         ? html`<header>
             <h1>${this.config.title}</h1>
-            <span class="pill ${open ? 'attention ringing' : 'ok'}"
-              ><span class="dot"></span>${open ? `${open} ${noun}${open > 1 ? 's' : ''} open` : `All ${noun}s shut`}</span
+            <span class="pill ${open ? 'attention ringing' : quiet ? 'quiet' : 'ok'}"
+              ><span class="dot"></span>${open
+                ? `${open} ${noun}${open > 1 ? 's' : ''} open`
+                : quiet
+                  ? `${quiet} ${noun}${quiet > 1 ? 's' : ''} not reporting`
+                  : `All ${noun}s shut`}</span
             >
           </header>`
         : nothing}
@@ -103,13 +112,20 @@ export class GlassDoors extends GlassElement {
         <h2 id="h">${this.config.heading ?? 'Doors'}</h2>
         <div class="grid">
           ${doors.map((d) => {
-            const isOpen = d.state === 'on';
+            const silent = isQuiet(d);
+            const isOpen = d.state === 'on' && !silent;
             const offline = isUnavailable(d);
-            const when = offline ? 'Offline' : isOpen ? `Open for ${duration(d.last_changed, this.now)}` : `Shut since ${clock(d.last_changed, this.now)}`;
+            const when = offline
+              ? 'Offline'
+              : silent
+                ? lastHeard(d)
+                : isOpen
+                  ? `Open for ${duration(d.last_changed, this.now)}`
+                  : `Shut since ${clock(d.last_changed, this.now)}`;
             return html`<button type="button" class="tile ${isOpen ? 'open' : ''}" @click=${() => openMoreInfo(this, d.entity_id)}>
               <span class="top">
                 <span class="ring"><glass-icon name=${isOpen ? 'door-open' : 'door-closed'} size="19"></glass-icon></span>
-                <span class="state">${offline ? '–' : isOpen ? 'Open' : 'Shut'}</span>
+                <span class="state">${offline ? '–' : silent ? 'Not reporting' : isOpen ? 'Open' : 'Shut'}</span>
               </span>
               <span class="bottom">
                 <span class="name">${sentence(shortName(d, ''))}</span>
@@ -170,6 +186,13 @@ export class GlassDoors extends GlassElement {
       }
       .pill.ok .dot {
         background: #2fa84f;
+      }
+      .pill.quiet {
+        background: var(--glass-neutral-tint);
+        color: var(--glass-text-secondary);
+      }
+      .pill.quiet .dot {
+        background: #8a8d94;
       }
       section {
         display: flex;

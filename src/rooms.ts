@@ -1,5 +1,6 @@
 import type { HassEntity, HomeAssistant } from './ha.js';
 import { groupMembers, isLightOn } from './light-colour.js';
+import { isQuiet, lastHeard } from './stale.js';
 
 /**
  * Everything a room tile shows, worked out from HA's areas: which lights are
@@ -24,6 +25,8 @@ export interface RoomSummary {
   temperature?: number;
   /** The room's humidity in %, when it has a sensor. */
   humidity?: number;
+  /** Its climate sensor has gone quiet: "Last heard 3 h ago". The readings stay, but don't count in averages. */
+  quiet?: string;
   /** Every entity this summary read, so a card only re-renders when one changes. */
   watch: string[];
 }
@@ -55,14 +58,17 @@ export function roomSummary(hass: HomeAssistant, areaId: string, exclude: string
   const chosen = [area?.temperature_entity_id, area?.humidity_entity_id].filter((id): id is string => !!id);
   const temperature = numberState(hass.states[area?.temperature_entity_id ?? pickSensor(hass, ids, 'temperature') ?? '']);
   const humidity = numberState(hass.states[area?.humidity_entity_id ?? pickSensor(hass, ids, 'humidity') ?? '']);
+  const tempEntity = hass.states[area?.temperature_entity_id ?? pickSensor(hass, ids, 'temperature') ?? ''];
+  const quiet = isQuiet(tempEntity) ? lastHeard(tempEntity) : undefined;
   return {
     areaId,
     name,
     lights,
     onCount: lights.filter((l) => l.on).length,
-    ...roomMeta(hass, ids, name, climateText(temperature, humidity)),
+    ...roomMeta(hass, ids, name, quiet ? `Sensor ${quiet.charAt(0).toLowerCase()}${quiet.slice(1)}` : climateText(temperature, humidity)),
     temperature,
     humidity,
+    quiet,
     watch: [...ids, ...members, ...chosen],
   };
 }
@@ -126,7 +132,8 @@ function roomMeta(
   const of = (cls: Set<string>) =>
     ids.filter((id) => id.startsWith('binary_sensor.') && cls.has(hass.states[id].attributes.device_class));
 
-  const openings = of(OPENING_CLASSES);
+  // A contact that's gone quiet says neither open nor shut.
+  const openings = of(OPENING_CLASSES).filter((id) => !isQuiet(hass.states[id]));
   const open = openings.find((id) => hass.states[id].state === 'on');
   if (open) return { meta: `${sentence(shortName(hass.states[open], ''))} open`, alert: true };
 

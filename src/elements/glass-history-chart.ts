@@ -28,6 +28,8 @@ export class GlassHistoryChart extends LitElement {
   @property({ attribute: false }) bands: ChartBand[] = [];
   /** Bars from this index on are still to come (drawn faint). */
   @property({ type: Number }) fadedFrom = Infinity;
+  /** For a sensor that's gone quiet: where along the chart (0–1) the readings stopped. The line ends there. */
+  @property({ type: Number }) gapFrom = Infinity;
   @property({ type: Number }) min = 0;
   @property({ type: Number }) max = 1;
   @property() hiLabel = '';
@@ -63,15 +65,19 @@ export class GlassHistoryChart extends LitElement {
 
   private renderLine(y: (v: number) => number, x: (i: number, n: number) => number, n: number, base: number) {
     if (n < 2) return nothing;
-    const pts = this.values.map((v, i) => `${x(i, n).toFixed(1)} ${y(v).toFixed(1)}`);
+    const gap = this.gapFrom < 1 ? Math.max(1, Math.floor(this.gapFrom * (n - 1))) : n - 1;
+    const shown = this.values.slice(0, gap + 1);
+    const endX = x(gap, n);
+    const pts = shown.map((v, i) => `${x(i, n).toFixed(1)} ${y(v).toFixed(1)}`);
     const t = this.target;
     // The target is a step line: it holds each value until the next.
     const steps = t && t.length > 1 ? t.map((v, i) => (i ? `L${x(i, t.length).toFixed(1)} ${y(t[i - 1]).toFixed(1)} L` : 'M') + `${x(i, t.length).toFixed(1)} ${y(v).toFixed(1)}`).join(' ') : '';
     return svg`
-      <path d="M0 ${base} L${pts.join(' L')} L${W} ${base} Z" fill="currentColor" fill-opacity=${t ? 0 : 0.05}></path>
+      <path d="M0 ${base} L${pts.join(' L')} L${endX.toFixed(1)} ${base} Z" fill="currentColor" fill-opacity=${t ? 0 : 0.05}></path>
       ${steps ? svg`<path d=${steps} fill="none" stroke="#E0683A" stroke-width="1.6" stroke-dasharray="4 4" stroke-linejoin="round"></path>` : nothing}
       <path d="M${pts.join(' L')}" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
-      <circle cx=${W} cy=${y(this.values[n - 1]).toFixed(1)} r="4" fill="currentColor"></circle>`;
+      <circle cx=${endX.toFixed(1)} cy=${y(shown[shown.length - 1]).toFixed(1)} r="4" fill="currentColor"></circle>
+      ${gap < n - 1 ? svg`<text x=${((endX + W) / 2).toFixed(1)} y="56" text-anchor="middle" class="axis">No data</text>` : nothing}`;
   }
 
   private renderBars(y: (v: number) => number, base: number) {
