@@ -12,6 +12,9 @@ let connected = !new URLSearchParams(location.search).has('offline');
 const QUIET_MINS: Record<string, number> = new URLSearchParams(location.search).has('quiet')
   ? { 'sensor.office_temperature': 190, 'sensor.office_humidity': 190, 'binary_sensor.back_door_contact': 800 }
   : {};
+// Zigbee2MQTT's own "Last seen" for the Office climate sensor: in ?quiet it really went silent a month ago,
+// though HA's times only go back to its last restart.
+const OFFICE_LAST_SEEN = new URLSearchParams(location.search).has('quiet') ? 32 * 24 * 60 : 2;
 
 type Def = [id: string, state: string, attrs?: Record<string, unknown>, area?: string, device?: string];
 
@@ -108,6 +111,7 @@ const defs: Def[] = [
   ['light.blue_example', 'on', { friendly_name: 'Blue example', color_mode: 'xy', rgb_color: [110, 150, 255], brightness: 178 }, 'office'],
   ['sensor.office_temperature', '14.92', { friendly_name: 'Office Temperature', device_class: 'temperature' }, 'office', 'office_climate'],
   ['sensor.office_humidity', '72.6', { friendly_name: 'Office Humidity', device_class: 'humidity' }, 'office', 'office_climate'],
+  ['sensor.office_climate_last_seen', minsAgo(OFFICE_LAST_SEEN), { friendly_name: 'Office Climate Last seen', device_class: 'timestamp' }, 'office', 'office_climate'],
   ['sensor.p1s_nozzle_temperature', '220', { friendly_name: 'P1S Nozzle', device_class: 'temperature' }, 'office', 'p1s'],
   ['sensor.p1s_bed_temperature', '60', { friendly_name: 'P1S Bed', device_class: 'temperature' }, 'office', 'p1s'],
   ['sensor.p1s_progress', '42', { friendly_name: 'P1S Progress' }, 'office', 'p1s'],

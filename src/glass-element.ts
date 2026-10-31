@@ -2,7 +2,7 @@ import { LitElement, css, type CSSResultGroup, type CSSResultOrNative, type Prop
 import type { HomeAssistant } from './ha.js';
 import { GlassOffline } from './elements/glass-offline.js';
 import { press, sliderHaptic, sliderStart } from './motion.js';
-import { setQuietHours } from './stale.js';
+import { setQuietHours, useHass } from './stale.js';
 
 /**
  * Sheets and full-screen views that are open right now. They live in <body>,
@@ -67,6 +67,7 @@ export class GlassElement extends LitElement {
     setQuietHours((this as { config?: { quiet_hours?: Record<string, number> } }).config?.quiet_hours);
     const hass = (this as { hass?: HomeAssistant }).hass;
     if (hass) {
+      useHass(hass);
       this.toggleAttribute('offline', hass.connected === false);
       GlassOffline.follow(hass);
     }

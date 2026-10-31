@@ -398,7 +398,7 @@ A Zigbee sensor that drops off often keeps its last value in Home Assistant, so 
 | Door, window and garage contacts | 12 hours (many Zigbee contacts only check in every few hours while nothing opens) |
 | Battery | 24 hours |
 
-They go by `last_reported` (Home Assistant 2024.3 and later), which updates on every check-in even when the value hasn't changed.
+**Zigbee2MQTT users:** turn on the **Last seen** sensors for the truest times. In Zigbee2MQTT, Settings → Advanced → Last seen = `ISO_8601`; then in Home Assistant enable each device's **Last seen** entity (it's off by default). The cards use it whenever a device has one. Without it they fall back to Home Assistant's own update times, which reset when Home Assistant restarts, so a sensor that died weeks ago can read "Last heard yesterday".
 
 If a sensor is fine but reports less often than that, raise its limit with `quiet_hours` on any card that shows readings (status chips, doors, room header, room climate, By room). It applies to the whole dashboard, by type or for one sensor:
 

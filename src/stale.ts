@@ -35,8 +35,41 @@ export function setQuietHours(hours?: Record<string, number>): void {
   if (hours && typeof hours === 'object') overrides = { ...overrides, ...hours };
 }
 
-/** When HA last heard from the sensor: every check-in, even when the value didn't change. */
+/**
+ * The dashboard's current hass, so heardAt can look at a sensor's device. Set by
+ * every card as it draws.
+ */
+let current: HomeAssistant | undefined;
+export function useHass(hass: HomeAssistant): void {
+  current = hass;
+}
+
+// Each device's "Last seen" sensor, worked out once per entity registry.
+const lastSeenCache = new WeakMap<object, Map<string, string>>();
+function lastSeenSensors(hass: HomeAssistant): Map<string, string> {
+  let map = lastSeenCache.get(hass.entities);
+  if (!map) {
+    map = new Map();
+    for (const e of Object.values(hass.entities ?? {})) {
+      if (e.device_id && /^sensor\..*_last_seen$/.test(e.entity_id)) map.set(e.device_id, e.entity_id);
+    }
+    lastSeenCache.set(hass.entities, map);
+  }
+  return map;
+}
+
+/**
+ * When the sensor was last heard from. Zigbee2MQTT's "Last seen" sensor on the
+ * same device is the truth (the radio's own time) and wins when it's there and
+ * enabled. Otherwise HA's own times, which reset when HA restarts, so a sensor
+ * that died a month ago can look like it was heard at the last restart.
+ */
 export function heardAt(e: HassEntity): string {
+  const hass = current;
+  const device = hass?.entities?.[e.entity_id]?.device_id;
+  const seenId = device ? lastSeenSensors(hass!).get(device) : undefined;
+  const seen = seenId ? hass!.states[seenId]?.state : undefined;
+  if (seen && !Number.isNaN(Date.parse(seen))) return seen;
   return e.last_reported || e.last_updated || e.last_changed;
 }
 
@@ -55,9 +88,14 @@ export function isQuiet(e?: HassEntity, now = Date.now()): boolean {
   return now - Date.parse(heardAt(e)) > hours * 3_600_000;
 }
 
-/** "Last heard 3 h ago" */
+/** "Last heard 3 h ago", "Last heard 3 weeks ago", "Last heard 1 month ago" */
 export function lastHeard(e: HassEntity): string {
-  return `Last heard ${ago(heardAt(e))}`;
+  const at = heardAt(e);
+  const days = (Date.now() - Date.parse(at)) / 86_400_000;
+  if (days < 7) return `Last heard ${ago(at)}`;
+  if (days < 30) return `Last heard ${Math.floor(days / 7) === 1 ? '1 week' : `${Math.floor(days / 7)} weeks`} ago`;
+  const months = Math.floor(days / 30);
+  return `Last heard ${months === 1 ? '1 month' : `${months} months`} ago`;
 }
 
 /**
