@@ -4,23 +4,45 @@ import { customElement, property, state } from 'lit/decorators.js';
 import { tokens } from '../../tokens.js';
 import { ensureFonts } from '../../fonts.js';
 import { type HomeAssistant, type LovelaceCardConfig, isUnavailable, openMoreInfo, registerCard } from '../../ha.js';
-import { isLightOn } from '../../light-colour.js';
+import { brightnessPct, isLightOn } from '../../light-colour.js';
+import { areaOf, shortName } from '../../rooms.js';
+import type { IconName } from '../../icons.js';
+import '../../elements/glass-icon.js';
 import { haptic } from '../../motion.js';
 import './favourites-editor.js';
 
 export interface FavouritesConfig extends LovelaceCardConfig {
   /** Lights, switches, scenes, scripts… in the order you want them. */
   entities: string[];
+  /** Tiles under a heading (default), or one row of pills. */
+  style?: 'tiles' | 'pills';
+  /** The heading over the tiles (default: Favourites). */
+  title?: string;
 }
 
 const TOGGLES = new Set(['light', 'switch', 'fan', 'input_boolean', 'media_player', 'climate']);
 const ACTIONS = new Set(['scene', 'script', 'button', 'input_button']);
 const HOLD_MS = 500;
 
+const ICONS: Record<string, IconName> = {
+  light: 'lightbulb',
+  scene: 'sparkles',
+  script: 'sparkles',
+  switch: 'power',
+  input_boolean: 'power',
+  button: 'power',
+  input_button: 'power',
+  fan: 'fan',
+  media_player: 'speaker',
+  climate: 'thermometer',
+};
+
 /**
- * Home's favourites row: one chip per thing you reach for most, ink while
- * it's on, glass while off. Tap to switch it (or run a scene or script);
- * hold for HA's own controls. Scrolls sideways.
+ * Home's favourites: the things you reach for most, as tiles three across
+ * under a heading, the row running off the screen and scrolling sideways.
+ * A light that's on takes the light tile's colour, anything else that's on
+ * is ink, and off is glass. Or, set to pills, one row of chips. Tap to
+ * switch it (or run a scene or script); hold for its pop-up.
  */
 @customElement('glass-favourites')
 export class GlassFavourites extends GlassElement {
@@ -67,6 +89,7 @@ export class GlassFavourites extends GlassElement {
 
   render() {
     if (!this.config || !this.hass) return nothing;
+    if (this.config.style !== 'pills') return this.renderTiles();
     return html`<nav aria-label="Favourites">
       ${this.config.entities.map((id) => {
         const entity = this.hass!.states[id];
@@ -90,6 +113,59 @@ export class GlassFavourites extends GlassElement {
         </button>`;
       })}
     </nav>`;
+  }
+
+  private renderTiles() {
+    const hass = this.hass!;
+    const title = this.config!.title ?? 'Favourites';
+    return html`<section aria-label=${title}>
+      <h2>${title}</h2>
+      <div class="tiles">
+        ${this.config!.entities.map((id) => {
+          const entity = hass.states[id];
+          if (!entity) return nothing;
+          const domain = id.split('.')[0];
+          const action = ACTIONS.has(domain);
+          const offline = action ? entity.state === 'unavailable' : isUnavailable(entity);
+          const on = !action && this.isOn(id);
+          const areaId = areaOf(hass, id);
+          const area = areaId ? (hass.areas?.[areaId]?.name ?? '') : '';
+          // A scene keeps its room as its second line ("Working · Office scene"); everything else shows its state.
+          const name = action ? shortName(entity, area) : (entity.attributes.friendly_name ?? id);
+          const pct = domain === 'light' && on ? brightnessPct(entity) : undefined;
+          const state = offline
+            ? 'Offline'
+            : action
+              ? area
+                ? `${area} ${domain === 'script' ? 'script' : 'scene'}`
+                : domain === 'script'
+                  ? 'Script'
+                  : 'Scene'
+              : on
+                ? pct !== undefined
+                  ? `${pct}%`
+                  : domain === 'media_player' && entity.state === 'playing'
+                    ? 'Playing'
+                    : 'On'
+                : 'Off';
+          return html`<button
+            type="button"
+            class="tile ${on ? (domain === 'light' ? 'lit' : 'on') : ''}"
+            ?disabled=${offline}
+            aria-pressed=${action ? nothing : on ? 'true' : 'false'}
+            @pointerdown=${(e: PointerEvent) => this.startHold(e, id)}
+            @pointerup=${this.cancelHold}
+            @pointerleave=${this.cancelHold}
+            @pointercancel=${this.cancelHold}
+            @contextmenu=${(e: Event) => e.preventDefault()}
+            @click=${() => this.tap(id)}
+          >
+            <glass-icon name=${ICONS[domain] ?? 'power'} size="24" stroke="1.6"></glass-icon>
+            <span class="text"><span class="name">${name}</span><span class="state">${state}</span></span>
+          </button>`;
+        })}
+      </div>
+    </section>`;
   }
 
   private isOn(id: string): boolean {
@@ -180,6 +256,71 @@ export class GlassFavourites extends GlassElement {
         outline: 2px solid var(--glass-ink);
         outline-offset: 2px;
       }
+      section {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      h2 {
+        margin: 0;
+        font-size: 20px;
+        font-weight: 400;
+      }
+      /* Runs to the screen's edges, so the next tile peeks in and the row reads as one that scrolls sideways. */
+      .tiles {
+        display: flex;
+        gap: 10px;
+        margin: 0 calc(-1 * var(--glass-space-edge));
+        padding: 0 var(--glass-space-edge);
+        overflow-x: auto;
+        scrollbar-width: none;
+        scroll-snap-type: x mandatory;
+        scroll-padding: 0 var(--glass-space-edge);
+      }
+      .tiles::-webkit-scrollbar {
+        display: none;
+      }
+      button.tile {
+        width: 104px;
+        height: 120px;
+        padding: 12px;
+        border-radius: var(--glass-radius-small-tile);
+        background: rgba(var(--glass-surface-rgb), 0.82);
+        flex-direction: column;
+        align-items: flex-start;
+        justify-content: space-between;
+        white-space: normal;
+        scroll-snap-align: start;
+      }
+      .text {
+        display: flex;
+        flex-direction: column;
+        line-height: 1.2;
+      }
+      .tile .name {
+        font-size: var(--glass-text-body);
+      }
+      .tile .state {
+        font-size: var(--glass-text-small);
+        color: var(--glass-text-muted);
+      }
+      /* a light that's on: the light tile's colour, dark text in both themes */
+      button.tile.lit {
+        background: var(--glass-light-default);
+        border-color: rgba(18, 19, 22, 0.06);
+        color: #121316;
+      }
+      .tile.lit .state {
+        color: rgba(18, 19, 22, 0.6);
+      }
+      button.tile.on {
+        background: var(--glass-ink);
+        border-color: var(--glass-ink);
+        color: var(--glass-on-ink);
+      }
+      .tile.on .state {
+        color: rgba(var(--glass-surface-rgb), 0.75);
+      }
     `,
   ];
 }
@@ -187,7 +328,7 @@ export class GlassFavourites extends GlassElement {
 registerCard({
   type: 'glass-favourites',
   name: 'Glass · Favourites',
-  description: 'A row of chips for the lights, switches and scenes you use most.',
+  description: 'Tiles (or a row of pills) for the lights, switches and scenes you use most.',
 });
 
 declare global {

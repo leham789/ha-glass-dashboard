@@ -20,11 +20,13 @@ person: person.alex      # optional, default the signed-in user
 
 ### Favourites · `custom:glass-favourites`
 
-A row of chips for the things you reach for most, dark while on. Tap to switch them, or to run a scene or script. Hold for Home Assistant's own controls.
+The things you reach for most, as tiles three across under a "Favourites" heading. The row runs off the edge of the screen and scrolls sideways. A light that's on takes its light colour, anything else that's on goes dark, and off is glass. Tap to switch one, or to run a scene or script; hold for its pop-up.
 
 ```yaml
 type: custom:glass-favourites
 entities: [light.living_room_hue, light.living_room_bookshelf, scene.relax]
+title: Favourites   # optional heading
+style: pills        # optional: one row of chips instead of tiles
 ```
 
 ### Heating & Energy tiles · `custom:glass-energy-tiles`
@@ -385,6 +387,28 @@ The cards move a little, always to show what changed, never for decoration. Noth
 If your phone or computer is set to reduce motion, all of this becomes plain fades.
 
 **Haptics** come through the Home Assistant app (iPhone and Android), and as a short buzz in Chrome on Android: a light tap when you switch something, a tick for each tenth of a slider or each thermostat step, a firmer bump at a slider's ends, and a double tap when a scene or Goodnight runs. They follow the **Vibrate** setting in your Home Assistant profile. Safari and computers have none.
+
+## Sensors that stop reporting
+
+A Zigbee sensor that drops off often keeps its last value in Home Assistant, so a room can say 18.0° for hours after the sensor died. The cards treat a sensor as **not reporting** once Home Assistant hasn't heard from it for longer than it should. The defaults by sensor type:
+
+| Type | Not reporting after |
+| --- | --- |
+| Temperature, humidity, pressure | 2 hours |
+| Door, window and garage contacts | 12 hours (many Zigbee contacts only check in every few hours while nothing opens) |
+| Battery | 24 hours |
+
+They go by `last_reported` (Home Assistant 2024.3 and later), which updates on every check-in even when the value hasn't changed.
+
+If a sensor is fine but reports less often than that, raise its limit with `quiet_hours` on any card that shows readings (status chips, doors, room header, room climate, By room). It applies to the whole dashboard, by type or for one sensor:
+
+```yaml
+quiet_hours:
+  door: 24                         # every door and window contact
+  binary_sensor.back_door: 48      # just this one
+```
+
+A sensor that's not reporting keeps its last reading, greyed, with a grey "Not reporting" pill and when it was last heard. It's left out of averages, the temperature range on Home and "Coldest room". A door or window contact that's gone quiet never says open or shut. While anything is quiet, Home shows a grey "1 sensor not reporting" chip that opens a list of them.
 
 ## Theming
 

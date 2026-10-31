@@ -12,6 +12,12 @@ export class GlassFavouritesEditor extends GlassFormEditor<FavouritesConfig> {
         required: true,
         selector: { entity: { multiple: true } },
       },
+      {
+        name: 'style',
+        label: 'Style',
+        selector: { select: { mode: 'list', options: [{ value: 'tiles', label: 'Tiles under a heading' }, { value: 'pills', label: 'One row of pills' }] } },
+      },
+      { name: 'title', label: 'Heading over the tiles (default: Favourites)', selector: { text: {} } },
     ];
   }
 }
