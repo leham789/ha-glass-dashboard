@@ -10,15 +10,17 @@ import { haptic } from '../../motion.js';
 import './switch-rows-editor.js';
 
 export interface SwitchRowsConfig extends LovelaceCardConfig {
-  /** Plugs and switches, in order. */
-  entities: string[];
+  /** Plugs and switches, in order. A plain switch can say what it does: { entity, secondary: Mains switch for the ceiling bulb }. */
+  entities: (string | { entity: string; secondary?: string })[];
   title?: string;
 }
+
+const idOf = (e: SwitchRowsConfig['entities'][number]) => (typeof e === 'string' ? e : e.entity);
 
 /**
  * Smart plugs as 64-high glass rows with a switch: the name, and underneath
  * what it's drawing and has used ("2.2 W now · 3.69 kWh total"), found from
- * the plug's own power and energy sensors.
+ * the plug's own power and energy sensors, or a line of your own.
  */
 @customElement('glass-switch-rows')
 export class GlassSwitchRows extends GlassElement {
@@ -72,10 +74,11 @@ export class GlassSwitchRows extends GlassElement {
   render() {
     if (!this.config || !this.hass) return nothing;
     const hass = this.hass;
-    this.watched = this.config.entities.flatMap((id) => [id, ...this.readings(id)]);
+    this.watched = this.config.entities.map(idOf).flatMap((id) => [id, ...this.readings(id)]);
     return html`<section aria-labelledby="h">
       <h2 id="h">${this.config.title ?? 'Power'}</h2>
-      ${this.config.entities.map((id) => {
+      ${this.config.entities.map((entry) => {
+        const id = idOf(entry);
         const e = hass.states[id];
         if (!e) return nothing;
         const on = e.state === 'on';
@@ -85,7 +88,7 @@ export class GlassSwitchRows extends GlassElement {
             const { value } = formatValue(hass.states[r]);
             return `${value} ${i === 0 ? 'now' : 'total'}`;
           })
-          .join(' · ');
+          .join(' · ') || (typeof entry === 'object' ? (entry.secondary ?? '') : '');
         const name = nameInRoom(hass, e);
         return html`<div class="row ${offline ? 'offline' : ''}">
           <span class="text">

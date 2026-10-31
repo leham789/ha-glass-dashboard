@@ -6,6 +6,8 @@ import type { EntityRegistryEntry, HassEntity, HomeAssistant } from '../src/ha.j
 
 // ?dark in the URL previews HA's dark theme.
 const DARK = new URLSearchParams(location.search).has('dark');
+// ?offline: HA can't be reached; "Try now" brings it back.
+let connected = !new URLSearchParams(location.search).has('offline');
 
 type Def = [id: string, state: string, attrs?: Record<string, unknown>, area?: string, device?: string];
 
@@ -116,8 +118,14 @@ const defs: Def[] = [
   ['camera.p1s_chamber', 'streaming', { friendly_name: 'P1S Chamber', entity_picture: CAMERA_PICTURE }, 'office', 'p1s'],
   ['sensor.p1s_ams_humidity', '38', { friendly_name: 'P1S AMS humidity', device_class: 'humidity', unit_of_measurement: '%' }, 'office', 'p1s'],
   // Bedroom (upstairs)
-  ['light.bedroom_left', 'off', { friendly_name: 'Bedroom Left Side' }, 'bedroom'],
-  ['light.bedroom_right', 'off', { friendly_name: 'Bedroom Right Side' }, 'bedroom'],
+  ['light.bedroom_hue', 'off', { friendly_name: 'Bedroom Hue', entity_id: ['light.bedroom_ambient', 'light.bedroom_left', 'light.bedroom_right'], supported_color_modes: ['color_temp', 'xy'] }, 'bedroom'],
+  ['light.bedroom_ambient', 'off', { friendly_name: 'Bedroom Ambient' }, 'bedroom'],
+  ['light.bedroom_left', 'off', { friendly_name: "Bedroom Liam's side" }, 'bedroom'],
+  ['light.bedroom_right', 'off', { friendly_name: "Bedroom Sarah's side" }, 'bedroom'],
+  ['sensor.bedroom_pressure', '972', { friendly_name: 'Bedroom Pressure', device_class: 'atmospheric_pressure', unit_of_measurement: 'hPa' }, 'bedroom'],
+  ['sensor.bedroom_remote_battery', '90', { friendly_name: 'Bedroom Hue remote battery', device_class: 'battery', unit_of_measurement: '%' }, 'bedroom', 'bed_remote'],
+  ['event.bedroom_remote_button_1', minsAgo(95), { event_type: 'short_release', device_class: 'button', friendly_name: 'Bedroom Hue remote Button 1' }, 'bedroom', 'bed_remote'],
+  ['sensor.bedroom_plug_power', '0.1', { friendly_name: "Sarah's side plug Power", device_class: 'power', unit_of_measurement: 'W' }, 'bedroom', 'bed_plug'],
   ['sensor.bedroom_temperature', '16.13', { friendly_name: 'Bedroom Temperature', device_class: 'temperature' }, 'bedroom'],
   ['sensor.bedroom_humidity', '74', { friendly_name: 'Bedroom Humidity', device_class: 'humidity' }, 'bedroom'],
   // Outside
@@ -232,12 +240,27 @@ function makeHass(states: Record<string, HassEntity>): HomeAssistant {
   return {
     states,
     themes: { darkMode: DARK },
+    connected,
     entities,
+    connection: {
+      async subscribeMessage() {
+        return async () => undefined;
+      },
+      reconnect() {
+        window.setTimeout(() => {
+          connected = true;
+          hass = makeHass(hass.states);
+          render();
+        }, 1200);
+      },
+    },
     devices: {
       lr_climate: { id: 'lr_climate', name: 'Living Room Thermometer' },
       office_climate: { id: 'office_climate', name: 'Office Climate' },
       p1s: { id: 'p1s', name: 'P1S' },
       pc_plug: { id: 'pc_plug', name: 'Office PC plug' },
+      bed_remote: { id: 'bed_remote', name: 'Bedroom Hue remote' },
+      bed_plug: { id: 'bed_plug', name: "Sarah's side plug" },
       alex_phone: { id: 'alex_phone', name: "Alex's iPhone" },
       doorbell: { id: 'doorbell', name: 'Doorbell', config_entries: ['protect'] },
       turret: { id: 'turret', name: 'Garden Turret', config_entries: ['protect'] },
