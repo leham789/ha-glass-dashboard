@@ -157,6 +157,10 @@ export class GlassMenu extends GlassElement {
     const items = this.items();
     const exact = items.find((i) => i.key !== 'rooms' && samePath(i.path!, this.path));
     if (exact) return exact.key;
+    // The dashboard's own address (no page, e.g. /glass-dashboard, as the app opens it)
+    // shows its first page: Home, never a room.
+    const home = items.find((i) => i.key === 'home');
+    if (home && !viewOf(this.path) && sameDashboard(home.path!, this.path)) return 'home';
     const rooms = items.find((i) => i.key === 'rooms');
     if (rooms && sameDashboard(rooms.path!, this.path)) return 'rooms';
     return undefined;
@@ -277,6 +281,8 @@ const trimSlash = (p: string) => p.replace(/\/+$/, '');
 const samePath = (a: string, b: string) => trimSlash(a) === trimSlash(b);
 const dashboardOf = (p: string) => p.split('/')[1] ?? '';
 const sameDashboard = (a: string, b: string) => dashboardOf(a) === dashboardOf(b);
+/** The page part of a dashboard address ("living_room" in /glass-dashboard/living_room), if any. */
+const viewOf = (p: string) => trimSlash(p).split('/')[2] ?? '';
 
 function rememberRoom(path: string) {
   try {
@@ -290,7 +296,8 @@ function rememberRoom(path: string) {
 function lastRoom(roomsPath: string): string {
   try {
     const last = localStorage.getItem(LAST_ROOM_KEY);
-    if (last && sameDashboard(last, roomsPath)) return last;
+    // Only a real page in this dashboard (older versions could save the bare dashboard address).
+    if (last && viewOf(last) && sameDashboard(last, roomsPath)) return last;
   } catch {
     // Fall through to the default.
   }
