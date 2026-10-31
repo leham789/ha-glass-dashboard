@@ -121,19 +121,18 @@ export class GlassRoomHeader extends GlassElement {
     const from = leaving;
     if (!from || performance.now() - from.at > 1500 || reducedMotion()) return;
     leaving = undefined;
-    // Its name stays dark until the highlight is under it.
-    current.classList.add('arriving');
     // Transform only (slide, and stretch to the new width), never width itself: HA
     // builds the new room's page in one long busy spell right after the tap, and only
     // transform and opacity keep animating through that.
-    const slide = pill.animate(
+    pill.animate(
       [
         { transform: `translateX(${from.left}px) scaleX(${from.width / to.width})` },
         { transform: `translateX(${to.left}px) scaleX(1)` },
       ],
       { duration: 250, easing: EASE },
     );
-    slide.finished.finally(() => current.classList.remove('arriving'));
+    // Its name turns from dark to white as the highlight passes under it.
+    current.animate([{ color: 'var(--glass-ink)' }, { color: 'var(--glass-on-ink)' }], { duration: 120, delay: 100, easing: 'ease', fill: 'backwards' });
   }
 
   private rooms() {
@@ -267,9 +266,8 @@ export class GlassRoomHeader extends GlassElement {
         text-decoration: none;
         -webkit-tap-highlight-color: transparent;
       }
-      a[aria-current='page']:not(.arriving) {
+      a[aria-current='page'] {
         color: var(--glass-on-ink);
-        transition: color 0.15s ease;
       }
       a:focus-visible {
         outline: 2px solid var(--glass-ink);

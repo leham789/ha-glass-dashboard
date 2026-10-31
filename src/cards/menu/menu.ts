@@ -130,9 +130,9 @@ export class GlassMenu extends GlassElement {
       const was = from.lefts[b.dataset.key!];
       if (was !== undefined && was !== b.offsetLeft) b.animate([{ transform: `translateX(${was - b.offsetLeft}px)` }, { transform: 'none' }], timing);
     }
-    current.classList.add('arriving');
+    // The name turns from dark to white as the pill passes under it, not after it lands.
+    current.animate([{ color: 'var(--glass-ink)' }, { color: 'var(--glass-on-ink)' }], { duration: 120, delay: 100, easing: 'ease', fill: 'backwards' });
     current.querySelector('span')?.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 180, delay: 90, easing: 'ease', fill: 'backwards' });
-    pill.getAnimations()[0]?.finished.finally(() => current.classList.remove('arriving'));
   }
 
   private onLocation = () => {
@@ -259,9 +259,8 @@ export class GlassMenu extends GlassElement {
       button.current {
         padding: 0 22px;
       }
-      button.current:not(.arriving) {
+      button.current {
         color: var(--glass-on-ink);
-        transition: color 0.15s ease;
       }
       button:focus-visible {
         outline: 2px solid var(--glass-ink);
