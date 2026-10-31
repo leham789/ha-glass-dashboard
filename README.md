@@ -107,7 +107,7 @@ printer_name: P1S
 
 ### Menu · `custom:glass-menu`
 
-The bottom menu: Home, Rooms, Energy and Security. The screen you're on is the dark pill with its name, and the others are icons. It floats over the bottom of the screen. Any view in the same dashboard that isn't Home, Energy or Security counts as a room, and **Rooms** reopens the last room you viewed on that device. Leave out a path to hide that item.
+The bottom menu: Home, Rooms, Energy and Security, in four equal slots so the icons stay put. The screen you're on is the dark pill with its name, and the others are icons; tapping another slides the pill across. It floats over the bottom of the screen. Any view in the same dashboard that isn't Home, Energy or Security counts as a room, and **Rooms** reopens the last room you viewed on that device. Leave out a path to hide that item.
 
 ```yaml
 type: custom:glass-menu
@@ -375,7 +375,7 @@ Anything else (scenes, scripts, covers, locks…) still opens Home Assistant's o
 
 The cards move a little, always to show what changed, never for decoration. Nothing bounces.
 
-- **Moving around:** pages change at once, so it stays snappy. In the menu the dark pill slides to the tab you tap; in the room switcher the highlight slides to the room.
+- **Moving around:** pages change at once, so it stays snappy. In the menu the dark pill slides to the tab you tap while the icons stay put; in the room switcher the highlight slides to the room.
 - **Pressing:** whatever you press shrinks slightly and comes back.
 - **Lights:** turning one on spreads its colour out from where you tapped; off fades it away.
 - **Thermostats:** the target rolls up or down to its new value.

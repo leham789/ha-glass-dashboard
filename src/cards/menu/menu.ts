@@ -28,16 +28,16 @@ interface Item {
 const LAST_ROOM_KEY = 'glass-menu-last-room';
 
 /**
- * Where the pill and each item were as you left a page. Every view has its
- * own menu, so the next page's menu reads this to slide from there.
+ * Where the pill and each icon were as you left a page. Every view has its own
+ * menu, so the next page's menu reads this to slide from there.
  */
-let leaving: { pill: { left: number; width: number }; lefts: Record<string, number>; at: number } | undefined;
+let leaving: { left: number; width: number; icons: Record<string, number>; at: number } | undefined;
 
 /**
- * The bottom menu: Home, Rooms, Energy, Security. The current screen is the
- * dark pill with its name; the others are icons. Any other view in the same
- * dashboard counts as a room, so Rooms reopens the last room you viewed.
- * Tapping another item slides the pill over to it.
+ * The bottom menu: Home, Rooms, Energy, Security, in equal slots so no icon
+ * ever moves. The current screen is the dark pill with its name; the others
+ * are icons. Any other view in the same dashboard counts as a room, so Rooms
+ * reopens the last room you viewed. Tapping another item slides the pill over.
  */
 @customElement('glass-menu')
 export class GlassMenu extends GlassElement {
@@ -96,7 +96,7 @@ export class GlassMenu extends GlassElement {
     this.placePill();
   }
 
-  /** Puts the pill under the current item; just after a tap, slides it (and the items) over from the last page. */
+  /** Puts the pill under the current item; just after a tap, slides it over from the last page. */
   private placePill() {
     const pill = this.renderRoot.querySelector<HTMLElement>('.pill');
     const current = this.renderRoot.querySelector<HTMLElement>('button.current');
@@ -114,21 +114,22 @@ export class GlassMenu extends GlassElement {
     const from = leaving;
     if (!from || performance.now() - from.at > 1500 || reducedMotion()) return;
     leaving = undefined;
-    const timing = { duration: 250, easing: EASE };
-    // Transform only (slide, and stretch to the new width), never width itself: HA
-    // builds the new page in one long busy spell right after the tap, and only
-    // transform and opacity keep animating through that.
+    // Transform only, never width or left: HA builds the new page in one long busy
+    // spell right after the tap, and only transform and opacity keep animating
+    // through that. (The slots are equal, so the scale is 1 unless the menu was resized.)
     pill.animate(
       [
-        { transform: `translateX(${from.pill.left}px) scaleX(${from.pill.width / to.width})` },
+        { transform: `translateX(${from.left}px) scaleX(${from.width / to.width})` },
         { transform: `translateX(${to.left}px) scaleX(1)` },
       ],
-      timing,
+      { duration: 250, easing: EASE },
     );
-    // Each item glides from where it was; the new name fades in once the pill is under it.
-    for (const b of this.renderRoot.querySelectorAll<HTMLElement>('button')) {
-      const was = from.lefts[b.dataset.key!];
-      if (was !== undefined && was !== b.offsetLeft) b.animate([{ transform: `translateX(${was - b.offsetLeft}px)` }, { transform: 'none' }], timing);
+    // Only the two icons whose slots swap move (one makes room for its name, the
+    // other re-centres): they glide there rather than jump.
+    for (const [key, x] of Object.entries(iconLefts(this.renderRoot))) {
+      const was = from.icons[key];
+      const icon = this.renderRoot.querySelector<HTMLElement>(`button[data-key="${key}"] glass-icon`);
+      if (icon && was !== undefined && Math.abs(was - x) > 0.5) icon.animate([{ transform: `translateX(${was - x}px)` }, { transform: 'none' }], { duration: 250, easing: EASE });
     }
     // The name turns from dark to white as the pill passes under it, not after it lands.
     current.animate([{ color: 'var(--glass-ink)' }, { color: 'var(--glass-on-ink)' }], { duration: 120, delay: 100, easing: 'ease', fill: 'backwards' });
@@ -178,7 +179,7 @@ export class GlassMenu extends GlassElement {
             aria-label=${item.label}
             @click=${() => this.go(item)}
           >
-            <glass-icon name=${item.icon} size=${on ? 20 : 22}></glass-icon>
+            <glass-icon name=${item.icon} size="20"></glass-icon>
             ${on ? html`<span>${item.label}</span>` : nothing}
           </button>`;
         })}
@@ -191,9 +192,7 @@ export class GlassMenu extends GlassElement {
     const target = item.key === 'rooms' ? lastRoom(item.path!) : item.path!;
     if (samePath(target, location.pathname)) return;
     const current = this.renderRoot.querySelector<HTMLElement>('button.current');
-    const lefts: Record<string, number> = {};
-    for (const b of this.renderRoot.querySelectorAll<HTMLElement>('button')) lefts[b.dataset.key!] = b.offsetLeft;
-    if (current) leaving = { pill: { left: current.offsetLeft, width: current.offsetWidth }, lefts, at: performance.now() };
+    if (current) leaving = { left: current.offsetLeft, width: current.offsetWidth, icons: iconLefts(this.renderRoot), at: performance.now() };
     haptic('selection');
     navigate(target);
   }
@@ -215,9 +214,11 @@ export class GlassMenu extends GlassElement {
         backdrop-filter: blur(24px);
         -webkit-backdrop-filter: blur(24px);
         position: relative;
-        display: flex;
+        /* equal slots, however many items: the icons stay put, only the pill moves */
+        display: grid;
+        grid-auto-flow: column;
+        grid-auto-columns: minmax(0, 1fr);
         align-items: center;
-        justify-content: space-between;
       }
       .pill {
         position: absolute;
@@ -244,20 +245,18 @@ export class GlassMenu extends GlassElement {
         all: unset;
         box-sizing: border-box;
         height: 56px;
-        min-width: 56px;
         border-radius: 28px;
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: 10px;
-        font-size: var(--glass-text-body);
+        gap: 6px;
+        font-size: 13px;
+        white-space: nowrap;
+        overflow: hidden;
         color: var(--glass-ink);
         cursor: pointer;
         -webkit-tap-highlight-color: transparent;
         position: relative; /* above the pill */
-      }
-      button.current {
-        padding: 0 22px;
       }
       button.current {
         color: var(--glass-on-ink);
@@ -268,6 +267,16 @@ export class GlassMenu extends GlassElement {
       }
     `,
   ];
+}
+
+/** Each item's icon position across the menu, by key. */
+function iconLefts(root: ParentNode): Record<string, number> {
+  const out: Record<string, number> = {};
+  for (const b of root.querySelectorAll<HTMLElement>('button')) {
+    const icon = b.querySelector('glass-icon');
+    if (icon) out[b.dataset.key!] = b.offsetLeft + (icon as HTMLElement).offsetLeft;
+  }
+  return out;
 }
 
 const trimSlash = (p: string) => p.replace(/\/+$/, '');
