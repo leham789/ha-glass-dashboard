@@ -107,7 +107,7 @@ printer_name: P1S
 
 ### Menu · `custom:glass-menu`
 
-The bottom menu: Home, Rooms, Energy and Security. The screen you're on is the dark pill with its name, and the others are icons. It floats over the bottom of the screen. Any view in the same dashboard that isn't Home, Energy or Security counts as a room, and **Rooms** reopens the last room you viewed on that device. Leave out a path to hide that item.
+The bottom menu: Home, Rooms, Energy and Security. The screen you're on is the dark pill with its name, and the others are icons. Tapping another slides the pill across; it's always the same width, so only the icons it jumps over move. It floats over the bottom of the screen. Any view in the same dashboard that isn't Home, Energy or Security counts as a room, and **Rooms** reopens the last room you viewed on that device. Leave out a path to hide that item.
 
 ```yaml
 type: custom:glass-menu

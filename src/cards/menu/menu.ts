@@ -37,7 +37,8 @@ let leaving: { pill: { left: number; width: number }; lefts: Record<string, numb
  * The bottom menu: Home, Rooms, Energy, Security. The current screen is the
  * dark pill with its name; the others are icons. Any other view in the same
  * dashboard counts as a room, so Rooms reopens the last room you viewed.
- * Tapping another item slides the pill over to it.
+ * Tapping another item slides the pill over to it. The pill is always the
+ * same width, so icons outside the jump stay still.
  */
 @customElement('glass-menu')
 export class GlassMenu extends GlassElement {
@@ -256,8 +257,10 @@ export class GlassMenu extends GlassElement {
         -webkit-tap-highlight-color: transparent;
         position: relative; /* above the pill */
       }
+      /* Always the same width, wide enough for the longest name ("Security"), so the
+         gaps never change: when the pill moves, only the icons it jumps over shift. */
       button.current {
-        padding: 0 22px;
+        width: 128px;
       }
       button.current {
         color: var(--glass-on-ink);
