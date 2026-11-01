@@ -10,6 +10,7 @@ A frosted-glass, phone-first Home Assistant dashboard: a pack of custom Lovelace
 - **The design always matches the build.** The canvas shows exactly what the cards render. Change both in the same piece of work, or say clearly what's out of step.
 - **Design only what Home Assistant can do.** No buttons that do nothing.
 - **Light and dark both work** for everything.
+- **Loading is soft placeholder bars,** never a dash or zero (details in design-decisions).
 - **Commit only when asked.** Confirm before publishing a release; releases are public.
 - **His own dashboard comes first, a shareable pack second.** Every card has a visual editor and no hardcoded entities, uses only stable HA frontend APIs, and adds no third-party runtime dependencies.
 - **It should feel like a native iPhone app** (iOS 26 is the reference). When unsure how something should behave, check what Apple does.
@@ -22,7 +23,19 @@ Decisions he's made on the canvas (sizes, colours, states, navigation): [docs/de
 ## Design canvas
 
 - https://claude.ai/artifact/VRZ7zCC8EHgBGCy5hAT4tP. Pages: **Designs** and **Dark Mode** (wrappers that import a frame with `theme="Dark"`).
-- **The design system** is the foundation frames (Type, Colour, Spacing, Sizing, Radius, Elevation, Motion, Opacity, Icons), **Components** (every part and its states) and **Card Library** (every card, with when it shows). Anything new goes in those too.
+- **Library page** (being built): one board per component, `Lib<Name>.dc.html`, 1712px wide, on dummy data taken from the live code. Sections in order:
+  - **Card:** light and dark side by side.
+  - **States**, then **Use cases** (only ones that change the look; copy-only differences go in a note), in light, with a `theme` tweak for dark.
+  - **Sizes:** narrowest, usual and widest (quarter 79px, half 169px, phone 350px, wide ~500px, as the card allows). Narrow sizes get their own compact layout (cards can measure their width), never the full card squashed.
+  - **Settings:** the HA editor fields, drawn as HA draws them.
+  - **Build notes:** numbered, for everything the board is ahead of the code, with "Build note N" tags where it shows.
+- **Shared states** (`LibShared`) holds pressed, keyboard focus, can't reach HA, loading, not reporting and the "needs setting up" card once. Card boards leave these out unless their wording differs.
+- Done so far: Energy today, Light tile, Temperature by room, Shared states, plus a new Energy pop-up frame on Designs. Next: the remaining cards, then pop-ups, then shared parts. Components and Card Library get retired once the Library covers everything.
+- **Frames are copies, not linked components.** Changing a Library board doesn't update the Designs screens; update both, or note what's out of step. Shared `tokens.css` (colours, radii, spacing, font family) does update everything.
+- **Publishing:** copy changed files to `<scratchpad>/stage/project/<name>` and publish with `root` set to `<scratchpad>/stage`. Send `canvas.json` only when boards, pages or heights change, and read it fresh first (Liam moves boards).
+- **Never crop a frame.** The canvas does not size frames itself. After changing a Library board, measure it: run the dev server, open `/design/measure.html`, run `await measureAll(['LibX.dc.html', …])`, and set each board's `h` in `canvas.json` to the result. Board roots have no height or `min-height`. Phone frames are fixed: make them as tall as their content.
+- **Save tokens:** never pull every frame to compare; read only the files you'll change. Reading a file inlines it into the chat.
+- **The design system** is the foundation frames (Type, Colour, Spacing, Sizing, Radius, Elevation, Motion, Opacity, Icons), and the Library page (above), which is replacing **Components** and **Card Library**. Anything new goes on the Library page.
 - Frames are `.dc.html`: markup with `{{values}}`, `<sc-if>` and `<sc-for>`, and a `Component extends DCLogic` script whose `renderVals()` fills them. **Tweaks** (`data-props`) show states. A new frame needs an entry in both `boards` and `order` in `canvas.json`.
 - **Re-read the live files before publishing.** Other sessions and the canvas page save edits. The page re-encodes `data-props` (`&quot;`), which is harmless. Re-apply your change to what's live; never resend an old copy.
 - `design/` mirrors every frame, locally only (gitignored). Copy changed frames there after publishing.

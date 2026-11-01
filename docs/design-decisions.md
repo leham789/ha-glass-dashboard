@@ -29,6 +29,7 @@ Decisions Liam has made on the design canvas, so they aren't undone. The canvas 
 - **Battery icons** follow the charge: full at 70% and up, medium 40–69%, low 15–39%, warning under 15%. Tiles under 40% turn dark.
 - **Never say the same thing twice,** and never claim what isn't known. An offline camera's badge says Offline and its motion pill says "Motion unknown", not "Clear". A sensor that's gone quiet never says shut or open ("Was shut").
 - **A device dropping out is grey, not attention.** Attention colours are for things that need doing.
+- **Loading shows soft placeholder bars,** never a dash or a zero. A number or line that hasn't arrived yet is a rounded bar of the same size, in a faint tint of what's under it; anything already known shows straight away.
 
 ## Design system frames
 
