@@ -9,6 +9,7 @@ Decisions Liam has made on the design canvas, so they aren't undone. The canvas 
 - **Radius:** 16 thumbnails and insets · 24 small tiles · 28 tiles · 32 cards · 40 sheets · pills are height ÷ 2.
 - **Type:** one size per style (see the Type frame). Section headings and pop-up titles share one Heading style, 20 Regular.
 - **Icon buttons:** four styles (Dark, White, Glass, Grey) and four sizes (64 sheet close, 52 default, 40 on tiles, 36 compact).
+- **Light tiles** show the brightness under the name in grey, never top right, at every size. Three styles: tile (default), small (97 × 112, also Brightness's lamps) and row (56 high, bulb on the left). At a quarter width (79px) a tile takes the small style by itself; row needs at least half. One part, not copies.
 - **Light rows** are 64 high with a 32 radius, and their brightness fill has rounded ends.
 
 ## Screens and navigation
@@ -19,6 +20,7 @@ Decisions Liam has made on the design canvas, so they aren't undone. The canvas 
 - **Room screens** have no back or "…" buttons. A full-width, contained room switcher sits at the top: it scrolls sideways, pinned rooms come first, and there's no divider. The small room name above the big number opens Room options.
 - **No "Open in Home Assistant" buttons** on pop-ups or Room options.
 - **Security** stacks every camera except the 3D printer's, plus the door states.
+- **Room header's big number** is a choice (`show`): lights on (default), temperature, power use, one sensor, or nothing. What it is joins the room name above it ("Study · Power use"), never a line under the number.
 - **Favourites** are tiles under a heading, three across with the next one peeking in. Pills stay as a card option.
 - **Heating presets** sit inside the dial card as a row of chips, with no "Presets" heading.
 
@@ -26,8 +28,10 @@ Decisions Liam has made on the design canvas, so they aren't undone. The canvas 
 
 - **Lit light tiles** take a soft tint of the bulb's real colour, with warm white when there's no colour data (option A). Liam may revisit this once he's seen it with live colours.
 - **Temperature tiles** tint only at the extremes, faintly (18%) in the top-left corner: blue for Cold (under 16.5°), orange for Warm (over 22°), red for Hot (over 25°). Cool and Comfy stay plain glass with a grey pill. No purple or green.
+- **Humidity tiles** get a band pill too: Dry under 40%, Comfy 40–60%, Damp over 60%. No tint. Either pill can be switched off in the card's options.
 - **Battery icons** follow the charge: full at 70% and up, medium 40–69%, low 15–39%, warning under 15%. Tiles under 40% turn dark.
 - **Never say the same thing twice,** and never claim what isn't known. An offline camera's badge says Offline and its motion pill says "Motion unknown", not "Clear". A sensor that's gone quiet never says shut or open ("Was shut").
+- **A sensor that's gone quiet says "Not reporting"** on cards, not when it was last heard ("Last heard 3 h ago" stays for its pop-up). Room climate tiles drop their pill when quiet; it doesn't fit a phone-width tile.
 - **A device dropping out is grey, not attention.** Attention colours are for things that need doing.
 - **Loading shows soft placeholder bars,** never a dash or a zero. A number or line that hasn't arrived yet is a rounded bar of the same size, in a faint tint of what's under it; anything already known shows straight away.
 
