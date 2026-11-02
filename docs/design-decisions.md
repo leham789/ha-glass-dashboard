@@ -9,8 +9,9 @@ Decisions Liam has made on the design canvas, so they aren't undone. The canvas 
 - **Radius:** 16 thumbnails and insets · 24 small tiles · 28 tiles · 32 cards · 40 sheets · pills are height ÷ 2.
 - **Type:** one size per style (see the Type frame). Section headings and pop-up titles share one Heading style, 20 Regular.
 - **Icon buttons:** four styles (Dark, White, Glass, Grey) and four sizes (64 sheet close, 52 default, 40 on tiles, 36 compact).
-- **Light tiles** show the brightness under the name in grey, never top right, at every size. Three styles: tile (default), small (97 × 112, also Brightness's lamps) and row (56 high, bulb on the left). At a quarter width (79px) a tile takes the small style by itself; row needs at least half. One part, not copies.
-- **Light rows** are 64 high with a 32 radius, and their brightness fill has rounded ends.
+- **One Tile part** for any single thing (lights, switches, scenes…). The Light tile card is the Tile on its own. The icon sits in a ring by default, or on its own (`icon_style: plain`, Favourites' default).
+- **Light tiles** show the brightness under the name in grey, never top right, at every size. Three styles: tile (default), small (97 × 112, also Brightness's lamps) and row (56 high, bulb on the left). At a quarter width (79px) a tile takes the small style by itself; row needs at least half. One part, not copies. Favourites' tiles are this part too (small, and row at half width): nested in another card it takes any entity, with ink for something on that isn't a light and glass for scenes.
+- **Light rows are a separate part from the Tile.** The Light row (lists of lights: the Lights pop-up, Room lights) is 64 high with a 32 radius, and shows brightness as a fill with rounded ends. **A Tile never shows brightness as a background**, in any style, its row style included: it's solid (the bulb's tint when on), with the brightness in grey under the name. Decided 2026-11-02, after a merge of the two was tried and undone.
 
 ## Screens and navigation
 
@@ -41,6 +42,8 @@ Decisions Liam has made on the design canvas, so they aren't undone. The canvas 
 - **Card Library** holds every card with the rule for when it shows. It doesn't repeat parts that live in Components, such as the menu or light rows. Its card containers are plain grey (`#E3E4E8`), in three fixed columns per section, grouped by topic in screen order.
 
 ## Still open
+
+- **Backlog: brightness as a fill on the Tile.** An option on the Tile card, for a light with a brightness, to show it as a fill across every style. Hard to make work in rectangular tiles, so not now.
 
 - **Background glows:** every canvas page has soft coloured glows behind it, but the build doesn't, because the cards can't paint the page background. Undecided: drop them from the canvas, or add one HA theme background for every page.
 - **Media "Play on":** the wording or a speaker icon on the chips were offered but not decided.
