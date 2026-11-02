@@ -16,6 +16,7 @@ Decisions Liam has made on the design canvas, so they aren't undone. The canvas 
 ## Screens and navigation
 
 - **Main screens** (reached from the menu) have no close button. Only pop-ups have ×.
+- **Behind a pop-up the screen dims darker in both themes**, as on iPhone: black at 50% in dark mode, never a light wash.
 - **Menu labels** are one word, on one line ("Energy", not "Heating & Energy").
 - **Rooms** opens the last room you viewed. There's no separate all-rooms screen; Home's room tiles are the overview.
 - **Room screens** have no back or "…" buttons. A full-width, contained room switcher sits at the top: it scrolls sideways, pinned rooms come first, and there's no divider. The small room name above the big number opens Room options.
