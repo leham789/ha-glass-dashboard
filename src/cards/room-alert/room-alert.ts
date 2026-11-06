@@ -1,4 +1,5 @@
 import { css, html, nothing, type PropertyValues } from 'lit';
+import '../../elements/glass-button.js';
 import { GlassElement } from '../../glass-element.js';
 import { customElement, property, state } from 'lit/decorators.js';
 import { tokens } from '../../tokens.js';
@@ -82,12 +83,7 @@ export class GlassRoomAlert extends GlassElement {
         <span class="title">${name} light is offline</span>
         <span class="why">Its mains switch is off, so the bulb has no power.</span>
       </span>
-      <button
-        type="button"
-        @click=${() => (haptic('light'), this.hass!.callService('homeassistant', 'turn_on', { entity_id: this.config!.switch }))}
-      >
-        Power on
-      </button>
+      <glass-button size="compact" @click=${() => (haptic('light'), this.hass!.callService('homeassistant', 'turn_on', { entity_id: this.config!.switch }))}>Power on</glass-button>
     </section>`;
   }
 
@@ -122,21 +118,6 @@ export class GlassRoomAlert extends GlassElement {
       .why {
         font-size: var(--glass-text-caption);
         color: var(--glass-attention-ink);
-      }
-      button {
-        all: unset;
-        flex: none;
-        height: 48px;
-        padding: 0 16px;
-        border-radius: 24px;
-        background: var(--glass-ink);
-        color: var(--glass-on-ink);
-        font-size: var(--glass-text-chip);
-        cursor: pointer;
-      }
-      button:focus-visible {
-        outline: 2px solid var(--glass-ink);
-        outline-offset: 2px;
       }
     `,
   ];

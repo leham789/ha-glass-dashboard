@@ -7,6 +7,7 @@ import { haptic } from '../motion.js';
 import type { HomeAssistant } from '../ha.js';
 import type { IconName } from '../icons.js';
 import './glass-icon.js';
+import './glass-button.js';
 
 /**
  * A pop-up sheet that slides up over the screen: handle, an icon + title
@@ -148,7 +149,7 @@ export abstract class GlassSheet extends GlassElement {
 
   // The top bar: a drag from anywhere on it but the close button.
   private onDragStart(e: PointerEvent) {
-    if (e.button !== 0 || (e.target as Element).closest('button')) return;
+    if (e.button !== 0 || (e.target as Element).closest('button, glass-icon-button')) return;
     this.dragBegin(e.clientY);
     (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
   }
@@ -222,9 +223,7 @@ export abstract class GlassSheet extends GlassElement {
                 ${this.sheetSubtitle ? html`<span class="subtitle">${this.sheetSubtitle}</span>` : ''}
               </span>
             </span>
-            <button type="button" class="close" aria-label="Close" @click=${() => this.close()}>
-              <glass-icon name="x" size="22" stroke="1.8"></glass-icon>
-            </button>
+            <glass-icon-button class="close" icon="x" look="glass" size="64" label="Close" @click=${() => this.close()}></glass-icon-button>
           </header>
         </div>
         <div class="scroll">${this.renderBody()}</div>
@@ -321,10 +320,6 @@ export abstract class GlassSheet extends GlassElement {
         mask-image: linear-gradient(to bottom, transparent calc(var(--bar) - 12px), #000 calc(var(--bar) + 18px));
       }
       .title,
-      .close {
-        backdrop-filter: blur(24px);
-        -webkit-backdrop-filter: blur(24px);
-      }
       .handle {
         align-self: center;
         width: 40px;
@@ -374,22 +369,6 @@ export abstract class GlassSheet extends GlassElement {
       .subtitle {
         font-size: var(--glass-text-small);
         color: var(--glass-text-muted);
-      }
-      .close {
-        all: unset;
-        width: 64px;
-        height: 64px;
-        flex: none;
-        border-radius: 50%;
-        background: rgba(var(--glass-surface-rgb), 0.85);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-      }
-      .close:focus-visible {
-        outline: 2px solid var(--glass-ink);
-        outline-offset: 2px;
       }
     `,
   ];

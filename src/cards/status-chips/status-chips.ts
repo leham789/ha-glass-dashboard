@@ -1,4 +1,5 @@
 import { css, html, nothing, type PropertyValues } from 'lit';
+import '../../elements/glass-chip.js';
 import { GlassElement } from '../../glass-element.js';
 import { customElement, property, state } from 'lit/decorators.js';
 import { tokens } from '../../tokens.js';
@@ -106,15 +107,15 @@ export class GlassStatusChips extends GlassElement {
     if (!this.config || !this.hass) return nothing;
     return html`<nav aria-label="Status">
       ${this.chips().map(
-        (c) => html`<button
-          type="button"
-          class="chip ${c.attention ? 'attention' : ''} ${c.key === 'open' ? 'ringing' : ''}"
+        (c) => html`<glass-status-chip
+          icon=${c.icon}
+          circle=${c.iconBg.includes('neutral') ? '' : c.iconBg}
+          ?attention=${!!c.attention}
+          ?ring=${c.key === 'open'}
           ?disabled=${!c.onTap}
           @click=${c.onTap}
-        >
-          <span class="icon" style="background: ${c.iconBg}; color: ${c.iconBg.includes('neutral') ? 'var(--glass-ink)' : 'var(--glass-on-pastel)'}"><glass-icon name=${c.icon} size="15" stroke="1.8"></glass-icon></span>
-          ${c.label}
-        </button>`,
+          >${c.label}</glass-status-chip
+        >`,
       )}
     </nav>`;
   }
@@ -250,42 +251,6 @@ export class GlassStatusChips extends GlassElement {
       }
       nav::-webkit-scrollbar {
         display: none;
-      }
-      .chip {
-        all: unset;
-        flex: none;
-        box-sizing: border-box;
-        height: 40px;
-        padding: 0 16px 0 8px;
-        border-radius: 20px;
-        background: rgba(var(--glass-surface-rgb), 0.55);
-        border: 1px solid var(--glass-surface-border);
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        font-size: var(--glass-text-chip);
-        white-space: nowrap;
-        cursor: pointer;
-        -webkit-tap-highlight-color: transparent;
-      }
-      .chip:disabled {
-        cursor: default;
-      }
-      .chip.attention {
-        background: var(--glass-attention-tint);
-        border-color: var(--glass-attention-edge);
-      }
-      .chip:focus-visible {
-        outline: 2px solid var(--glass-ink);
-        outline-offset: 2px;
-      }
-      .icon {
-        width: 28px;
-        height: 28px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
       }
     `,
   ];

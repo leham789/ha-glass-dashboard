@@ -1,4 +1,7 @@
 import { css, html, nothing, svg, type PropertyValues } from 'lit';
+import '../../elements/glass-chip.js';
+import '../../elements/glass-button.js';
+import type { GlassSegmented } from '../../elements/glass-button.js';
 import { GlassElement } from '../../glass-element.js';
 import { customElement, property, state } from 'lit/decorators.js';
 import { cardSurface } from '../../elements/surfaces.js';
@@ -157,34 +160,28 @@ export class GlassThermostatDial extends GlassElement {
         </span>
       </div>
       <span class="controls">
-        <button type="button" class="minus" aria-label="Lower target" ?disabled=${off} @click=${() => this.step(-1)}>−</button>
+        <glass-icon-button look="white" text="−" label="Lower target" ?disabled=${off} @click=${() => this.step(-1)}></glass-icon-button>
         ${modes.length > 1
-          ? html`<span class="modes" role="group" aria-label="Mode">
-              ${modes.map(
-                (m) => html`<button
-                  type="button"
-                  class=${m === e.state ? 'current' : ''}
-                  aria-pressed=${m === e.state ? 'true' : 'false'}
-                  @click=${() => (haptic('selection'), this.hass!.callService('climate', 'set_hvac_mode', { entity_id: e.entity_id, hvac_mode: m }))}
-                >
-                  ${modeName(m)}
-                </button>`,
-              )}
-            </span>`
+          ? html`<glass-segmented
+              class="modes"
+              label="Mode"
+              ?disabled=${isUnavailable(e)}
+              .options=${modes.map((m) => ({ value: m, label: modeName(m) }))}
+              .value=${e.state}
+              @change=${(ev: Event) => (haptic('selection'), this.hass!.callService('climate', 'set_hvac_mode', { entity_id: e.entity_id, hvac_mode: (ev.target as GlassSegmented).value }))}
+            ></glass-segmented>`
           : nothing}
-        <button type="button" class="plus" aria-label="Raise target" ?disabled=${off} @click=${() => this.step(1)}>+</button>
+        <glass-icon-button look="dark" text="+" label="Raise target" ?disabled=${off} @click=${() => this.step(1)}></glass-icon-button>
       </span>
       ${this.config.show_presets && Array.isArray(a.preset_modes) && a.preset_modes.length
         ? html`<span class="presets ${isUnavailable(e) ? 'faded' : ''}" role="group" aria-label="Preset">
             ${(a.preset_modes as string[]).map(
-              (p) => html`<button
-                type="button"
-                class=${p === a.preset_mode ? 'on' : ''}
-                aria-pressed=${p === a.preset_mode ? 'true' : 'false'}
+              (p) => html`<glass-toggle-chip
+                size="fill"
+                ?on=${p === a.preset_mode}
                 @click=${() => (haptic('selection'), this.hass!.callService('climate', 'set_preset_mode', { entity_id: e.entity_id, preset_mode: p }))}
-              >
-                ${presetName(p)}
-              </button>`,
+                >${presetName(p)}</glass-toggle-chip
+              >`,
             )}
           </span>`
         : nothing}
@@ -331,70 +328,14 @@ export class GlassThermostatDial extends GlassElement {
         justify-content: space-between;
         gap: 12px;
       }
-      .controls > button {
-        all: unset;
-        box-sizing: border-box;
-        width: 52px;
-        height: 52px;
-        flex: none;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 22px;
-        cursor: pointer;
-      }
-      .controls > .minus {
-        background: var(--glass-solid);
-        border: 1px solid rgba(var(--glass-line-rgb), 0.12);
-      }
-      .controls > .plus {
-        background: var(--glass-ink);
-        color: var(--glass-on-ink);
-      }
-      .controls > button:disabled {
-        opacity: 0.4;
-        cursor: default;
-      }
       .modes {
-        display: flex;
-        gap: 8px;
-        padding: 4px;
-        border-radius: 26px;
-        background: rgba(var(--glass-line-rgb), 0.06);
-      }
-      .modes button {
-        all: unset;
-        height: 44px;
-        padding: 0 16px;
-        border-radius: 22px;
-        font-size: var(--glass-text-chip);
-        cursor: pointer;
-      }
-      .modes button.current {
-        background: var(--glass-raised);
+        flex: 1;
+        min-width: 0;
       }
       .presets {
         width: 100%;
         display: flex;
         gap: var(--glass-space-chip);
-      }
-      .presets button {
-        all: unset;
-        box-sizing: border-box;
-        flex: 1;
-        height: 40px;
-        border-radius: 20px;
-        border: 1px solid var(--glass-surface-border);
-        background: rgba(var(--glass-surface-rgb), 0.7);
-        font-size: var(--glass-text-chip);
-        text-align: center;
-        cursor: pointer;
-      }
-      .presets button.on {
-        background: var(--glass-ink);
-        border-color: var(--glass-ink);
-        color: var(--glass-on-ink);
       }
       .presets.faded {
         opacity: 0.5;

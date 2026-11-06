@@ -1,4 +1,5 @@
 import { css, html, nothing, type PropertyValues } from 'lit';
+import '../../elements/glass-button.js';
 import { GlassElement } from '../../glass-element.js';
 import { customElement, property, state } from 'lit/decorators.js';
 import { cardSurface } from '../../elements/surfaces.js';
@@ -131,14 +132,7 @@ export class GlassNowPlaying extends GlassElement {
             ? nothing
             : html`<span class="bar" aria-hidden="true"><span style="width: ${progress * 100}%"></span></span>`}
         </span>
-        <button
-          type="button"
-          class="play"
-          aria-label=${playing ? 'Pause' : 'Play'}
-          @click=${() => (haptic('light'), this.hass!.callService('media_player', 'media_play_pause', { entity_id: p.entity_id }))}
-        >
-          <glass-icon name=${playing ? 'pause' : 'play'} size="18" stroke="2" solid></glass-icon>
-        </button>
+        <glass-icon-button class="play" look="dark" icon=${playing ? 'pause' : 'play'} icon-size="18" solid label=${playing ? 'Pause' : 'Play'} @click=${() => (haptic('light'), this.hass!.callService('media_player', 'media_play_pause', { entity_id: p.entity_id }))}></glass-icon-button>
       </section>
     `;
   }
@@ -177,10 +171,6 @@ export class GlassNowPlaying extends GlassElement {
         -webkit-tap-highlight-color: transparent;
       }
       .open:focus-visible,
-      .play:focus-visible {
-        outline: 2px solid var(--glass-ink);
-        outline-offset: 2px;
-      }
       .art,
       .info {
         pointer-events: none;
@@ -235,18 +225,7 @@ export class GlassNowPlaying extends GlassElement {
         background: var(--glass-ink);
       }
       .play {
-        all: unset;
-        position: relative;
-        width: 52px;
-        height: 52px;
-        flex: none;
-        border-radius: 50%;
-        background: var(--glass-ink);
-        color: var(--glass-on-ink);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
+        position: relative; /* above the tap-anywhere overlay */
       }
     `,
   ];

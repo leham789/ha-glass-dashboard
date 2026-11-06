@@ -1,4 +1,5 @@
 import { css, html, nothing, type PropertyValues } from 'lit';
+import '../../elements/glass-button.js';
 import { heading } from '../../elements/type.js';
 import { GlassElement } from '../../glass-element.js';
 import { customElement, property, state } from 'lit/decorators.js';
@@ -100,17 +101,8 @@ export class GlassSwitchRows extends GlassElement {
             <span class="name">${name}</span>
             <span class="detail">${offline ? 'Offline' : detail}</span>
           </span>
-          <button
-            type="button"
-            role="switch"
-            class=${on ? 'on' : ''}
-            aria-checked=${on ? 'true' : 'false'}
-            aria-label=${name}
-            ?disabled=${offline}
-            @click=${() => (haptic('light'), hass.callService('homeassistant', on ? 'turn_off' : 'turn_on', { entity_id: id }))}
-          >
-            <span class="knob"></span>
-          </button>
+          <glass-switch ?checked=${on} label=${name}
+            ?disabled=${offline} @change=${() => (haptic('light'), hass.callService('homeassistant', on ? 'turn_off' : 'turn_on', { entity_id: id }))}></glass-switch>
         </div>`;
       })}
     </section>`;
@@ -157,41 +149,6 @@ export class GlassSwitchRows extends GlassElement {
       .detail {
         font-size: var(--glass-text-small);
         color: var(--glass-text-muted);
-      }
-      button {
-        all: unset;
-        position: relative;
-        width: 52px;
-        height: 32px;
-        flex: none;
-        border-radius: 16px;
-        background: rgba(var(--glass-line-rgb), 0.15);
-        cursor: pointer;
-        transition: background 0.2s ease;
-      }
-      button.on {
-        background: var(--glass-go);
-      }
-      button:disabled {
-        cursor: default;
-      }
-      button:focus-visible {
-        outline: 2px solid var(--glass-ink);
-        outline-offset: 2px;
-      }
-      .knob {
-        position: absolute;
-        top: 3px;
-        left: 3px;
-        width: 26px;
-        height: 26px;
-        border-radius: 50%;
-        background: var(--glass-knob);
-        box-shadow: var(--glass-knob-shadow);
-        transition: left 0.2s ease;
-      }
-      .on .knob {
-        left: 23px;
       }
     `,
   ];

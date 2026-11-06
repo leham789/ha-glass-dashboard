@@ -1,4 +1,5 @@
 import { css, html, nothing, type PropertyValues } from 'lit';
+import '../../elements/glass-button.js';
 import { GlassElement } from '../../glass-element.js';
 import { customElement, property, state } from 'lit/decorators.js';
 import { tokens } from '../../tokens.js';
@@ -114,16 +115,14 @@ export function renderRoomTile(
         <span class="rule"></span>
       </span>
       <span class="foot">
-        <button
-          type="button"
-          class="bulb ${lit ? 'on' : ''}"
+        <glass-light-toggle
+          class="bulb"
+          tile
+          ?on=${lit}
           ?disabled=${total === 0}
-          aria-pressed=${lit ? 'true' : 'false'}
-          aria-label="${lit ? 'Turn off' : 'Turn on'} ${name} lights"
+          label="${lit ? 'Turn off' : 'Turn on'} ${name} lights"
           @click=${opts.onToggle}
-        >
-          <glass-icon name="lightbulb" size="20"></glass-icon>
-        </button>
+        ></glass-light-toggle>
         <span class="extra">${extra}</span>
       </span>
     </div>
@@ -242,34 +241,8 @@ export function roomTileStyles() {
       gap: 8px;
     }
     .bulb {
-      all: unset;
       position: relative;
-      z-index: 1;
-      box-sizing: border-box;
-      width: 44px;
-      height: 44px;
-      flex: none;
-      border-radius: 50%;
-      border: 1px solid rgba(var(--glass-line-rgb), 0.1);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: var(--glass-ink);
-      cursor: pointer;
-      -webkit-tap-highlight-color: transparent;
-      transition: background 0.2s ease;
-    }
-    .bulb.on {
-      background: var(--glass-accent);
-      color: #121316;
-    }
-    .bulb:focus-visible {
-      outline: 2px solid var(--glass-ink);
-      outline-offset: 2px;
-    }
-    .bulb:disabled {
-      opacity: 0.4;
-      cursor: default;
+      z-index: 1; /* above the tap-anywhere overlay */
     }
     .extra {
       font-size: var(--glass-text-small);

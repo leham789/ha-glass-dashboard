@@ -1,4 +1,5 @@
 import { css, html, nothing, type PropertyValues } from 'lit';
+import '../../elements/glass-chip.js';
 import { tileSurface } from '../../elements/surfaces.js';
 import { GlassElement } from '../../glass-element.js';
 import { customElement, property, state } from 'lit/decorators.js';
@@ -104,7 +105,7 @@ export class GlassRoomClimate extends GlassElement {
         ? html`<button type="button" class="tile" style=${styleMap({ background: look!.background })} @click=${() => tempId && openMoreInfo(this, tempId)}>
             <span class="top"
               ><span class="label">Temperature</span
-              >${band ? html`<span class="pill" style=${styleMap({ background: look!.pillBg, color: look!.pillFg })}>${band}</span>` : nothing}</span
+              >${band ? html`<glass-tag bg=${look!.pillBg} fg=${look!.pillFg}>${band}</glass-tag>` : nothing}</span
             >
             <span class="bottom"><span class="value">${t.toFixed(1)}°</span>${note ? html`<span class="note">${note}</span>` : nothing}</span>
           </button>`
@@ -168,14 +169,6 @@ export class GlassRoomClimate extends GlassElement {
       }
       .note {
         font-size: var(--glass-text-small);
-      }
-      .pill {
-        height: 24px;
-        padding: 0 8px;
-        border-radius: 12px;
-        font-size: var(--glass-text-tiny);
-        display: flex;
-        align-items: center;
       }
       .bottom {
         display: flex;

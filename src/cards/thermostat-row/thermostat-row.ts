@@ -1,4 +1,5 @@
 import { css, html, nothing, type PropertyValues } from 'lit';
+import '../../elements/glass-button.js';
 import { nil } from '../../elements/nil.js';
 import { GlassElement } from '../../glass-element.js';
 import { customElement, property, state } from 'lit/decorators.js';
@@ -83,8 +84,8 @@ export class GlassThermostatRow extends GlassElement {
         >
       </button>
       <span class="buttons">
-        <button type="button" class="minus" aria-label="Lower temperature" ?disabled=${off} @click=${() => this.step(-1)}>−</button>
-        <button type="button" class="plus" aria-label="Raise temperature" ?disabled=${off} @click=${() => this.step(1)}>+</button>
+        <glass-icon-button look="white" text="−" label="Lower temperature" ?disabled=${off} @click=${() => this.step(-1)}></glass-icon-button>
+        <glass-icon-button look="dark" text="+" label="Raise temperature" ?disabled=${off} @click=${() => this.step(1)}></glass-icon-button>
       </span>
     </section>`;
   }
@@ -137,30 +138,6 @@ export class GlassThermostatRow extends GlassElement {
       .buttons {
         display: flex;
         gap: 8px;
-      }
-      .buttons button {
-        all: unset;
-        box-sizing: border-box;
-        width: 52px;
-        height: 52px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 22px;
-        cursor: pointer;
-      }
-      .buttons .minus {
-        background: var(--glass-solid);
-        border: 1px solid rgba(var(--glass-line-rgb), 0.12);
-      }
-      .buttons .plus {
-        background: var(--glass-ink);
-        color: var(--glass-on-ink);
-      }
-      .buttons button:disabled {
-        opacity: 0.4;
-        cursor: default;
       }
       button:focus-visible {
         outline: 2px solid var(--glass-ink);

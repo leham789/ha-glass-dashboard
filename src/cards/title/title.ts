@@ -1,4 +1,5 @@
 import { css, html, nothing } from 'lit';
+import '../../elements/glass-chip.js';
 import { GlassElement } from '../../glass-element.js';
 import { customElement, property, state } from 'lit/decorators.js';
 import { tokens } from '../../tokens.js';
@@ -81,9 +82,7 @@ export class GlassTitle extends GlassElement {
         ? html`<nav aria-label="Sections">
             ${tabs.map(
               (t, i) =>
-                html`<button type="button" class=${i === this.current ? 'on' : ''} aria-current=${i === this.current ? 'true' : 'false'} @click=${() => this.jump(i, t.card)}>
-                  ${t.name}
-                </button>`,
+                html`<glass-toggle-chip size="tab" ?on=${i === this.current} @click=${() => this.jump(i, t.card)}>${t.name}</glass-toggle-chip>`,
             )}
           </nav>`
         : nothing}`;
@@ -111,28 +110,6 @@ export class GlassTitle extends GlassElement {
       nav {
         display: flex;
         gap: 8px;
-      }
-      button {
-        all: unset;
-        box-sizing: border-box;
-        height: 40px;
-        padding: 0 20px;
-        border-radius: 20px;
-        border: 1px solid var(--glass-surface-border);
-        background: rgba(var(--glass-surface-rgb), 0.7);
-        font-size: var(--glass-text-chip);
-        display: flex;
-        align-items: center;
-        cursor: pointer;
-      }
-      button.on {
-        border-color: var(--glass-ink);
-        background: var(--glass-ink);
-        color: var(--glass-on-ink);
-      }
-      button:focus-visible {
-        outline: 2px solid var(--glass-ink);
-        outline-offset: 2px;
       }
     `,
   ];

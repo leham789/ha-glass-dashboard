@@ -1,4 +1,5 @@
 import { css, html, nothing, type PropertyValues } from 'lit';
+import '../../elements/glass-button.js';
 import { GlassElement } from '../../glass-element.js';
 import { customElement, property, state } from 'lit/decorators.js';
 import { cardSurface } from '../../elements/surfaces.js';
@@ -81,15 +82,16 @@ export class GlassMedia extends GlassElement {
           <span class="context">${context}</span>
           <span class="title">${title}${a.media_artist ? html`<span class="artist"> · ${a.media_artist}</span>` : nothing}</span>
         </button>
-        <button
-          type="button"
+        <glass-icon-button
           class="play"
-          aria-label=${playing ? 'Pause' : 'Play'}
+          look=${(this.config.style ?? 'dark') === 'dark' ? 'on-dark' : 'dark'}
+          icon=${playing ? 'pause' : 'play'}
+          icon-size="18"
+          solid
+          label=${playing ? 'Pause' : 'Play'}
           ?disabled=${isUnavailable(p) || p.state === 'off'}
           @click=${() => (haptic('light'), this.hass!.callService('media_player', 'media_play_pause', { entity_id: p.entity_id }))}
-        >
-          <glass-icon name=${playing ? 'pause' : 'play'} size="18" stroke="2" solid></glass-icon>
-        </button>
+        ></glass-icon-button>
       </div>
       ${this.config.buttons?.length
         ? html`<div class="buttons">
@@ -97,15 +99,14 @@ export class GlassMedia extends GlassElement {
               const e = this.hass!.states[id];
               if (!e) return nothing;
               const on = !['off', 'standby', 'unavailable', 'unknown'].includes(e.state);
-              return html`<button
-                type="button"
-                class="device ${on ? 'on' : ''}"
-                aria-pressed=${on ? 'true' : 'false'}
+              return html`<glass-button
+                kind="secondary"
+                ?dark=${(this.config!.style ?? 'dark') === 'dark'}
+                ?on=${on}
                 ?disabled=${isUnavailable(e)}
                 @click=${() => this.toggle(id, on)}
-              >
-                ${nameInRoom(this.hass!, e)} · ${isUnavailable(e) ? 'Offline' : on ? 'On' : 'Off'}
-              </button>`;
+                >${nameInRoom(this.hass!, e)} · ${isUnavailable(e) ? 'Offline' : on ? 'On' : 'Off'}</glass-button
+              >`;
             })}
           </div>`
         : nothing}
@@ -138,19 +139,14 @@ export class GlassMedia extends GlassElement {
         background: var(--glass-dark-surface);
         color: #fff;
         --muted: rgba(255, 255, 255, 0.75);
-        --play-bg: #fff;
-        --play-fg: #121316; /* the dark card stays dark in both themes */
-        --chip-border: rgba(255, 255, 255, 0.3);
-        --chip-on: rgba(255, 255, 255, 0.12);
+      }
+      .play {
+        position: relative;
       }
       .light {
         ${cardSurface}
         color: var(--glass-ink);
         --muted: var(--glass-text-muted);
-        --play-bg: var(--glass-ink);
-        --play-fg: var(--glass-on-ink);
-        --chip-border: rgba(var(--glass-line-rgb), 0.12);
-        --chip-on: var(--glass-solid);
       }
       .top {
         display: flex;
@@ -179,44 +175,10 @@ export class GlassMedia extends GlassElement {
       .artist {
         color: var(--muted);
       }
-      .play {
-        all: unset;
-        width: 52px;
-        height: 52px;
-        flex: none;
-        border-radius: 50%;
-        background: var(--play-bg);
-        color: var(--play-fg);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-      }
-      .play:disabled {
-        opacity: 0.4;
-        cursor: default;
-      }
       .buttons {
         display: flex;
         gap: 8px;
         flex-wrap: wrap;
-      }
-      .device {
-        all: unset;
-        box-sizing: border-box;
-        height: 40px;
-        padding: 0 16px;
-        border-radius: 20px;
-        border: 1px solid var(--chip-border);
-        font-size: var(--glass-text-caption);
-        cursor: pointer;
-      }
-      .device.on {
-        background: var(--chip-on);
-      }
-      .device:disabled {
-        opacity: 0.5;
-        cursor: default;
       }
       button:focus-visible {
         outline: 2px solid currentColor;

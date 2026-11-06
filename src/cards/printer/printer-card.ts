@@ -1,4 +1,6 @@
 import { css, html, nothing, svg, type PropertyValues } from 'lit';
+import '../../elements/glass-chip.js';
+import type { Tone } from '../../elements/glass-chip.js';
 import { heading } from '../../elements/type.js';
 import { nil } from '../../elements/nil.js';
 import { GlassElement } from '../../glass-element.js';
@@ -158,7 +160,7 @@ export class GlassPrinter extends GlassElement {
       <span class="head">
         <h2 id="h">${title}</h2>
         <span class="right">
-          <span class="pill ${pill.tone} ${pill === PILL.done ? 'ringing' : ''}"><span class="dot"></span>${pill.text}</span>
+          <glass-pill class=${pill === PILL.done ? 'ringing' : ''} tone=${pill.tone as Tone}>${pill.text}</glass-pill>
           ${!p.showFull
             ? html`<button type="button" class="collapse" aria-label="Collapse printer card" @click=${() => (this.expanded = false)}>
                 <glass-icon name="chevron-up" size="16" stroke="1.8"></glass-icon>
@@ -273,48 +275,6 @@ export class GlassPrinter extends GlassElement {
         display: flex;
         align-items: center;
         gap: 8px;
-      }
-      .pill {
-        height: 30px;
-        padding: 0 12px;
-        border-radius: 15px;
-        font-size: var(--glass-text-caption);
-        display: flex;
-        align-items: center;
-        gap: 8px;
-      }
-      .pill .dot {
-        width: 7px;
-        height: 7px;
-        border-radius: 50%;
-      }
-      .pill.info {
-        background: var(--glass-info-tint);
-        color: var(--glass-info-ink);
-      }
-      .pill.info .dot {
-        background: var(--glass-info);
-      }
-      .pill.success {
-        background: var(--glass-success-tint);
-        color: var(--glass-success-ink);
-      }
-      .pill.success .dot {
-        background: var(--glass-go);
-      }
-      .pill.attention {
-        background: var(--glass-attention-tint);
-        color: var(--glass-attention-ink);
-      }
-      .pill.attention .dot {
-        background: var(--glass-attention);
-      }
-      .pill.neutral {
-        background: var(--glass-neutral-tint);
-        color: var(--glass-text-secondary);
-      }
-      .pill.neutral .dot {
-        background: var(--glass-grey);
       }
       .collapse {
         all: unset;

@@ -1,4 +1,6 @@
 import { css, html, nothing, type PropertyValues } from 'lit';
+import '../../elements/glass-button.js';
+import type { GlassSegmented } from '../../elements/glass-button.js';
 import { heading } from '../../elements/type.js';
 import { GlassElement } from '../../glass-element.js';
 import { customElement, property, state } from 'lit/decorators.js';
@@ -98,18 +100,14 @@ export class GlassRooms extends GlassElement {
       <div class="header">
         <h2>${this.config.title ?? 'Rooms'}</h2>
         ${tabs.length > 1
-          ? html`<div class="floors" role="group" aria-label="Floor">
-              ${tabs.map(
-                (t) => html`<button
-                  type="button"
-                  class=${t === current ? 'current' : ''}
-                  aria-pressed=${t === current ? 'true' : 'false'}
-                  @click=${() => this.pickFloor(t.id)}
-                >
-                  ${t.label}
-                </button>`,
-              )}
-            </div>`
+          ? html`<glass-segmented
+              class="floors"
+              look="dark"
+              label="Floor"
+              .options=${tabs.map((t) => ({ value: t.id, label: t.label }))}
+              .value=${current?.id ?? ''}
+              @change=${(ev: Event) => this.pickFloor((ev.target as GlassSegmented).value)}
+            ></glass-segmented>`
           : nothing}
       </div>
       <div class="grid">
@@ -149,32 +147,6 @@ export class GlassRooms extends GlassElement {
       }
       h2 {
         ${heading}
-      }
-      .floors {
-        display: flex;
-        gap: 4px;
-        padding: 4px;
-        border-radius: 22px;
-        background: rgba(var(--glass-surface-rgb), 0.6);
-      }
-      .floors button {
-        all: unset;
-        height: 36px;
-        padding: 0 12px;
-        border-radius: 18px;
-        font-size: var(--glass-text-caption);
-        display: flex;
-        align-items: center;
-        cursor: pointer;
-        -webkit-tap-highlight-color: transparent;
-      }
-      .floors button.current {
-        background: var(--glass-ink);
-        color: var(--glass-on-ink);
-      }
-      .floors button:focus-visible {
-        outline: 2px solid var(--glass-ink);
-        outline-offset: 2px;
       }
       .grid {
         display: grid;

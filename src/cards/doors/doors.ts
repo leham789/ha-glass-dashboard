@@ -1,4 +1,5 @@
 import { css, html, nothing, type PropertyValues } from 'lit';
+import '../../elements/glass-chip.js';
 import { heading } from '../../elements/type.js';
 import { tileSurface } from '../../elements/surfaces.js';
 import { GlassElement } from '../../glass-element.js';
@@ -101,12 +102,12 @@ export class GlassDoors extends GlassElement {
       ${this.config.title
         ? html`<header>
             <h1>${this.config.title}</h1>
-            <span class="pill ${open ? 'attention ringing' : quiet ? 'quiet' : 'ok'}"
-              ><span class="dot"></span>${open
+            <glass-pill class=${open ? 'ringing' : ''} tone=${open ? 'attention' : quiet ? 'neutral' : 'success'}
+              >${open
                 ? `${open} ${noun}${open > 1 ? 's' : ''} open`
                 : quiet
                   ? `${quiet} ${noun}${quiet > 1 ? 's' : ''} not reporting`
-                  : `All ${noun}s shut`}</span
+                  : `All ${noun}s shut`}</glass-pill
             >
           </header>`
         : nothing}
@@ -160,41 +161,6 @@ export class GlassDoors extends GlassElement {
         font-size: 28px;
         font-weight: 400;
         letter-spacing: -0.4px;
-      }
-      .pill {
-        height: 30px;
-        padding: 0 12px;
-        border-radius: 15px;
-        font-size: var(--glass-text-caption);
-        display: flex;
-        align-items: center;
-        gap: 8px;
-      }
-      .pill .dot {
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
-      }
-      .pill.attention {
-        background: var(--glass-attention-tint);
-        color: var(--glass-attention-ink);
-      }
-      .pill.attention .dot {
-        background: var(--glass-attention);
-      }
-      .pill.ok {
-        background: var(--glass-success-tint);
-        color: var(--glass-success-ink);
-      }
-      .pill.ok .dot {
-        background: var(--glass-go);
-      }
-      .pill.quiet {
-        background: var(--glass-neutral-tint);
-        color: var(--glass-text-secondary);
-      }
-      .pill.quiet .dot {
-        background: var(--glass-grey);
       }
       section {
         display: flex;

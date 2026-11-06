@@ -1,4 +1,5 @@
 import { css, html, nothing, type PropertyValues } from 'lit';
+import '../../elements/glass-chip.js';
 import { GlassElement } from '../../glass-element.js';
 import { customElement, property, state } from 'lit/decorators.js';
 import { tokens } from '../../tokens.js';
@@ -85,7 +86,7 @@ export class GlassRoomDevices extends GlassElement {
     ];
     if (!chips.length) return nothing;
     return html`<section aria-label="Devices">
-      ${chips.map((c) => html`<button type="button" @click=${() => openMoreInfo(this, c.id)}>${c.text}</button>`)}
+      ${chips.map((c) => html`<button type="button" @click=${() => openMoreInfo(this, c.id)}><glass-info-chip device>${c.text}</glass-info-chip></button>`)}
     </section>`;
   }
 
@@ -100,15 +101,12 @@ export class GlassRoomDevices extends GlassElement {
         flex-wrap: wrap;
         gap: 8px;
       }
+      /* the Info chip (device size), tappable for its pop-up; never wider than the card */
       button {
         all: unset;
-        height: 36px;
-        padding: 0 16px;
+        display: inline-flex;
+        max-width: 100%;
         border-radius: 18px;
-        background: rgba(var(--glass-surface-rgb), 0.7);
-        font-size: var(--glass-text-caption);
-        display: flex;
-        align-items: center;
         cursor: pointer;
       }
       button:focus-visible {

@@ -1,4 +1,5 @@
 import { css, html, nothing, type PropertyValues } from 'lit';
+import '../../elements/glass-chip.js';
 import { GlassElement } from '../../glass-element.js';
 import { customElement, property, state } from 'lit/decorators.js';
 import { tokens } from '../../tokens.js';
@@ -132,14 +133,14 @@ export class GlassHomeHeader extends GlassElement {
         ? html`<section aria-label="${v.room} temperature">
             <span class="hero ${v.quiet ? 'quiet' : ''}"><span>${whole}</span><span class="decimal">.${decimal}°</span></span>
             <span class="chips">
-              <span class="chip subject">${v.room}</span>
+              <glass-info-chip subject>${v.room}</glass-info-chip>
               ${v.outside !== undefined
-                ? html`<span class="chip"><glass-icon name="cloud" size="14" stroke="1.8"></glass-icon>${v.outside}° outside</span>`
+                ? html`<glass-info-chip icon="cloud">${v.outside}° outside</glass-info-chip>`
                 : nothing}
               ${v.quiet
-                ? html`<span class="chip quiet"><i class="dot"></i>Not reporting</span>`
+                ? html`<glass-pill tone="neutral">Not reporting</glass-pill>`
                 : v.humidity !== undefined
-                  ? html`<span class="chip"><glass-icon name="droplet" size="14" stroke="1.8"></glass-icon>${Math.round(v.humidity)}%</span>`
+                  ? html`<glass-info-chip icon="droplet">${Math.round(v.humidity)}%</glass-info-chip>`
                   : nothing}
             </span>
           </section>`
@@ -222,22 +223,6 @@ export class GlassHomeHeader extends GlassElement {
         font-weight: 200;
         letter-spacing: -5px;
       }
-      .decimal {
-        color: var(--glass-grey);
-      }
-      /* the room's sensor has gone quiet: the whole number greys too */
-      .hero.quiet {
-        color: var(--glass-grey);
-      }
-      .chip.quiet {
-        color: var(--glass-text-muted);
-      }
-      .chip.quiet .dot {
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
-        background: var(--glass-grey);
-      }
       .chips {
         display: flex;
         gap: 8px;
@@ -245,20 +230,12 @@ export class GlassHomeHeader extends GlassElement {
         overflow-x: auto;
         scrollbar-width: none;
       }
-      .chip {
-        flex: none;
-        height: 32px;
-        padding: 0 12px;
-        border-radius: 16px;
-        background: rgba(var(--glass-surface-rgb), 0.7);
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        font-size: var(--glass-text-caption);
+      .decimal {
+        color: var(--glass-grey);
       }
-      .chip.subject {
-        background: var(--glass-ink);
-        color: var(--glass-on-ink);
+      /* the room's sensor has gone quiet: the whole number greys too */
+      .hero.quiet {
+        color: var(--glass-grey);
       }
     `,
   ];

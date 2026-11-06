@@ -1,4 +1,7 @@
 import { css, html, nothing, type CSSResultGroup } from 'lit';
+import '../elements/glass-chip.js';
+import '../elements/glass-button.js';
+import type { GlassSegmented } from '../elements/glass-button.js';
 import { nil } from '../elements/nil.js';
 import { customElement, property, state } from 'lit/decorators.js';
 import { styleMap } from 'lit/directives/style-map.js';
@@ -54,18 +57,12 @@ export class GlassTempsSheet extends GlassSheet {
             </span>`
           : nothing}
       </div>
-      <div class="segmented" role="group" aria-label="Sort">
-        ${(['Rooms', 'Coldest', 'Warmest'] as Sort[]).map(
-          (s) => html`<button
-            type="button"
-            class=${s === this.sort ? 'current' : ''}
-            aria-pressed=${s === this.sort ? 'true' : 'false'}
-            @click=${() => (this.sort = s)}
-          >
-            ${s}
-          </button>`,
-        )}
-      </div>
+      <glass-segmented
+        label="Sort"
+        .options=${(['Rooms', 'Coldest', 'Warmest'] as Sort[]).map((s) => ({ value: s, label: s }))}
+        .value=${this.sort}
+        @change=${(ev: Event) => (this.sort = (ev.target as GlassSegmented).value as Sort)}
+      ></glass-segmented>
       <div class="grid">
         ${rooms.map((r) => {
           const band = r.quiet ? 'Not reporting' : tempBand(r.temperature!);
@@ -81,7 +78,7 @@ export class GlassTempsSheet extends GlassSheet {
           >
             <span class="top">
               <span class="name">${r.name}</span>
-              <span class="pill" style=${styleMap({ background: look.pillBg, color: look.pillFg })}>${band}</span>
+              <glass-tag bg=${look.pillBg} fg=${look.pillFg}>${band}</glass-tag>
             </span>
             <span class="temp">${r.temperature!.toFixed(1)}°</span>
             ${r.humidity !== undefined || r.quiet
@@ -101,9 +98,7 @@ export class GlassTempsSheet extends GlassSheet {
         ? html`<p class="empty">No rooms have a temperature sensor yet. Choose one per area in Settings › Areas.</p>`
         : nothing}
       ${this.energyPath
-        ? html`<button type="button" class="wide" @click=${() => this.goEnergy()}>
-            Go to Heating &amp; Energy <glass-icon name="arrow-up-right" size="16" stroke="1.8"></glass-icon>
-          </button>`
+        ? html`<glass-button size="full" @click=${() => this.goEnergy()}>Go to Heating &amp; Energy <glass-icon name="arrow-up-right" size="16" stroke="1.8"></glass-icon></glass-button>`
         : nothing}
     `;
   }
@@ -147,26 +142,6 @@ export class GlassTempsSheet extends GlassSheet {
         letter-spacing: -3px;
         line-height: 0.9;
       }
-      .segmented {
-        display: flex;
-        gap: 4px;
-        padding: 4px;
-        border-radius: 26px;
-        background: rgba(var(--glass-line-rgb), 0.06);
-      }
-      .segmented button {
-        all: unset;
-        flex: 1;
-        height: 44px;
-        border-radius: 22px;
-        text-align: center;
-        font-size: var(--glass-text-chip);
-        cursor: pointer;
-      }
-      .segmented button.current {
-        background: var(--glass-raised);
-        box-shadow: var(--glass-raised-shadow);
-      }
       .grid {
         display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -200,15 +175,6 @@ export class GlassTempsSheet extends GlassSheet {
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
-      }
-      .pill {
-        flex: none;
-        height: 24px;
-        padding: 0 8px;
-        border-radius: 12px;
-        font-size: var(--glass-text-tiny);
-        display: flex;
-        align-items: center;
       }
       .temp {
         font-size: 44px;
@@ -251,25 +217,6 @@ export class GlassTempsSheet extends GlassSheet {
         margin-left: -1px;
         border-radius: 1px;
         background: var(--glass-ink);
-      }
-      .wide {
-        all: unset;
-        box-sizing: border-box;
-        height: 56px;
-        border-radius: 28px;
-        background: var(--glass-ink);
-        color: var(--glass-on-ink);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-        font-size: var(--glass-text-body);
-        cursor: pointer;
-      }
-      .segmented button:focus-visible,
-      .wide:focus-visible {
-        outline: 2px solid var(--glass-ink);
-        outline-offset: 2px;
       }
       .empty {
         margin: 0;

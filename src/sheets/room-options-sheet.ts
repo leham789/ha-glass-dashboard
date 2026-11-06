@@ -1,4 +1,5 @@
 import { css, html, nothing, type CSSResultGroup } from 'lit';
+import '../elements/glass-button.js';
 import { heading } from '../elements/type.js';
 import { customElement, property, state } from 'lit/decorators.js';
 import { GlassSheet } from '../elements/glass-sheet.js';
@@ -62,15 +63,14 @@ export class GlassRoomOptionsSheet extends GlassSheet {
       ${room.lights.length
         ? html`<div class="actions">
             ${actions.map(
-              (a) => html`<button
-                type="button"
-                class=${a.id === 'off' ? 'dark' : ''}
+              (a) => html`<glass-button
+                kind="tile"
+                ?dark=${a.id === 'off'}
                 ?disabled=${!reachable.length}
+                hint=${this.done === a.id ? 'Done' : a.hint}
                 @click=${() => this.run(a.id, reachable)}
-              >
-                <span class="hint">${this.done === a.id ? 'Done' : a.hint}</span>
-                <span class="name">${a.name}</span>
-              </button>`,
+                >${a.name}</glass-button
+              >`,
             )}
           </div>`
         : nothing}
@@ -119,9 +119,7 @@ export class GlassRoomOptionsSheet extends GlassSheet {
   }
 
   private switch(on: boolean, label: string, toggle: () => void) {
-    return html`<button type="button" role="switch" class="switch ${on ? 'on' : ''}" aria-checked=${on ? 'true' : 'false'} aria-label=${label} @click=${toggle}>
-      <span class="knob"></span>
-    </button>`;
+    return html`<glass-switch ?checked=${on} label=${label} @change=${toggle}></glass-switch>`;
   }
 
   private toggleHidden(id: string, shown: boolean) {
@@ -169,33 +167,6 @@ export class GlassRoomOptionsSheet extends GlassSheet {
         display: grid;
         grid-template-columns: repeat(3, minmax(0, 1fr));
         gap: 12px;
-      }
-      .actions button {
-        all: unset;
-        box-sizing: border-box;
-        height: 92px;
-        padding: 12px;
-        border-radius: var(--glass-radius-small-tile);
-        background: var(--glass-solid);
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        cursor: pointer;
-      }
-      .actions button.dark {
-        background: var(--glass-ink);
-        color: var(--glass-on-ink);
-      }
-      .actions button:disabled {
-        opacity: 0.5;
-        cursor: default;
-      }
-      .hint {
-        font-size: var(--glass-text-small);
-        opacity: 0.75;
-      }
-      .name {
-        font-size: var(--glass-text-body);
       }
       .group {
         border-radius: var(--glass-radius-tile);
@@ -269,34 +240,6 @@ export class GlassRoomOptionsSheet extends GlassSheet {
         font-size: var(--glass-text-caption);
         color: var(--glass-text-secondary);
         text-align: right;
-      }
-      .switch {
-        all: unset;
-        position: relative;
-        width: 52px;
-        height: 32px;
-        flex: none;
-        border-radius: 16px;
-        background: rgba(var(--glass-line-rgb), 0.15);
-        cursor: pointer;
-        transition: background 0.2s ease;
-      }
-      .switch.on {
-        background: var(--glass-go);
-      }
-      .knob {
-        position: absolute;
-        top: 3px;
-        left: 3px;
-        width: 26px;
-        height: 26px;
-        border-radius: 50%;
-        background: var(--glass-knob);
-        box-shadow: var(--glass-knob-shadow);
-        transition: left 0.2s ease;
-      }
-      .switch.on .knob {
-        left: 23px;
       }
       button:focus-visible {
         outline: 2px solid var(--glass-ink);

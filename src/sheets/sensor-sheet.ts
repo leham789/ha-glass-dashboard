@@ -1,4 +1,6 @@
 import { html, nothing, type PropertyValues } from 'lit';
+import '../elements/glass-button.js';
+import type { GlassSegmented } from '../elements/glass-button.js';
 import { nil } from '../elements/nil.js';
 import { customElement, state } from 'lit/decorators.js';
 import { GlassEntitySheet, type Fact, type Tone } from './entity-sheet.js';
@@ -220,11 +222,13 @@ export class GlassSensorSheet extends GlassEntitySheet {
         ? html`<div class="card">
               <div class="card-head">
                 <h2>History</h2>
-                <span class="segmented" role="group" aria-label="Range">
-                  ${(['24 h', '7 days'] as Range[]).map(
-                    (r) => html`<button type="button" class=${r === this.range ? 'on' : ''} aria-pressed=${r === this.range ? 'true' : 'false'} @click=${() => (this.range = r)}>${r}</button>`,
-                  )}
-                </span>
+                <glass-segmented
+                  look="small"
+                  label="Range"
+                  .options=${(['24 h', '7 days'] as Range[]).map((r) => ({ value: r, label: r }))}
+                  .value=${this.range}
+                  @change=${(ev: Event) => (this.range = (ev.target as GlassSegmented).value as Range)}
+                ></glass-segmented>
               </div>
               <glass-history-chart
                 .kind=${c.shape as 'line' | 'bars' | 'timeline'}

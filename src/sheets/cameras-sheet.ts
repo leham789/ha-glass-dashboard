@@ -1,4 +1,5 @@
 import { css, html, nothing, type CSSResultGroup, type PropertyValues } from 'lit';
+import '../elements/glass-button.js';
 import { heading } from '../elements/type.js';
 import { customElement, property, state } from 'lit/decorators.js';
 import { keyed } from 'lit/directives/keyed.js';
@@ -174,19 +175,10 @@ export class GlassCamerasSheet extends GlassSheet {
         ? html`<div class="group">
             <div class="row">
               <span class="text"><span class="n">Cycle cameras</span><span class="sub">Next camera every 10 s, round and round</span></span>
-              <button
-                type="button"
-                role="switch"
-                class="switch ${this.cycling ? 'on' : ''}"
-                aria-checked=${this.cycling ? 'true' : 'false'}
-                aria-label="Cycle cameras"
-                @click=${() => {
+              <glass-switch ?checked=${this.cycling} label="Cycle cameras" @change=${() => {
                   this.cycling = !this.cycling;
                   this.cycleStart = Date.now();
-                }}
-              >
-                <span class="knob"></span>
-              </button>
+                }}></glass-switch>
             </div>
           </div>`
         : nothing}
@@ -458,34 +450,6 @@ export class GlassCamerasSheet extends GlassSheet {
         font-size: var(--glass-text-small);
         color: var(--glass-text-muted);
       }
-      .switch {
-        all: unset;
-        position: relative;
-        width: 52px;
-        height: 32px;
-        flex: none;
-        border-radius: 16px;
-        background: rgba(var(--glass-line-rgb), 0.15);
-        cursor: pointer;
-        transition: background 0.2s ease;
-      }
-      .switch.on {
-        background: var(--glass-go);
-      }
-      .knob {
-        position: absolute;
-        top: 3px;
-        left: 3px;
-        width: 26px;
-        height: 26px;
-        border-radius: 50%;
-        background: var(--glass-knob);
-        box-shadow: var(--glass-knob-shadow);
-        transition: left 0.2s ease;
-      }
-      .switch.on .knob {
-        left: 23px;
-      }
       .recent {
         display: flex;
         flex-direction: column;
@@ -586,10 +550,6 @@ export class GlassCamerasSheet extends GlassSheet {
         color: #121316;
         background: linear-gradient(150deg, #fefaf0 0%, #f8ebcb 100%);
         border-color: #f2dfb4;
-      }
-      .primary {
-        background: var(--glass-ink);
-        color: var(--glass-on-ink);
       }
       button:focus-visible {
         outline: 2px solid var(--glass-ink);

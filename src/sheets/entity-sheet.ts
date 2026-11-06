@@ -1,4 +1,5 @@
 import { css, html, nothing, type CSSResultGroup, type PropertyValues, type TemplateResult } from 'lit';
+import '../elements/glass-chip.js';
 import { heading } from '../elements/type.js';
 import { cardSurface, tileSurface } from '../elements/surfaces.js';
 import { property } from 'lit/decorators.js';
@@ -81,7 +82,7 @@ export abstract class GlassEntitySheet extends GlassSheet {
   }
 
   protected renderPill(text: string, tone: Tone): TemplateResult {
-    return html`<span class="pill ${tone}"><span class="dot"></span>${text}</span>`;
+    return html`<glass-pill class="pill" tone=${tone}>${text}</glass-pill>`;
   }
 
   protected renderFacts(facts: Fact[]): TemplateResult {
@@ -94,9 +95,7 @@ export abstract class GlassEntitySheet extends GlassSheet {
   protected renderChips(options: string[], current: string | undefined, pick: (o: string) => void, even = false): TemplateResult {
     return html`<div class="chips ${even ? 'even' : ''}">
       ${options.map(
-        (o) => html`<button type="button" class=${o === current ? 'on' : ''} aria-pressed=${o === current ? 'true' : 'false'} @click=${() => pick(o)}>
-          ${o}
-        </button>`,
+        (o) => html`<glass-toggle-chip size=${even ? 'fill' : 'default'} ?on=${o === current} @click=${() => pick(o)}>${o}</glass-toggle-chip>`,
       )}
     </div>`;
   }
@@ -138,46 +137,6 @@ export abstract class GlassEntitySheet extends GlassSheet {
       .caption {
         font-size: var(--glass-text-caption);
         color: var(--glass-text-muted);
-      }
-      .pill {
-        flex: none;
-        height: 30px;
-        margin-bottom: 4px;
-        padding: 0 12px;
-        border-radius: 15px;
-        font-size: var(--glass-text-caption);
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        background: var(--glass-neutral-tint);
-        color: var(--glass-text-secondary);
-      }
-      .pill .dot {
-        width: 7px;
-        height: 7px;
-        border-radius: 50%;
-        background: var(--glass-grey);
-      }
-      .pill.success {
-        background: var(--glass-success-tint);
-        color: var(--glass-success-ink);
-      }
-      .pill.success .dot {
-        background: var(--glass-go);
-      }
-      .pill.attention {
-        background: var(--glass-attention-tint);
-        color: var(--glass-attention-ink);
-      }
-      .pill.attention .dot {
-        background: var(--glass-attention);
-      }
-      .pill.info {
-        background: var(--glass-info-tint);
-        color: var(--glass-info-ink);
-      }
-      .pill.info .dot {
-        background: var(--glass-info);
       }
       .card {
         ${cardSurface}
@@ -247,81 +206,6 @@ export abstract class GlassEntitySheet extends GlassSheet {
         display: flex;
         flex-wrap: wrap;
         gap: var(--glass-space-chip);
-      }
-      .chips button {
-        all: unset;
-        box-sizing: border-box;
-        height: 44px;
-        padding: 0 20px;
-        border-radius: 22px;
-        border: 1px solid var(--glass-surface-border);
-        background: rgba(var(--glass-surface-rgb), 0.7);
-        font-size: var(--glass-text-body);
-        cursor: pointer;
-      }
-      .chips.even button {
-        flex: 1;
-        height: 40px;
-        padding: 0;
-        text-align: center;
-        font-size: var(--glass-text-chip);
-      }
-      .chips button.on {
-        background: var(--glass-ink);
-        border-color: var(--glass-ink);
-        color: var(--glass-on-ink);
-      }
-      .segmented {
-        display: flex;
-        gap: 4px;
-        padding: 4px;
-        border-radius: 20px;
-        background: rgba(var(--glass-line-rgb), 0.06);
-      }
-      .segmented button {
-        all: unset;
-        height: 32px;
-        padding: 0 12px;
-        border-radius: 16px;
-        font-size: var(--glass-text-caption);
-        cursor: pointer;
-      }
-      .segmented button.on {
-        background: var(--glass-raised);
-        box-shadow: var(--glass-raised-shadow);
-      }
-      .switch {
-        all: unset;
-        position: relative;
-        flex: none;
-        width: 52px;
-        height: 32px;
-        border-radius: 16px;
-        background: rgba(var(--glass-line-rgb), 0.15);
-        cursor: pointer;
-        transition: background 0.2s ease;
-      }
-      .switch::after {
-        content: '';
-        position: absolute;
-        top: 3px;
-        left: 3px;
-        width: 26px;
-        height: 26px;
-        border-radius: 50%;
-        background: var(--glass-knob);
-        box-shadow: var(--glass-knob-shadow);
-        transition: left 0.2s ease;
-      }
-      .switch.on {
-        background: var(--glass-go);
-      }
-      .switch.on::after {
-        left: 23px;
-      }
-      .switch:disabled {
-        opacity: 0.5;
-        cursor: default;
       }
       button:focus-visible {
         outline: 2px solid var(--glass-ink);

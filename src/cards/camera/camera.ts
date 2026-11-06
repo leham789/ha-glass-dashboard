@@ -1,4 +1,5 @@
 import { css, html, nothing, type PropertyValues } from 'lit';
+import '../../elements/glass-chip.js';
 import { heading } from '../../elements/type.js';
 import { GlassElement } from '../../glass-element.js';
 import { customElement, property, state } from 'lit/decorators.js';
@@ -126,7 +127,7 @@ export class GlassCamera extends GlassElement {
             <span class="name">${c.name ?? shortName(cam, '')}</span>
             ${last ? html`<span class="last">${last}</span>` : nothing}
           </span>
-          ${motion ? html`<span class="pill ${moving ? 'motion ringing' : 'clear'}">${moving ? 'Motion' : 'Clear'}</span>` : nothing}
+          ${motion ? html`<glass-pill class=${moving ? 'ringing' : ''} tone=${moving ? 'attention' : 'success'}>${moving ? 'Motion' : 'Clear'}</glass-pill>` : nothing}
         </div>
       </section>
     `;
@@ -261,23 +262,6 @@ export class GlassCamera extends GlassElement {
       .last {
         font-size: var(--glass-text-caption);
         color: var(--glass-text-muted);
-      }
-      .pill {
-        flex: none;
-        height: 30px;
-        padding: 0 12px;
-        border-radius: 15px;
-        font-size: var(--glass-text-caption);
-        display: flex;
-        align-items: center;
-      }
-      .pill.motion {
-        background: var(--glass-attention-tint);
-        color: var(--glass-attention-ink);
-      }
-      .pill.clear {
-        background: var(--glass-success-tint);
-        color: var(--glass-success-ink);
       }
     `,
   ];

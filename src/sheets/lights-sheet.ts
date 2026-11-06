@@ -1,4 +1,6 @@
 import { css, html, nothing, type CSSResultGroup } from 'lit';
+import '../elements/glass-button.js';
+import type { GlassSegmented } from '../elements/glass-button.js';
 import { customElement, property, state } from 'lit/decorators.js';
 import { GlassSheet } from '../elements/glass-sheet.js';
 import { isUnavailable } from '../ha.js';
@@ -40,23 +42,16 @@ export class GlassLightsSheet extends GlassSheet {
       <div class="summary">
         <span class="big"><span class="n">${onIds.length}</span><span class="unit">on of ${reachable.length}</span></span>
         ${onIds.length || showUndo
-          ? html`<button type="button" class="primary" @click=${() => (showUndo ? this.undo() : this.allOff(onIds))}>
-              <glass-icon name="power" size="18" stroke="1.7"></glass-icon>${showUndo ? 'Undo' : 'All off'}
-            </button>`
+          ? html`<glass-button icon="power" @click=${() => (showUndo ? this.undo() : this.allOff(onIds))}>${showUndo ? 'Undo' : 'All off'}</glass-button>`
           : nothing}
       </div>
-      <div class="filters" role="group" aria-label="Filter">
-        ${(['On', 'All', 'Offline'] as Filter[]).map(
-          (f) => html`<button
-            type="button"
-            class=${f === this.filter ? 'current' : ''}
-            aria-pressed=${f === this.filter ? 'true' : 'false'}
-            @click=${() => (this.filter = f)}
-          >
-            ${f}
-          </button>`,
-        )}
-      </div>
+      <glass-segmented
+        class="filters"
+        label="Filter"
+        .options=${(['On', 'All', 'Offline'] as Filter[]).map((f) => ({ value: f, label: f }))}
+        .value=${this.filter}
+        @change=${(ev: Event) => (this.filter = (ev.target as GlassSegmented).value as Filter)}
+      ></glass-segmented>
       ${groups.map((g) => {
         const shown = g.lights.filter(visible);
         if (!shown.length) return nothing;
@@ -114,39 +109,6 @@ export class GlassLightsSheet extends GlassSheet {
         font-weight: 300;
         color: var(--glass-text-muted);
       }
-      .primary {
-        all: unset;
-        height: 52px;
-        padding: 0 20px;
-        border-radius: 26px;
-        background: var(--glass-ink);
-        color: var(--glass-on-ink);
-        font-size: var(--glass-text-body);
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        cursor: pointer;
-      }
-      .filters {
-        display: flex;
-        gap: 4px;
-        padding: 4px;
-        border-radius: 26px;
-        background: rgba(var(--glass-line-rgb), 0.06);
-      }
-      .filters button {
-        all: unset;
-        flex: 1;
-        height: 44px;
-        border-radius: 22px;
-        text-align: center;
-        font-size: var(--glass-text-chip);
-        cursor: pointer;
-      }
-      .filters button.current {
-        background: var(--glass-raised);
-        box-shadow: var(--glass-raised-shadow);
-      }
       .group {
         display: flex;
         flex-direction: column;
@@ -159,11 +121,6 @@ export class GlassLightsSheet extends GlassSheet {
         color: var(--glass-text-muted);
         display: flex;
         justify-content: space-between;
-      }
-      .primary:focus-visible,
-      .filters button:focus-visible {
-        outline: 2px solid var(--glass-ink);
-        outline-offset: 2px;
       }
       .empty {
         margin: 0;

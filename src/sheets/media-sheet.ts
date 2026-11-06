@@ -1,4 +1,5 @@
 import { css, html, nothing, type CSSResultGroup } from 'lit';
+import '../elements/glass-button.js';
 import { customElement, state } from 'lit/decorators.js';
 import { GlassEntitySheet } from './entity-sheet.js';
 import type { HassEntity } from '../ha.js';
@@ -117,32 +118,25 @@ export class GlassMediaSheet extends GlassEntitySheet {
 
       <div class="transport ${f & (SHUFFLE | REPEAT) ? 'full' : ''} ${off ? 'off' : ''}">
         ${f & SHUFFLE
-          ? html`<button type="button" class="mode ${a.shuffle ? 'on' : ''}" aria-label="Shuffle" aria-pressed=${a.shuffle ? 'true' : 'false'} @click=${() => this.call('shuffle_set', { shuffle: !a.shuffle })}>
-              <glass-icon name="shuffle" size="18" stroke="1.8"></glass-icon>
-            </button>`
+          ? html`<glass-icon-button look="bare" size="44" icon="shuffle" toggle ?on=${!!a.shuffle} label="Shuffle" @click=${() => this.call('shuffle_set', { shuffle: !a.shuffle })}></glass-icon-button>`
           : nothing}
         ${f & PREVIOUS
-          ? html`<button type="button" class="step" aria-label="Previous" @click=${() => this.call('media_previous_track')}>
-              <glass-icon name="skip-back" size="18" stroke="2" solid></glass-icon>
-            </button>`
+          ? html`<glass-icon-button look="white" icon="skip-back" icon-size="18" solid label="Previous" @click=${() => this.call('media_previous_track')}></glass-icon-button>`
           : nothing}
-        <button type="button" class="play" aria-label=${playing ? 'Pause' : 'Play'} @click=${() => this.call('media_play_pause')}>
-          <glass-icon name=${playing ? 'pause' : 'play'} size="22" stroke="2" solid></glass-icon>
-        </button>
+        <glass-icon-button class="play" look="dark" size="64" icon=${playing ? 'pause' : 'play'} icon-size="22" solid label=${playing ? 'Pause' : 'Play'} @click=${() => this.call('media_play_pause')}></glass-icon-button>
         ${f & NEXT
-          ? html`<button type="button" class="step" aria-label="Next" @click=${() => this.call('media_next_track')}>
-              <glass-icon name="skip-forward" size="18" stroke="2" solid></glass-icon>
-            </button>`
+          ? html`<glass-icon-button look="white" icon="skip-forward" icon-size="18" solid label="Next" @click=${() => this.call('media_next_track')}></glass-icon-button>`
           : nothing}
         ${f & REPEAT
-          ? html`<button
-              type="button"
-              class="mode ${a.repeat && a.repeat !== 'off' ? 'on' : ''}"
-              aria-label="Repeat ${a.repeat ?? 'off'}"
+          ? html`<glass-icon-button
+              look="bare"
+              size="44"
+              icon=${a.repeat === 'one' ? 'repeat-1' : 'repeat'}
+              toggle
+              ?on=${!!a.repeat && a.repeat !== 'off'}
+              label="Repeat ${a.repeat ?? 'off'}"
               @click=${() => this.call('repeat_set', { repeat: a.repeat === 'off' || !a.repeat ? 'all' : a.repeat === 'all' ? 'one' : 'off' })}
-            >
-              <glass-icon name=${a.repeat === 'one' ? 'repeat-1' : 'repeat'} size="18" stroke="1.8"></glass-icon>
-            </button>`
+            ></glass-icon-button>`
           : nothing}
       </div>
 
@@ -289,36 +283,6 @@ export class GlassMediaSheet extends GlassEntitySheet {
       }
       .transport.full {
         justify-content: space-between;
-      }
-      .transport button {
-        all: unset;
-        box-sizing: border-box;
-        flex: none;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-      }
-      .transport .mode {
-        width: 44px;
-        height: 44px;
-      }
-      .transport .mode.on {
-        background: var(--glass-ink);
-        color: var(--glass-on-ink);
-      }
-      .transport .step {
-        width: 52px;
-        height: 52px;
-        background: var(--glass-solid);
-        border: 1px solid rgba(var(--glass-line-rgb), 0.12);
-      }
-      .transport .play {
-        width: 64px;
-        height: 64px;
-        background: var(--glass-ink);
-        color: var(--glass-on-ink);
       }
       .transport.off,
       .volume.off {

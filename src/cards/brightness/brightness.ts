@@ -1,4 +1,5 @@
 import { css, html, nothing, type PropertyValues } from 'lit';
+import '../../elements/glass-chip.js';
 import { GlassElement } from '../../glass-element.js';
 import { customElement, property, state } from 'lit/decorators.js';
 import { cardSurface } from '../../elements/surfaces.js';
@@ -146,15 +147,7 @@ export class GlassBrightness extends GlassElement {
       ${tones.length
         ? html`<div class="tones">
             ${tones.map(
-              (t) => html`<button
-                type="button"
-                class=${t.name === current ? 'current' : ''}
-                aria-pressed=${t.name === current ? 'true' : 'false'}
-                ?disabled=${offline}
-                @click=${() => this.pick(t)}
-              >
-                <span class="swatch" style="background: ${t.swatch}"></span>${t.name}
-              </button>`,
+              (t) => html`<glass-colour-preset swatch=${t.swatch} ?selected=${t.name === current} ?disabled=${offline} @click=${() => this.pick(t)}>${t.name}</glass-colour-preset>`,
             )}
           </div>`
         : nothing}
@@ -291,37 +284,6 @@ export class GlassBrightness extends GlassElement {
         display: grid;
         grid-template-columns: repeat(4, minmax(0, 1fr));
         gap: 8px;
-      }
-      .tones button {
-        all: unset;
-        box-sizing: border-box;
-        height: 56px;
-        border-radius: var(--glass-radius-inset);
-        border: 1px solid var(--glass-hairline);
-        background: var(--glass-solid);
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        gap: 4px;
-        font-size: var(--glass-text-small);
-        cursor: pointer;
-      }
-      .tones button.current {
-        border-color: var(--glass-ink);
-      }
-      .tones button:focus-visible {
-        outline: 2px solid var(--glass-ink);
-        outline-offset: 2px;
-      }
-      .tones button:disabled {
-        opacity: 0.5;
-        cursor: default;
-      }
-      .swatch {
-        width: 16px;
-        height: 16px;
-        border-radius: 50%;
       }
     `,
   ];

@@ -1,4 +1,7 @@
 import { css, html, nothing, type CSSResultGroup } from 'lit';
+import '../elements/glass-chip.js';
+import '../elements/glass-button.js';
+import type { GlassSegmented } from '../elements/glass-button.js';
 import { customElement, state } from 'lit/decorators.js';
 import { GlassEntitySheet } from './entity-sheet.js';
 import type { HassEntity } from '../ha.js';
@@ -78,15 +81,8 @@ export class GlassLightSheet extends GlassEntitySheet {
         </span>
         <span class="right">
           ${off ? this.renderPill('Unavailable', 'neutral') : nothing}
-          <button
-            type="button"
-            role="switch"
-            class="switch ${on ? 'on' : ''}"
-            aria-checked=${on ? 'true' : 'false'}
-            aria-label="Power"
-            ?disabled=${off}
-            @click=${() => (haptic('light'), this.hass!.callService('light', on ? 'turn_off' : 'turn_on', { entity_id: e.entity_id }))}
-          ></button>
+          <glass-switch ?checked=${on} label="Power"
+            ?disabled=${off} @change=${() => (haptic('light'), this.hass!.callService('light', on ? 'turn_off' : 'turn_on', { entity_id: e.entity_id }))}></glass-switch>
         </span>
       </div>
 
@@ -112,11 +108,13 @@ export class GlassLightSheet extends GlassEntitySheet {
       ${hasWhite || hasColour
         ? html`<div class="colour ${off ? 'faded' : ''}">
             ${hasWhite && hasColour
-              ? html`<span class="tabs" role="group" aria-label="Colour mode">
-                  ${(['White', 'Colour'] as const).map(
-                    (t) => html`<button type="button" class=${t === tab ? 'on' : ''} aria-pressed=${t === tab ? 'true' : 'false'} @click=${() => (this.tab = t)}>${t}</button>`,
-                  )}
-                </span>`
+              ? html`<glass-segmented
+                  class="tabs"
+                  label="Colour mode"
+                  .options=${(['White', 'Colour'] as const).map((t) => ({ value: t, label: t }))}
+                  .value=${tab}
+                  @change=${(ev: Event) => (this.tab = (ev.target as GlassSegmented).value as 'White' | 'Colour')}
+                ></glass-segmented>`
               : nothing}
             ${hasWhite && (tab === 'White' || !hasColour)
               ? html`<label class="row-label"><span>Colour temperature</span><span class="dim">${kelvin} K</span></label>
@@ -140,9 +138,7 @@ export class GlassLightSheet extends GlassEntitySheet {
                     ${WHITES.map(([n, k]) => {
                       const kk = Math.min(kMax, Math.max(kMin, k));
                       const picked = on && a.color_mode === 'color_temp' && Math.abs(kelvin - kk) < 100;
-                      return html`<button type="button" class=${picked ? 'on' : ''} aria-pressed=${picked ? 'true' : 'false'} @click=${() => this.turnOn({ color_temp_kelvin: kk })}>
-                        <span class="swatch ${n.toLowerCase()}"></span>${n}
-                      </button>`;
+                      return html`<glass-colour-preset swatch="var(--glass-swatch-${n.toLowerCase()})" ?selected=${picked} @click=${() => this.turnOn({ color_temp_kelvin: kk })}>${n}</glass-colour-preset>`;
                     })}
                   </div>`
               : html`<label class="row-label"><span>Colour</span><span class="dim"><span class="dot" style="background: ${hueCss(hue)}"></span>${hueName(hue)}</span></label>
@@ -164,7 +160,7 @@ export class GlassLightSheet extends GlassEntitySheet {
                   <div class="quick">
                     ${QUICK.map(([n, h]) => {
                       const picked = on && COLOUR_MODES.includes(a.color_mode) && Math.abs(hue - h) < 8;
-                      return html`<button type="button" class=${picked ? 'on' : ''} aria-label=${n} aria-pressed=${picked ? 'true' : 'false'} style="background: ${hueCss(h)}" @click=${() => this.turnOn({ hs_color: [h, 100] })}></button>`;
+                      return html`<glass-colour-preset swatch-only swatch=${hueCss(h)} label=${n} ?selected=${picked} @click=${() => this.turnOn({ hs_color: [h, 100] })}></glass-colour-preset>`;
                     })}
                   </div>`}
           </div>`
@@ -255,26 +251,6 @@ export class GlassLightSheet extends GlassEntitySheet {
         flex-direction: column;
         gap: 16px;
       }
-      .tabs {
-        display: flex;
-        gap: 4px;
-        padding: 4px;
-        border-radius: 26px;
-        background: rgba(var(--glass-line-rgb), 0.06);
-      }
-      .tabs button {
-        all: unset;
-        flex: 1;
-        height: 44px;
-        border-radius: 22px;
-        text-align: center;
-        font-size: var(--glass-text-chip);
-        cursor: pointer;
-      }
-      .tabs button.on {
-        background: var(--glass-raised);
-        box-shadow: var(--glass-raised-shadow);
-      }
       .row-label {
         display: flex;
         justify-content: space-between;
@@ -315,52 +291,10 @@ export class GlassLightSheet extends GlassEntitySheet {
         grid-template-columns: repeat(3, minmax(0, 1fr));
         gap: 8px;
       }
-      .whites button {
-        all: unset;
-        box-sizing: border-box;
-        height: 56px;
-        border-radius: var(--glass-radius-inset);
-        border: 1px solid rgba(var(--glass-line-rgb), 0.08);
-        background: var(--glass-solid);
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        gap: 4px;
-        font-size: var(--glass-text-small);
-        cursor: pointer;
-      }
-      .whites button.on {
-        border-color: var(--glass-ink);
-      }
-      .swatch {
-        width: 16px;
-        height: 16px;
-        border-radius: 50%;
-        box-shadow: inset 0 0 0 1px var(--glass-hairline);
-      }
-      .swatch.warm {
-        background: var(--glass-swatch-warm);
-      }
-      .swatch.neutral {
-        background: var(--glass-swatch-neutral);
-      }
-      .swatch.cool {
-        background: var(--glass-swatch-cool);
-      }
       .quick {
         display: grid;
         grid-template-columns: repeat(7, minmax(0, 1fr));
         gap: 8px;
-      }
-      .quick button {
-        all: unset;
-        height: 40px;
-        border-radius: 20px;
-        cursor: pointer;
-      }
-      .quick button.on {
-        box-shadow: 0 0 0 2px var(--glass-sheet), 0 0 0 4px var(--glass-ink);
       }
       .member {
         all: unset;

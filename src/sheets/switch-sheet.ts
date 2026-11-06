@@ -1,4 +1,5 @@
 import { css, html, nothing, type CSSResultGroup, type PropertyValues } from 'lit';
+import '../elements/glass-button.js';
 import { nil } from '../elements/nil.js';
 import { customElement, state } from 'lit/decorators.js';
 import { GlassEntitySheet, type Fact } from './entity-sheet.js';
@@ -100,15 +101,8 @@ export class GlassSwitchSheet extends GlassEntitySheet {
         </span>
         <span class="right">
           ${off ? this.renderPill('Unavailable', 'neutral') : nothing}
-          <button
-            type="button"
-            role="switch"
-            class="switch ${on ? 'on' : ''}"
-            aria-checked=${on ? 'true' : 'false'}
-            aria-label="Power"
-            ?disabled=${off}
-            @click=${() => (haptic('light'), this.hass!.callService('homeassistant', on ? 'turn_off' : 'turn_on', { entity_id: e.entity_id }))}
-          ></button>
+          <glass-switch ?checked=${on} label="Power"
+            ?disabled=${off} @change=${() => (haptic('light'), this.hass!.callService('homeassistant', on ? 'turn_off' : 'turn_on', { entity_id: e.entity_id }))}></glass-switch>
         </span>
       </div>
       ${power || energy
