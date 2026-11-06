@@ -1,4 +1,5 @@
 import { css, html, nothing, type PropertyValues } from 'lit';
+import '../../elements/glass-tile.js';
 import '../../elements/glass-chip.js';
 import { GlassElement } from '../../glass-element.js';
 import { customElement, property, state } from 'lit/decorators.js';
@@ -91,21 +92,7 @@ export class GlassBrightness extends GlassElement {
     const names = distinctNames(members.map((m) => shortName(m, '')));
     return html`<div class="lamps">
       ${members.map((m, i) => {
-        const offline = isUnavailable(m);
-        const lit = !offline && isLightOn(m, states);
-        const look = lightLook(m, lit);
-        const pct = brightnessPct(m);
-        return html`<button
-          type="button"
-          class="lamp ${lit ? 'on' : ''}"
-          style=${styleMap({ background: look.background, boxShadow: look.shadow })}
-          ?disabled=${offline}
-          aria-pressed=${lit ? 'true' : 'false'}
-          @click=${() => this.hass!.callService('light', lit ? 'turn_off' : 'turn_on', { entity_id: m.entity_id })}
-        >
-          <span class="bulb"><glass-icon name="lightbulb" size="17"></glass-icon></span>
-          <span class="lname">${names[i]}<span>${offline ? 'Offline' : lit ? (pct === undefined ? 'On' : `${pct}%`) : 'Off'}</span></span>
-        </button>`;
+        return html`<glass-tile .hass=${this.hass} entity=${m.entity_id} name=${names[i]} tile-style="small"></glass-tile>`;
       })}
     </div>`;
   }
@@ -231,54 +218,6 @@ export class GlassBrightness extends GlassElement {
         display: grid;
         grid-template-columns: repeat(3, minmax(0, 1fr));
         gap: 12px;
-      }
-      .lamp {
-        all: unset;
-        box-sizing: border-box;
-        height: var(--glass-height-small-tile);
-        padding: 12px;
-        border-radius: var(--glass-radius-small-tile);
-        border: 1px solid var(--glass-hairline);
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        cursor: pointer;
-        transition: background 0.25s ease, box-shadow 0.25s ease;
-        -webkit-tap-highlight-color: transparent;
-      }
-      .lamp.on {
-        color: #121316; /* lit colours are pastel in both themes */
-      }
-      .lamp:disabled {
-        opacity: 0.5;
-        cursor: default;
-      }
-      .lamp:focus-visible {
-        outline: 2px solid var(--glass-ink);
-        outline-offset: 2px;
-      }
-      .lamp .bulb {
-        width: 36px;
-        height: 36px;
-        box-sizing: border-box;
-        border-radius: 50%;
-        border: 1px solid rgba(var(--glass-line-rgb), 0.15);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      }
-      .lname {
-        display: flex;
-        flex-direction: column;
-        line-height: 1.2;
-        font-size: var(--glass-text-body);
-      }
-      .lname span {
-        font-size: var(--glass-text-small);
-        color: var(--glass-text-muted);
-      }
-      .lamp.on .lname span {
-        color: rgba(18, 19, 22, 0.65);
       }
       .tones {
         display: grid;

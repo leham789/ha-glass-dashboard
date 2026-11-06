@@ -27,6 +27,7 @@ type: custom:glass-favourites
 entities: [light.living_room_hue, light.living_room_bookshelf, scene.relax]
 title: Favourites   # optional heading
 style: pills        # optional: one row of chips instead of tiles
+icon_style: ring    # optional: the icon in a ring (default: on its own)
 ```
 
 ### Heating & Energy tiles · `custom:glass-energy-tiles`
@@ -198,6 +199,7 @@ Scene tiles three across, coloured by name (Energise, Read, Relax, Nightlight…
 type: custom:glass-scenes
 title: Hue scenes
 entities: [scene.living_room_energise, scene.living_room_read, scene.living_room_relax]
+look: glass        # optional: glass tiles, like Favourites (default: colour)
 ```
 
 ### Thermostat row · `custom:glass-thermostat-row`
@@ -327,22 +329,25 @@ heading: Cameras                               # optional, on the first one
 
 ## Building blocks
 
-### Light tile · `custom:glass-light-tile`
+### Tile · `custom:glass-light-tile`
 
-One light. Its tile shows the light's real colour:
+One light, switch, scene or script. The same tile Brightness's lamps, Favourites, Doors and Room lights are built from.
 
-- a colour bulb shows its own colour, softened
-- a white bulb shows warm white (under 4000K) or cool white (4000K and up)
-- anything else that's on is soft yellow
-- off is pale glass; an unavailable light fades out and can't be tapped
+- a light that's on shows its real colour: a colour bulb its own colour, softened; a white bulb warm white (under 4000K) or cool white (4000K and up); anything else soft yellow
+- anything else that's on (a switch, fan, thermostat, media playing) is dark
+- a scene or script stays glass, with its room under the name
+- off is pale glass; something unavailable fades to half and can't be tapped
+- a sensor, which has nothing to switch, says "Can't be a tile"
 
-The corner shows the brightness, or "3 on · 78%" for a light group. **Tap** to toggle, **hold** to open Home Assistant's own light controls.
+The brightness, or "3 on · 78%" for a light group, sits in grey under the name. **Tap** to toggle (or run a scene or script), **hold** for its pop-up. A tile narrower than a quarter of the screen takes the small style by itself.
 
 ```yaml
 type: custom:glass-light-tile
 entity: light.office
 name: Office        # optional
 icon: lamp          # optional, any icon from the pack
+style: small        # optional: tile (default), small (92 high) or row (56 high)
+icon_style: plain   # optional: ring (default) or plain, the icon on its own
 ```
 
 ## Install

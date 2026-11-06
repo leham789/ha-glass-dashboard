@@ -1,4 +1,5 @@
 import { css, html, nothing, type PropertyValues } from 'lit';
+import '../../elements/glass-tile.js';
 import { heading } from '../../elements/type.js';
 import { GlassElement } from '../../glass-element.js';
 import { customElement, property, state } from 'lit/decorators.js';
@@ -16,6 +17,8 @@ export interface ScenesConfig extends LovelaceCardConfig {
   title?: string;
   /** Inside a card with "… is on" (default), or the tiles on their own, taller, with each hint. */
   style?: 'card' | 'plain';
+  /** colour (default): tiles coloured by the scene's name. glass: the Tile's scene look, its hint (or room) as the grey line. */
+  look?: 'colour' | 'glass';
 }
 
 const idOf = (e: ScenesConfig['entities'][number]) => (typeof e === 'string' ? e : e.entity);
@@ -109,7 +112,9 @@ export class GlassScenes extends GlassElement {
         ${active && !plain ? html`<span class="note">${name(active)} is on</span>` : nothing}
       </span>
       <div class="grid">
-        ${scenes.map((e) => {
+        ${this.config.look === 'glass'
+          ? scenes.map((e) => html`<glass-tile .hass=${this.hass} entity=${e.entity_id} name=${name(e)} tile-style="small" .line=${hint(e)}></glass-tile>`)
+          : scenes.map((e) => {
           const look = LOOKS.find(([re]) => re.test(name(e)))?.[1] ?? DEFAULT_LOOK;
           const on = e === active;
           return html`<button
@@ -123,7 +128,7 @@ export class GlassScenes extends GlassElement {
             ${plain && hint(e) ? html`<span class="hint" aria-hidden="true">${hint(e)}</span>` : nothing}
             <span class="name">${name(e)}</span>
           </button>`;
-        })}
+            })}
       </div>
     </section>`;
   }

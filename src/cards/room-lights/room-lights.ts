@@ -9,8 +9,8 @@ import { type HomeAssistant, type LovelaceCardConfig, isUnavailable, registerCar
 import { lightRow, lightRowStyles } from '../../elements/light-row.js';
 import { roomSummary } from '../../rooms.js';
 import { loadPrefs, onPrefsChange, prefs } from '../../prefs.js';
-import type { GlassLightTile } from '../light-tile/light-tile.js';
-import '../light-tile/light-tile.js';
+import { repeat } from 'lit/directives/repeat.js';
+import '../../elements/glass-tile.js';
 import './room-lights-editor.js';
 
 export interface RoomLightsConfig extends LovelaceCardConfig {
@@ -31,7 +31,6 @@ export interface RoomLightsConfig extends LovelaceCardConfig {
 export class GlassRoomLights extends GlassElement {
   @property({ attribute: false }) hass?: HomeAssistant;
   @state() private config?: RoomLightsConfig;
-  private tiles = new Map<string, GlassLightTile>();
   private watched: string[] = [];
   private stopPrefs?: () => void;
 
@@ -96,23 +95,14 @@ export class GlassRoomLights extends GlassElement {
     const offline = room.lights.filter((l) => isUnavailable(this.hass!.states[l.id]));
     const reachable = room.lights.filter((l) => !offline.includes(l));
     return html`<section aria-labelledby="h">
-      <h2 id="h">${title} <span>tap to toggle, hold for colour</span></h2>
-      ${reachable.length ? html`<div class="grid">${reachable.map((l) => this.tile(l.id))}</div>` : nothing}
+      <h2 id="h">${title}</h2>
+      ${reachable.length
+        ? html`<div class="grid">${repeat(reachable, (l) => l.id, (l) => html`<glass-tile .hass=${this.hass} entity=${l.id}></glass-tile>`)}</div>`
+        : nothing}
       ${offline.length ? html`<span class="offline"><i></i>${offlineLine(offline.map((l) => l.name))}</span>` : nothing}
     </section>`;
   }
 
-  /** One light tile per light, kept between renders so each keeps its own state. */
-  private tile(id: string): GlassLightTile {
-    let tile = this.tiles.get(id);
-    if (!tile) {
-      tile = document.createElement('glass-light-tile');
-      tile.setConfig({ type: 'custom:glass-light-tile', entity: id, name: undefined });
-      this.tiles.set(id, tile);
-    }
-    tile.hass = this.hass;
-    return tile;
-  }
 
   static styles = [
     tokens,
@@ -128,10 +118,6 @@ export class GlassRoomLights extends GlassElement {
       }
       h2 {
         ${heading}
-      }
-      h2 span {
-        font-size: var(--glass-text-chip);
-        color: var(--glass-text-muted);
       }
       .grid {
         display: grid;
@@ -152,10 +138,10 @@ export class GlassRoomLights extends GlassElement {
         gap: 8px;
       }
       .offline i {
-        width: 7px;
-        height: 7px;
+        width: 8px;
+        height: 8px;
         border-radius: 50%;
-        background: var(--glass-attention);
+        background: var(--glass-grey); /* a light dropping out isn't something to act on */
       }
     `,
   ];

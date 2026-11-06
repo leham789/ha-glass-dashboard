@@ -13,6 +13,11 @@ export class GlassScenesEditor extends GlassFormEditor<ScenesConfig> {
         label: 'Style (hint lines are set in YAML: { entity, hint })',
         selector: { select: { mode: 'list', options: [{ value: 'card', label: 'In a card, with which one is on' }, { value: 'plain', label: 'On their own, with a hint line' }] } },
       },
+      {
+        name: 'look',
+        label: 'Look',
+        selector: { select: { mode: 'list', options: [{ value: 'colour', label: 'Coloured by the scene’s name (default)' }, { value: 'glass', label: 'Glass, like a Favourites tile' }] } },
+      },
     ];
   }
 }

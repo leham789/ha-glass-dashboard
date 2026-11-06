@@ -18,6 +18,11 @@ export class GlassFavouritesEditor extends GlassFormEditor<FavouritesConfig> {
         selector: { select: { mode: 'list', options: [{ value: 'tiles', label: 'Tiles under a heading' }, { value: 'pills', label: 'One row of pills' }] } },
       },
       { name: 'title', label: 'Heading over the tiles (default: Favourites)', selector: { text: {} } },
+      {
+        name: 'icon_style',
+        label: 'Icon',
+        selector: { select: { mode: 'dropdown', options: [{ value: 'plain', label: 'On its own (default)' }, { value: 'ring', label: 'In a ring' }] } },
+      },
     ];
   }
 }

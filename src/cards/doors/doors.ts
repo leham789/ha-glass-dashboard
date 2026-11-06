@@ -1,7 +1,7 @@
 import { css, html, nothing, type PropertyValues } from 'lit';
+import '../../elements/glass-tile.js';
 import '../../elements/glass-chip.js';
 import { heading } from '../../elements/type.js';
-import { tileSurface } from '../../elements/surfaces.js';
 import { GlassElement } from '../../glass-element.js';
 import { customElement, property, state } from 'lit/decorators.js';
 import { tokens } from '../../tokens.js';
@@ -125,16 +125,15 @@ export class GlassDoors extends GlassElement {
                 : isOpen
                   ? `Open for ${duration(d.last_changed, this.now)}`
                   : `Shut since ${clock(d.last_changed, this.now)}`;
-            return html`<button type="button" class="tile ${isOpen ? 'open' : ''}" @click=${() => openMoreInfo(this, d.entity_id)}>
-              <span class="top">
-                <span class="ring"><glass-icon name=${isOpen ? 'door-open' : 'door-closed'} size="19"></glass-icon></span>
-                <span class="state">${offline || silent ? '' : isOpen ? 'Open' : 'Shut'}</span>
-              </span>
-              <span class="bottom">
-                <span class="name">${sentence(shortName(d, ''))}</span>
-                <span class="when">${when}</span>
-              </span>
-            </button>`;
+            return html`<glass-tile
+              .hass=${this.hass}
+              entity=${d.entity_id}
+              name=${sentence(shortName(d, ''))}
+              icon=${isOpen ? 'door-open' : 'door-closed'}
+              look=${isOpen ? 'attention' : 'auto'}
+              line=${when}
+              tap="more-info"
+            ></glass-tile>`;
           })}
         </div>
       </section>
@@ -174,60 +173,6 @@ export class GlassDoors extends GlassElement {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
         gap: var(--glass-space-tile-gap);
-      }
-      .tile {
-        ${tileSurface}
-        all: unset;
-        box-sizing: border-box;
-        height: 132px;
-        padding: var(--glass-space-tile);
-        border-radius: var(--glass-radius-tile);
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        cursor: pointer;
-      }
-      .tile.open {
-        background: var(--glass-attention-tint);
-        border-color: var(--glass-attention-edge);
-      }
-      .tile:focus-visible {
-        outline: 2px solid var(--glass-ink);
-        outline-offset: 2px;
-      }
-      .top {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-      }
-      .ring {
-        box-sizing: border-box;
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        border: 1px solid rgba(var(--glass-line-rgb), 0.15);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      }
-      .state {
-        font-size: var(--glass-text-caption);
-        color: var(--glass-text-secondary);
-      }
-      .open .state {
-        color: var(--glass-attention-ink);
-      }
-      .bottom {
-        display: flex;
-        flex-direction: column;
-        gap: 4px;
-      }
-      .name {
-        font-size: var(--glass-text-tile-title);
-      }
-      .when {
-        font-size: var(--glass-text-small);
-        color: var(--glass-text-muted);
       }
     `,
   ];
