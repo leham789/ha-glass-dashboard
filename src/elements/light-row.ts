@@ -1,94 +1,54 @@
 import { css, html } from 'lit';
-import { type HomeAssistant, isUnavailable } from '../ha.js';
-import { brightnessPct } from '../light-colour.js';
+import { type HassEntity, type HomeAssistant, isUnavailable } from '../ha.js';
+import { brightnessPct, COLOUR_MODES } from '../light-colour.js';
 import { haptic } from '../motion.js';
 import type { RoomLight } from '../rooms.js';
-import './glass-icon.js';
+import './glass-rows.js';
+
+export type LightFill = 'warm' | 'colour';
 
 /**
- * A light as a 64-high row: the bulb, its name and state, with the brightness
- * as a fill behind. Tap to toggle. Used by the Lights pop-up and by a room's
- * lights card when it's set to rows.
+ * The Light row (Library: Light row): the Pill row (solid) with the light's
+ * brightness as a fill behind, the bulb, its name and state. Tap to toggle.
+ * The Lights pop-up and Room lights (rows) use it.
+ *
+ * `fill`: warm (default) is the light fill; colour lets a light in colour
+ * mode fill with a soft tint of its own colour (see-through in dark mode, like
+ * the light fill). A white light always fills warm.
  */
-export function lightRow(hass: HomeAssistant, l: RoomLight) {
+export function lightRow(hass: HomeAssistant, l: RoomLight, fill: LightFill = 'warm') {
   const entity = hass.states[l.id];
   const offline = isUnavailable(entity);
   const pct = brightnessPct(entity);
-  const fill = l.on ? (pct ?? 100) : 0;
+  const width = l.on ? (pct ?? 100) : 0;
   const state = offline ? 'Offline' : l.on ? (pct === undefined ? 'On' : `${pct}%`) : 'Off';
-  return html`<button
-    type="button"
-    class="row ${l.on ? 'on' : ''}"
+  return html`<glass-pill-row
+    look="solid"
+    button
+    icon="lightbulb"
+    ?icon-on=${l.on}
+    name=${l.name}
+    state=${state}
+    .fill=${width}
+    fill-bg=${fill === 'colour' ? colourFill(entity) : 'var(--glass-light-fill)'}
+    ?faded=${offline}
     ?disabled=${offline}
-    aria-pressed=${l.on ? 'true' : 'false'}
+    .pressed=${l.on}
     @click=${() => (haptic('light'), hass.callService('light', l.on ? 'turn_off' : 'turn_on', { entity_id: l.id }))}
-  >
-    <span class="fill" style="width: ${fill}%"></span>
-    <span class="bulb"><glass-icon name="lightbulb" size="18"></glass-icon></span>
-    <span class="name">${l.name}</span>
-    <span class="state">${state}</span>
-  </button>`;
+  ></glass-pill-row>`;
 }
 
+/** A soft tint of the bulb's own colour, when it's in colour mode; otherwise the warm light fill. */
+function colourFill(e: HassEntity | undefined): string {
+  const rgb: number[] | undefined = e?.attributes.rgb_color;
+  if (!e || !COLOUR_MODES.has(e.attributes.color_mode) || !Array.isArray(rgb) || rgb.length !== 3) return 'var(--glass-light-fill)';
+  const c = rgb.join(', ');
+  return `linear-gradient(90deg, rgba(${c}, 0.25) 0%, rgba(${c}, 0.5) 100%)`;
+}
+
+/** Kept for the cards that list rows: they sit 8 apart. */
 export const lightRowStyles = css`
-  .row {
-    all: unset;
-    position: relative;
-    overflow: hidden;
-    box-sizing: border-box;
-    height: 64px;
-    padding: 0 16px 0 12px;
-    border-radius: 32px;
-    border: 1px solid var(--glass-hairline);
-    background: var(--glass-solid);
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    cursor: pointer;
-    -webkit-tap-highlight-color: transparent;
-  }
-  .row:disabled {
-    opacity: 0.5;
-    cursor: default;
-  }
-  .row:focus-visible {
-    outline: 2px solid var(--glass-ink);
-    outline-offset: 2px;
-  }
-  .fill {
-    position: absolute;
-    left: 0;
-    top: 0;
-    bottom: 0;
-    border-radius: 32px;
-    background: var(--glass-light-fill);
-    transition: width 0.25s ease;
-  }
-  .bulb {
-    position: relative;
-    width: 44px;
-    height: 44px;
-    flex: none;
-    border-radius: 50%;
-    background: var(--glass-neutral-tint);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  .row.on .bulb {
-    background: rgba(var(--glass-surface-rgb), 0.75);
-  }
-  .name {
-    position: relative;
-    flex: 1;
-    font-size: var(--glass-text-body);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  .state {
-    position: relative;
-    font-size: var(--glass-text-caption);
-    color: var(--glass-text-secondary);
+  glass-pill-row {
+    display: block;
   }
 `;

@@ -63,6 +63,7 @@ type: custom:glass-status-chips
 security_path: /glass/security   # optional
 energy_path: /glass/energy       # optional, linked from Room temperatures
 exclude_areas: [server_room]     # optional
+light_fill: colour   # optional: the Lights pop-up’s rows fill with each light’s own colour (default: warm)
 ```
 
 ### Goodnight · `custom:glass-goodnight`
@@ -189,6 +190,7 @@ Every light in the room as a light tile, two across. New lights appear on their 
 type: custom:glass-room-lights
 area: living_room
 exclude_entities: [light.p1s_chamber_light]   # optional
+light_fill: colour   # optional: rows fill with each light’s own colour (default: warm)
 ```
 
 ### Scenes · `custom:glass-scenes`

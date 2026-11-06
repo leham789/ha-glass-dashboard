@@ -15,7 +15,7 @@ export interface LightLook {
   shadow: string;
 }
 
-const COLOUR_MODES = new Set(['hs', 'rgb', 'rgbw', 'rgbww', 'xy']);
+export const COLOUR_MODES = new Set(['hs', 'rgb', 'rgbw', 'rgbww', 'xy']);
 const WARM_COOL_SPLIT_K = 4000;
 
 const glow = (rgb: string) => `0 12px 26px rgba(${rgb}, 0.28)`;

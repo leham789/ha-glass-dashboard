@@ -1,4 +1,5 @@
 import { css, html, nothing, type CSSResultGroup } from 'lit';
+import '../elements/glass-rows.js';
 import { customElement } from 'lit/decorators.js';
 import { GlassSheet } from '../elements/glass-sheet.js';
 import { type HassEntity, openMoreInfo } from '../ha.js';
@@ -71,11 +72,15 @@ export class GlassQuietSheet extends GlassSheet {
       ${quiet.length
         ? html`<div class="rows">
             ${quiet.map(
-              (es) => html`<button type="button" class="row" @click=${() => openMoreInfo(this, es[0].entity_id)}>
-                <span class="icon"><glass-icon name=${this.icon(es[0])} size="18"></glass-icon></span>
-                <span class="text"><span class="name">${this.name(es[0])}</span><span class="when">${lastHeard(es[0])}</span></span>
-                <span class="last">${this.last(es)}</span>
-              </button>`,
+              (es) => html`<glass-pill-row
+                look="solid"
+                button
+                icon=${this.icon(es[0])}
+                name=${this.name(es[0])}
+                line=${lastHeard(es[0])}
+                value=${this.last(es)}
+                @click=${() => openMoreInfo(this, es[0].entity_id)}
+              ></glass-pill-row>`,
             )}
           </div>`
         : html`<p class="empty">Every sensor is reporting.</p>`}
@@ -122,58 +127,10 @@ export class GlassQuietSheet extends GlassSheet {
         flex-direction: column;
         gap: 8px;
       }
-      .row {
-        all: unset;
-        box-sizing: border-box;
-        height: 64px;
-        padding: 0 16px 0 12px;
-        border-radius: 32px;
-        border: 1px solid var(--glass-hairline);
-        background: var(--glass-solid);
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        cursor: pointer;
-        -webkit-tap-highlight-color: transparent;
-      }
-      .row:focus-visible {
-        outline: 2px solid var(--glass-ink);
-        outline-offset: 2px;
-      }
-      .icon {
-        width: 44px;
-        height: 44px;
-        flex: none;
-        border-radius: 50%;
-        background: var(--glass-neutral-tint);
-        color: var(--glass-text-secondary);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      }
-      .text {
-        flex: 1;
-        min-width: 0;
-        display: flex;
-        flex-direction: column;
-        line-height: 1.25;
-      }
-      .name {
-        font-size: var(--glass-text-body);
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
       .when,
       .last,
       .muted {
         color: var(--glass-text-muted);
-      }
-      .when {
-        font-size: var(--glass-text-small);
-      }
-      .last {
-        font-size: var(--glass-text-body);
       }
       .tip {
         padding: 16px 16px;

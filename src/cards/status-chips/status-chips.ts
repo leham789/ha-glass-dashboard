@@ -34,6 +34,8 @@ export interface StatusChipsConfig extends LovelaceCardConfig, PrinterEntities {
   /** Where the temperatures pop-up's "Go to Heating & Energy" goes. */
   energy_path?: string;
   exclude_areas?: string[];
+  /** The Lights pop-up's rows: warm (default) or colour, where a light in colour mode fills with its own colour. */
+  light_fill?: 'warm' | 'colour';
 }
 
 interface Chip {
@@ -224,7 +226,7 @@ export class GlassStatusChips extends GlassElement {
   }
 
   private openLights() {
-    this.openSheet<GlassLightsSheet>('glass-lights-sheet');
+    this.openSheet<GlassLightsSheet>('glass-lights-sheet', (s) => (s.lightFill = this.config?.light_fill ?? 'warm'));
   }
 
   /** Opens one sheet at a time; every sheet gets the card's excluded areas where it uses them. */

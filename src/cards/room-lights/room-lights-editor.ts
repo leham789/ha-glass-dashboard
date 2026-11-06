@@ -14,6 +14,11 @@ export class GlassRoomLightsEditor extends GlassFormEditor<RoomLightsConfig> {
         label: 'Layout',
         selector: { select: { mode: 'list', options: [{ value: 'tiles', label: 'Tiles, two across' }, { value: 'rows', label: 'Rows in a card (a room with a few lights)' }] } },
       },
+      {
+        name: 'light_fill',
+        label: 'Row fill',
+        selector: { select: { mode: 'dropdown', options: [{ value: 'warm', label: 'Warm (default)' }, { value: 'colour', label: 'The light’s own colour' }] } },
+      },
     ];
   }
 }

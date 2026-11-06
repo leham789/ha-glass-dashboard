@@ -19,6 +19,8 @@ export interface RoomLightsConfig extends LovelaceCardConfig {
   title?: string;
   /** Tiles two across (default), or rows inside a card for a room with a few lights. */
   layout?: 'tiles' | 'rows';
+  /** The rows' fill: warm (default) or colour, where a light in colour mode fills with its own colour. */
+  light_fill?: 'warm' | 'colour';
 }
 
 /**
@@ -89,7 +91,7 @@ export class GlassRoomLights extends GlassElement {
     if (this.config.layout === 'rows') {
       return html`<section class="card" aria-labelledby="h">
         <h2 id="h">${title}</h2>
-        ${room.lights.map((l) => lightRow(this.hass!, l))}
+        ${room.lights.map((l) => lightRow(this.hass!, l, this.config!.light_fill ?? 'warm'))}
       </section>`;
     }
     const offline = room.lights.filter((l) => isUnavailable(this.hass!.states[l.id]));

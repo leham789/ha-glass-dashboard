@@ -1,4 +1,5 @@
 import { css, html, nothing, type CSSResultGroup, type PropertyValues } from 'lit';
+import '../elements/glass-rows.js';
 import '../elements/glass-button.js';
 import { heading } from '../elements/type.js';
 import { customElement, property, state } from 'lit/decorators.js';
@@ -172,15 +173,14 @@ export class GlassCamerasSheet extends GlassSheet {
       </div>
 
       ${many
-        ? html`<div class="group">
-            <div class="row">
-              <span class="text"><span class="n">Cycle cameras</span><span class="sub">Next camera every 10 s, round and round</span></span>
+        ? html`<glass-row-group>
+            <glass-grouped-row name="Cycle cameras" line="Next camera every 10 s, round and round">
               <glass-switch ?checked=${this.cycling} label="Cycle cameras" @change=${() => {
                   this.cycling = !this.cycling;
                   this.cycleStart = Date.now();
                 }}></glass-switch>
-            </div>
-          </div>`
+            </glass-grouped-row>
+          </glass-row-group>`
         : nothing}
 
       ${events.length
@@ -423,30 +423,6 @@ export class GlassCamerasSheet extends GlassSheet {
         }
       }
       .count {
-        font-size: var(--glass-text-small);
-        color: var(--glass-text-muted);
-      }
-      .group {
-        border-radius: var(--glass-radius-tile);
-        background: rgba(var(--glass-surface-rgb), 0.75);
-        padding: 8px 16px;
-      }
-      .row {
-        min-height: 56px;
-        display: flex;
-        align-items: center;
-        gap: 12px;
-      }
-      .text {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        line-height: 1.2;
-      }
-      .n {
-        font-size: var(--glass-text-body);
-      }
-      .sub {
         font-size: var(--glass-text-small);
         color: var(--glass-text-muted);
       }

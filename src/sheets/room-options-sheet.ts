@@ -1,4 +1,5 @@
 import { css, html, nothing, type CSSResultGroup } from 'lit';
+import '../elements/glass-rows.js';
 import '../elements/glass-button.js';
 import { heading } from '../elements/type.js';
 import { customElement, property, state } from 'lit/decorators.js';
@@ -75,46 +76,37 @@ export class GlassRoomOptionsSheet extends GlassSheet {
           </div>`
         : nothing}
       ${room.lights.length
-        ? html`<section class="group" aria-labelledby="show">
-            <span class="top">
-              <h2 id="show">Show on this screen</h2>
-              <span class="count">${room.lights.length - room.lights.filter((l) => hidden.has(l.id)).length} of ${room.lights.length}</span>
-            </span>
+        ? html`<glass-row-group heading="Show on this screen" count="${room.lights.length - room.lights.filter((l) => hidden.has(l.id)).length} of ${room.lights.length}">
             ${room.lights.map((l) => {
               const e = hass.states[l.id];
               const offline = isUnavailable(e);
               const pct = brightnessPct(e);
               const note = offline ? 'Offline' : l.on ? (pct === undefined ? 'On' : `On · ${pct}%`) : 'Off';
               const shown = !hidden.has(l.id);
-              return html`<div class="row ${offline ? 'faded' : ''}">
-                <span class="text"><span class="n">${l.name}</span><span class="sub">${note}</span></span>
+              return html`<glass-grouped-row name=${l.name} line=${note} ?faded=${offline}>
                 ${this.switch(shown, `Show ${l.name}`, () => this.toggleHidden(l.id, shown))}
-              </div>`;
+              </glass-grouped-row>`;
             })}
-          </section>`
+          </glass-row-group>`
         : nothing}
-      <section class="group settings" aria-label="Room settings">
-        <div class="row first">
-          <span class="text"><span class="n">Pin to Home</span><span class="sub">Show this room first on Home</span></span>
+      <glass-row-group aria-label="Room settings">
+        <glass-grouped-row name="Pin to Home" line="Show this room first on Home">
           ${this.switch(pinned, 'Pin to Home', () =>
             updatePrefs(hass, (p) => ({
               ...p,
               pinned: pinned ? p.pinned.filter((id) => id !== this.area) : [...p.pinned, this.area],
             })),
           )}
-        </div>
+        </glass-grouped-row>
         ${devices.length || lowBattery
-          ? html`<div class="row">
-              <span class="text">
-                <span class="n">Room devices</span>
-                ${lowBattery
-                  ? html`<span class="sub warn">${lowBattery.device || lowBattery.room} battery ${lowBattery.level}%</span>`
-                  : nothing}
-              </span>
-              <span class="devices">${devices.join(' · ')}</span>
-            </div>`
+          ? html`<glass-grouped-row
+              name="Room devices"
+              line=${lowBattery ? `${lowBattery.device || lowBattery.room} battery ${lowBattery.level}%` : ''}
+              ?warn=${!!lowBattery}
+              value=${devices.join(' · ')}
+            ></glass-grouped-row>`
           : nothing}
-      </section>
+      </glass-row-group>
     `;
   }
 
@@ -168,78 +160,8 @@ export class GlassRoomOptionsSheet extends GlassSheet {
         grid-template-columns: repeat(3, minmax(0, 1fr));
         gap: 12px;
       }
-      .group {
-        border-radius: var(--glass-radius-tile);
-        background: rgba(var(--glass-surface-rgb), 0.75);
-        padding: 16px 16px 8px;
-        display: flex;
-        flex-direction: column;
-      }
-      .settings {
-        padding: 8px 16px;
-      }
-      .top {
-        display: flex;
-        justify-content: space-between;
-        align-items: baseline;
-        margin-bottom: 4px;
-      }
       h2 {
         ${heading}
-      }
-      .count {
-        font-size: var(--glass-text-small);
-        color: var(--glass-text-muted);
-      }
-      .row {
-        box-sizing: border-box;
-        min-height: 54px;
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        border-top: 1px solid rgba(var(--glass-line-rgb), 0.07);
-      }
-      .row.first {
-        border-top: none;
-        min-height: 56px;
-      }
-      .row.faded {
-        opacity: 0.6;
-      }
-      .row.link {
-        all: unset;
-        box-sizing: border-box;
-        min-height: 56px;
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        border-top: 1px solid rgba(var(--glass-line-rgb), 0.07);
-        cursor: pointer;
-      }
-      .row.link .n {
-        flex: 1;
-      }
-      .text {
-        flex: 1;
-        min-width: 0;
-        display: flex;
-        flex-direction: column;
-        line-height: 1.2;
-      }
-      .n {
-        font-size: var(--glass-text-body);
-      }
-      .sub {
-        font-size: var(--glass-text-small);
-        color: var(--glass-text-muted);
-      }
-      .sub.warn {
-        color: var(--glass-attention-ink);
-      }
-      .devices {
-        font-size: var(--glass-text-caption);
-        color: var(--glass-text-secondary);
-        text-align: right;
       }
       button:focus-visible {
         outline: 2px solid var(--glass-ink);

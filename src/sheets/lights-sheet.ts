@@ -4,7 +4,7 @@ import type { GlassSegmented } from '../elements/glass-button.js';
 import { customElement, property, state } from 'lit/decorators.js';
 import { GlassSheet } from '../elements/glass-sheet.js';
 import { isUnavailable } from '../ha.js';
-import { lightRow, lightRowStyles } from '../elements/light-row.js';
+import { type LightFill, lightRow, lightRowStyles } from '../elements/light-row.js';
 import { type RoomLight, lightsByArea } from '../rooms.js';
 import { haptic } from '../motion.js';
 
@@ -19,6 +19,8 @@ type Filter = 'On' | 'All' | 'Offline';
 export class GlassLightsSheet extends GlassSheet {
   @property({ attribute: false }) excludeAreas: string[] = [];
   @state() private filter: Filter = 'All';
+  /** Set by the Status chips card that opens it (its light_fill option). */
+  @state() lightFill: LightFill = 'warm';
   /** Lights that All off switched off, so Undo can turn them back on. */
   @state() private saved?: string[];
 
@@ -68,7 +70,7 @@ export class GlassLightsSheet extends GlassSheet {
   }
 
   private renderRow(l: RoomLight) {
-    return lightRow(this.hass!, l);
+    return lightRow(this.hass!, l, this.lightFill);
   }
 
   private allOff(ids: string[]) {

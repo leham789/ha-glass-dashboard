@@ -1,4 +1,5 @@
 import { css, html, nothing, type PropertyValues } from 'lit';
+import '../../elements/glass-rows.js';
 import '../../elements/glass-button.js';
 import { heading } from '../../elements/type.js';
 import { GlassElement } from '../../glass-element.js';
@@ -83,6 +84,7 @@ export class GlassSwitchRows extends GlassElement {
     this.watched = this.config.entities.map(idOf).flatMap((id) => [id, ...this.readings(id)]);
     return html`<section aria-labelledby="h">
       <h2 id="h">${this.config.title ?? 'Power'}</h2>
+      <div class="rows">
       ${this.config.entities.map((entry) => {
         const id = idOf(entry);
         const e = hass.states[id];
@@ -96,15 +98,12 @@ export class GlassSwitchRows extends GlassElement {
           })
           .join(' · ') || (typeof entry === 'object' ? (entry.secondary ?? '') : '');
         const name = nameInRoom(hass, e);
-        return html`<div class="row ${offline ? 'offline' : ''}">
-          <span class="text">
-            <span class="name">${name}</span>
-            <span class="detail">${offline ? 'Offline' : detail}</span>
-          </span>
+        return html`<glass-pill-row look="glass" name=${name} line=${offline ? 'Offline' : detail} ?faded=${offline}>
           <glass-switch ?checked=${on} label=${name}
             ?disabled=${offline} @change=${() => (haptic('light'), hass.callService('homeassistant', on ? 'turn_off' : 'turn_on', { entity_id: id }))}></glass-switch>
-        </div>`;
+        </glass-pill-row>`;
       })}
+      </div>
     </section>`;
   }
 
@@ -114,6 +113,11 @@ export class GlassSwitchRows extends GlassElement {
       :host {
         display: block;
       }
+      .rows {
+        display: flex;
+        flex-direction: column;
+        gap: var(--glass-space-chip);
+      }
       section {
         display: flex;
         flex-direction: column;
@@ -121,34 +125,6 @@ export class GlassSwitchRows extends GlassElement {
       }
       h2 {
         ${heading}
-      }
-      .row {
-        box-sizing: border-box;
-        height: 64px;
-        padding: 0 16px 0 var(--glass-space-edge);
-        border-radius: 32px;
-        background: var(--glass-surface);
-        border: 1px solid var(--glass-surface-border);
-        display: flex;
-        align-items: center;
-        gap: 12px;
-      }
-      .row.offline {
-        opacity: 0.5;
-      }
-      .text {
-        flex: 1;
-        min-width: 0;
-        display: flex;
-        flex-direction: column;
-        line-height: 1.2;
-      }
-      .name {
-        font-size: var(--glass-text-body);
-      }
-      .detail {
-        font-size: var(--glass-text-small);
-        color: var(--glass-text-muted);
       }
     `,
   ];

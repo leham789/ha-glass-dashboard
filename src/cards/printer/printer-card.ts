@@ -1,4 +1,5 @@
 import { css, html, nothing, svg, type PropertyValues } from 'lit';
+import '../../elements/glass-rows.js';
 import '../../elements/glass-chip.js';
 import type { Tone } from '../../elements/glass-chip.js';
 import { heading } from '../../elements/type.js';
@@ -118,14 +119,9 @@ export class GlassPrinter extends GlassElement {
       // Bambu printers keep saying "finish" until the next print, so a print
       // that ended over two hours ago reads as idle, with when it ended.
       const sub = p.phase === 'failed' ? `Last print failed ${ago(p.status.last_changed)}` : `Idle · last print ${ago(p.status.last_changed)}`;
-      return html`<button type="button" class="compact" aria-label="Show 3D printer details" @click=${() => (this.expanded = true)}>
-        <span class="round"><glass-icon name="printer" size="22"></glass-icon></span>
-        <span class="text">
-          <span class="t">${title}</span>
-          <span class="sub">${sub}</span>
-        </span>
-        <glass-icon name="chevron-right" size="18" stroke="1.8"></glass-icon>
-      </button>`;
+      return html`<glass-pill-row look="glass" button icon="printer" name=${title} line=${sub} label="Show 3D printer details" @click=${() => (this.expanded = true)}
+        ><glass-icon name="chevron-right" size="18" stroke="1.8"></glass-icon
+      ></glass-pill-row>`;
     }
     return this.renderFull(p, title);
   }
@@ -213,45 +209,6 @@ export class GlassPrinter extends GlassElement {
     css`
       :host {
         display: block;
-      }
-      .compact {
-        all: unset;
-        box-sizing: border-box;
-        width: 100%;
-        height: 76px;
-        padding: 0 20px 0 12px;
-        border-radius: 38px;
-        background: var(--glass-surface);
-        border: 1px solid var(--glass-surface-border);
-        backdrop-filter: blur(20px);
-        -webkit-backdrop-filter: blur(20px);
-        display: flex;
-        align-items: center;
-        gap: 16px;
-        cursor: pointer;
-      }
-      .round {
-        width: 52px;
-        height: 52px;
-        flex: none;
-        border-radius: 50%;
-        background: var(--glass-neutral-tint);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      }
-      .text {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        gap: 4px;
-      }
-      .t {
-        font-size: var(--glass-text-body);
-      }
-      .sub {
-        font-size: var(--glass-text-caption);
-        color: var(--glass-text-muted);
       }
       section {
         ${cardSurface}
