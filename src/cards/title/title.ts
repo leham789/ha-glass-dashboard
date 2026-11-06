@@ -42,7 +42,9 @@ export class GlassTitle extends GlassElement {
   }
 
   setConfig(config: TitleConfig): void {
-    if (!config.title) throw new Error('Enter a title');
+
+    this.needs = undefined;
+    if (!config.title) return this.setUp(config, 'Enter a title');
     this.config = config;
   }
 
@@ -61,6 +63,7 @@ export class GlassTitle extends GlassElement {
 
   // The title never depends on HA's state.
   protected shouldUpdate(changed: Map<string, unknown>): boolean {
+    if (this.needs) return true;
     return changed.has('config') || changed.has('current');
   }
 
@@ -70,6 +73,7 @@ export class GlassTitle extends GlassElement {
   }
 
   render() {
+    if (this.needs) return this.renderSetup('layout-panel-top');
     if (!this.config) return nothing;
     const tabs = this.config.tabs ?? [];
     return html`<h1>${this.config.title}</h1>

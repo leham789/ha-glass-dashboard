@@ -33,7 +33,9 @@ export class GlassRoomAlert extends GlassElement {
   }
 
   setConfig(config: RoomAlertConfig): void {
-    if (!config.light || !config.switch) throw new Error('Choose the bulb and the switch that powers it');
+
+    this.needs = undefined;
+    if (!config.light || !config.switch) return this.setUp(config, 'Choose the bulb and the switch that powers it');
     this.config = config;
   }
 
@@ -51,6 +53,7 @@ export class GlassRoomAlert extends GlassElement {
   }
 
   protected shouldUpdate(changed: PropertyValues): boolean {
+    if (this.needs) return true;
     if (!changed.has('hass') || changed.size > 1 || !this.config) return true;
     const old = changed.get('hass') as HomeAssistant | undefined;
     const ids = [this.config.light, this.config.switch];
@@ -58,6 +61,7 @@ export class GlassRoomAlert extends GlassElement {
   }
 
   protected updated(): void {
+    if (this.needs) return;
     reportVisibility(this, this.showing());
   }
 
@@ -67,6 +71,9 @@ export class GlassRoomAlert extends GlassElement {
   }
 
   render() {
+    if (this.needs) return this.renderSetup('triangle-alert');
+    const lost = this.config && this.hass ? [this.config.light, this.config.switch].find((id) => !this.hass!.states[id]) : undefined;
+    if (lost) return this.renderMissing(lost);
     if (!this.showing()) return nothing;
     const light = this.hass!.states[this.config!.light];
     const name = light ? nameInRoom(this.hass!, light) : 'A light';

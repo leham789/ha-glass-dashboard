@@ -68,7 +68,9 @@ export class GlassPrinter extends GlassElement {
   }
 
   setConfig(config: PrinterCardConfig): void {
-    if (!config.printer_status) throw new Error('Choose the printer’s status sensor');
+
+    this.needs = undefined;
+    if (!config.printer_status) return this.setUp(config, 'Choose the printer’s status sensor');
     this.config = config;
   }
 
@@ -94,6 +96,7 @@ export class GlassPrinter extends GlassElement {
   }
 
   protected shouldUpdate(changed: PropertyValues): boolean {
+    if (this.needs) return true;
     if (!changed.has('hass') || changed.size > 1 || !this.config) return true;
     const old = changed.get('hass') as HomeAssistant | undefined;
     const c = this.config;
@@ -102,7 +105,10 @@ export class GlassPrinter extends GlassElement {
   }
 
   render() {
+    if (this.needs) return this.renderSetup('printer');
     if (!this.config || !this.hass) return nothing;
+    const status = this.config.printer_status;
+    if (status && !this.hass.states[status]) return this.renderMissing(status);
     const p = printerState(this.hass, this.config);
     if (!p) return nothing;
     const title = `3D printer${this.config.name ? ` · ${this.config.name}` : ''}`;

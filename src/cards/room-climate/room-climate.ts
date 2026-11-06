@@ -37,7 +37,9 @@ export class GlassRoomClimate extends GlassElement {
   }
 
   setConfig(config: RoomClimateConfig): void {
-    if (!config.area) throw new Error('Choose a room');
+
+    this.needs = undefined;
+    if (!config.area) return this.setUp(config, 'Choose a room');
     this.config = config;
   }
 
@@ -55,12 +57,14 @@ export class GlassRoomClimate extends GlassElement {
   }
 
   protected shouldUpdate(changed: PropertyValues): boolean {
+    if (this.needs) return true;
     if (!changed.has('hass') || changed.size > 1 || !this.config) return true;
     const old = changed.get('hass') as HomeAssistant | undefined;
     return !old || this.watched.some((id) => old.states[id] !== this.hass!.states[id]);
   }
 
   render() {
+    if (this.needs) return this.renderSetup('thermometer');
     if (!this.config || !this.hass) return nothing;
     const hass = this.hass;
     const room = roomSummary(hass, this.config.area);
@@ -74,9 +78,9 @@ export class GlassRoomClimate extends GlassElement {
     if (room.temperature === undefined && room.humidity === undefined) return nothing;
 
     const t = room.temperature;
-    // A sensor that's gone quiet keeps its last readings, greyed, with a grey pill and when it was last heard.
+    // A sensor that's gone quiet keeps its last readings, greyed, with no pill: the line under each says "Not reporting".
     const quiet = room.quiet;
-    const band = quiet ? 'Not reporting' : t !== undefined ? tempBand(t) : undefined;
+    const band = quiet ? undefined : t !== undefined ? tempBand(t) : undefined;
     const look = quiet ? QUIET_LOOK : band ? bandStyle(band as ReturnType<typeof tempBand>) : undefined;
     // A bedroom says whether it's right for sleeping (16–19°); elsewhere, how fresh the reading is.
     const bedroom = /bed/i.test(room.name);
@@ -84,7 +88,7 @@ export class GlassRoomClimate extends GlassElement {
       t === undefined
         ? ''
         : quiet
-          ? quiet
+          ? 'Not reporting'
         : bedroom
           ? t < 16
             ? 'A bit cold for sleep'
@@ -100,7 +104,7 @@ export class GlassRoomClimate extends GlassElement {
         ? html`<button type="button" class="tile" style=${styleMap({ background: look!.background })} @click=${() => tempId && openMoreInfo(this, tempId)}>
             <span class="top"
               ><span class="label">Temperature</span
-              ><span class="pill" style=${styleMap({ background: look!.pillBg, color: look!.pillFg })}>${band}</span></span
+              >${band ? html`<span class="pill" style=${styleMap({ background: look!.pillBg, color: look!.pillFg })}>${band}</span>` : nothing}</span
             >
             <span class="bottom"><span class="value">${t.toFixed(1)}°</span>${note ? html`<span class="note">${note}</span>` : nothing}</span>
           </button>`
@@ -112,7 +116,7 @@ export class GlassRoomClimate extends GlassElement {
               <span class="value">${Math.round(room.humidity)}%</span>
               <span class="scale" aria-hidden="true"><span class="marker" style="left: ${Math.min(100, Math.max(0, room.humidity))}%"></span></span>
               ${quiet
-                ? html`<span class="note">${quiet}</span>`
+                ? html`<span class="note">Not reporting</span>`
                 : Number.isFinite(pressure)
                   ? html`<span class="note">${Math.round(pressure)} hPa pressure</span>`
                   : nothing}

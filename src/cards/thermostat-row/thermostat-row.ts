@@ -37,7 +37,9 @@ export class GlassThermostatRow extends GlassElement {
   }
 
   setConfig(config: ThermostatRowConfig): void {
-    if (!config.entity?.startsWith('climate.')) throw new Error('Choose a thermostat');
+
+    this.needs = undefined;
+    if (!config.entity?.startsWith('climate.')) return this.setUp(config, 'Choose a thermostat');
     this.config = config;
   }
 
@@ -55,15 +57,17 @@ export class GlassThermostatRow extends GlassElement {
   }
 
   protected shouldUpdate(changed: PropertyValues): boolean {
+    if (this.needs) return true;
     if (!changed.has('hass') || changed.size > 1 || !this.config) return true;
     const old = changed.get('hass') as HomeAssistant | undefined;
     return !old || old.states[this.config.entity] !== this.hass!.states[this.config.entity];
   }
 
   render() {
+    if (this.needs) return this.renderSetup('thermometer');
     if (!this.config || !this.hass) return nothing;
     const e = this.hass.states[this.config.entity];
-    if (!e) return nothing;
+    if (!e) return this.renderMissing(this.config.entity);
     const a = e.attributes;
     const off = e.state === 'off' || isUnavailable(e);
     const target = this.pending ?? a.temperature;

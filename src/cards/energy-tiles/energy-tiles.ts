@@ -37,6 +37,7 @@ export class GlassEnergyTiles extends GlassElement {
   @property({ attribute: false }) hass?: HomeAssistant;
   @state() private config?: EnergyTilesConfig;
   @state() private hours: number[] = [];
+  @state() private historyLoaded = false;
   private timer?: number;
 
   static getConfigElement() {
@@ -95,6 +96,7 @@ export class GlassEnergyTiles extends GlassElement {
       // No history (recorder off or excluded): the chart just stays empty.
       this.hours = [];
     }
+    this.historyLoaded = true;
   }
 
   render() {
@@ -151,6 +153,7 @@ export class GlassEnergyTiles extends GlassElement {
         <span class="go" aria-hidden="true"><glass-icon name="arrow-up-right" size="16" stroke="1.8"></glass-icon></span>
       </span>
       <span class="chart" aria-hidden="true">
+        ${this.historyLoaded ? nothing : html`<span class="skel" style="width: 100%; height: 100%;"></span>`}
         ${this.hours.map((h) => {
           const level = Math.round((h / max) * CHART_DOTS);
           return html`<span class="col">

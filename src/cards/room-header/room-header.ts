@@ -53,8 +53,10 @@ export class GlassRoomHeader extends GlassElement {
   }
 
   setConfig(config: RoomHeaderConfig): void {
-    if (!config.area) throw new Error('Choose this screen’s room');
-    if (!config.room_path) throw new Error('Set the room view path, e.g. /glass/{area}');
+
+    this.needs = undefined;
+    if (!config.area) return this.setUp(config, 'Choose this screen’s room');
+    if (!config.room_path) return this.setUp(config, 'Set the room view path, e.g. /glass/{area}');
     this.config = config;
   }
 
@@ -83,6 +85,7 @@ export class GlassRoomHeader extends GlassElement {
   }
 
   protected shouldUpdate(changed: PropertyValues): boolean {
+    if (this.needs) return true;
     if (this.hass) loadPrefs(this.hass);
     // Keep an open Room options sheet current.
     if (this.sheet?.isConnected && this.hass) this.sheet.hass = this.hass;
@@ -93,6 +96,7 @@ export class GlassRoomHeader extends GlassElement {
   }
 
   protected updated(changed: PropertyValues): void {
+    if (this.needs) return;
     // Bring the current room into view in the switcher.
     // (Scrolls only the switcher, never the page.)
     if (changed.has('config')) {
@@ -150,12 +154,13 @@ export class GlassRoomHeader extends GlassElement {
   }
 
   render() {
+    if (this.needs) return this.renderSetup('house');
     if (!this.config || !this.hass) return nothing;
     const hass = this.hass;
     // Lights hidden in Room options don't count on the room screen.
     const room = roomSummary(hass, this.config.area, prefs().hidden[this.config.area]);
     const extremes = this.extremes();
-    const playing = room.quiet ? `Climate sensor ${room.quiet.charAt(0).toLowerCase()}${room.quiet.slice(1)}` : this.mediaLine() || extremes.line || this.remoteLine();
+    const playing = room.quiet ? 'Climate sensor not reporting' : this.mediaLine() || extremes.line || this.remoteLine();
     this.watched = [...room.watch, ...extremes.watch];
 
     const climate = [

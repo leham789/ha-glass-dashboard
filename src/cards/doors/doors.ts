@@ -11,7 +11,7 @@ import { clock, duration } from '../../time.js';
 import '../../elements/glass-icon.js';
 import './doors-editor.js';
 import { attentionStyles } from '../../motion.js';
-import { isQuiet, lastHeard } from '../../stale.js';
+import { isQuiet } from '../../stale.js';
 
 export interface DoorsConfig extends LovelaceCardConfig {
   /** Hours before a sensor counts as not reporting, by type or entity, e.g. { door: 24 }. Applies to the whole dashboard. */
@@ -120,14 +120,14 @@ export class GlassDoors extends GlassElement {
             const when = offline
               ? 'Offline'
               : silent
-                ? lastHeard(d)
+                ? 'Not reporting'
                 : isOpen
                   ? `Open for ${duration(d.last_changed, this.now)}`
                   : `Shut since ${clock(d.last_changed, this.now)}`;
             return html`<button type="button" class="tile ${isOpen ? 'open' : ''}" @click=${() => openMoreInfo(this, d.entity_id)}>
               <span class="top">
                 <span class="ring"><glass-icon name=${isOpen ? 'door-open' : 'door-closed'} size="19"></glass-icon></span>
-                <span class="state">${offline ? '–' : silent ? 'Not reporting' : isOpen ? 'Open' : 'Shut'}</span>
+                <span class="state">${offline || silent ? '' : isOpen ? 'Open' : 'Shut'}</span>
               </span>
               <span class="bottom">
                 <span class="name">${sentence(shortName(d, ''))}</span>

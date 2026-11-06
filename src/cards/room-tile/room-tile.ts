@@ -37,7 +37,9 @@ export class GlassRoomTile extends GlassElement {
   }
 
   setConfig(config: RoomTileConfig): void {
-    if (!config.area) throw new Error('Choose an area');
+
+    this.needs = undefined;
+    if (!config.area) return this.setUp(config, 'Choose an area');
     this.config = config;
   }
 
@@ -55,6 +57,7 @@ export class GlassRoomTile extends GlassElement {
   }
 
   protected shouldUpdate(changed: PropertyValues): boolean {
+    if (this.needs) return true;
     if (changed.has('config') || !this.config) return true;
     const old = changed.get('hass') as HomeAssistant | undefined;
     if (!old || !this.hass) return true;
@@ -63,6 +66,7 @@ export class GlassRoomTile extends GlassElement {
   }
 
   render() {
+    if (this.needs) return this.renderSetup('house');
     if (!this.config || !this.hass) return nothing;
     const room = roomSummary(this.hass, this.config.area, this.config.exclude_entities);
     this.watched = room.watch;

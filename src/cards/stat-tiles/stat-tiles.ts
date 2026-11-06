@@ -44,7 +44,9 @@ export class GlassStatTiles extends GlassElement {
   }
 
   setConfig(config: StatTilesConfig): void {
-    if (!Array.isArray(config.tiles) || !config.tiles.length) throw new Error('Add at least one tile');
+
+    this.needs = undefined;
+    if (!Array.isArray(config.tiles) || !config.tiles.length) return this.setUp(config, 'Add at least one tile');
     this.config = config;
   }
 
@@ -62,6 +64,7 @@ export class GlassStatTiles extends GlassElement {
   }
 
   protected shouldUpdate(changed: PropertyValues): boolean {
+    if (this.needs) return true;
     if (!changed.has('hass') || changed.size > 1 || !this.config) return true;
     const old = changed.get('hass') as HomeAssistant | undefined;
     const ids = this.config.tiles.flatMap((t) => [t.entity, t.secondary]).filter(Boolean) as string[];
@@ -69,6 +72,7 @@ export class GlassStatTiles extends GlassElement {
   }
 
   render() {
+    if (this.needs) return this.renderSetup('gauge');
     if (!this.config || !this.hass) return nothing;
     return html`<section>
       ${this.config.tiles.map((t) => {

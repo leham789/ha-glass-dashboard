@@ -44,8 +44,10 @@ export class GlassLightTile extends GlassElement {
   }
 
   setConfig(config: LightTileConfig): void {
-    if (!config.entity) throw new Error('Choose a light');
-    if (!config.entity.startsWith('light.')) throw new Error('The entity must be a light');
+
+    this.needs = undefined;
+    if (!config.entity) return this.setUp(config, 'Choose a light');
+    if (!config.entity.startsWith('light.')) return this.setUp(config, 'The entity must be a light');
     this.config = config;
   }
 
@@ -65,6 +67,7 @@ export class GlassLightTile extends GlassElement {
 
   // Only re-render when this light changes, not on every HA state update.
   protected shouldUpdate(changed: PropertyValues): boolean {
+    if (this.needs) return true;
     if (changed.has('config') || !this.config) return true;
     const old = changed.get('hass') as HomeAssistant | undefined;
     if (!old) return true;
@@ -75,8 +78,10 @@ export class GlassLightTile extends GlassElement {
   }
 
   render() {
+    if (this.needs) return this.renderSetup('lightbulb');
     if (!this.config || !this.hass) return nothing;
     const entity = this.hass.states[this.config.entity];
+    if (!entity) return this.renderMissing(this.config.entity);
     const offline = isUnavailable(entity);
     const on = isLightOn(entity, this.hass.states);
     const look = lightLook(entity, on);
@@ -107,6 +112,7 @@ export class GlassLightTile extends GlassElement {
   }
 
   protected updated(): void {
+    if (this.needs) return;
     const entity = this.hass?.states[this.config!.entity];
     const on = isLightOn(entity, this.hass!.states);
     // Turned on by a tap here: the colour spreads out from the finger.

@@ -8,6 +8,7 @@ import { type DailyUsage, dailyUsage } from '../../history.js';
 import { formatValue } from '../../format.js';
 import '../../elements/glass-icon.js';
 import './electricity-editor.js';
+import { nil } from '../../elements/nil.js';
 
 export interface ElectricityConfig extends LovelaceCardConfig {
   /** Energy that counts up: kWh today, or the meter's total. */
@@ -32,6 +33,7 @@ export class GlassElectricity extends GlassElement {
   @property({ attribute: false }) hass?: HomeAssistant;
   @state() private config?: ElectricityConfig;
   @state() private usage?: DailyUsage;
+  @state() private loading = true;
   private timer?: number;
 
   static getConfigElement() {
@@ -43,7 +45,9 @@ export class GlassElectricity extends GlassElement {
   }
 
   setConfig(config: ElectricityConfig): void {
-    if (!config.energy) throw new Error('Choose an energy sensor');
+
+    this.needs = undefined;
+    if (!config.energy) return this.setUp(config, 'Choose an energy sensor');
     const changed = config.energy !== this.config?.energy;
     this.config = config;
     if (changed && this.hass) this.load();
@@ -69,10 +73,12 @@ export class GlassElectricity extends GlassElement {
   }
 
   protected firstUpdated(): void {
+    if (this.needs) return;
     this.load();
   }
 
   protected shouldUpdate(changed: PropertyValues): boolean {
+    if (this.needs) return true;
     if (!changed.has('hass') || changed.size > 1 || !this.config) return true;
     const old = changed.get('hass') as HomeAssistant | undefined;
     const ids = [this.config.energy, this.config.cost].filter(Boolean) as string[];
@@ -86,13 +92,18 @@ export class GlassElectricity extends GlassElement {
     } catch {
       this.usage = undefined;
     }
+    this.loading = false;
   }
 
   render() {
+    if (this.needs) return this.renderSetup('zap');
     if (!this.config || !this.hass) return nothing;
+    if (!this.hass.states[this.config.energy]) return this.renderMissing(this.config.energy);
     const cost = this.config.cost ? this.hass.states[this.config.cost] : undefined;
     const u = this.usage;
-    const big = cost ? formatValue(cost).value : u ? `${u.today.toFixed(1)} kWh` : '–';
+    // While today's history loads: soft bars where the number and line go (Shared states). No history at all: the grey dash.
+    const wait = this.loading && !u;
+    const big = cost ? formatValue(cost).value : u ? `${u.today.toFixed(1)} kWh` : wait ? html`<span class="skel" style="width: 3em; height: 0.75em; margin: 0.12em 0;"></span>` : nil;
     const compare = u && u.yesterdaySoFar > 0 ? comparison(u.today, u.yesterdaySoFar) : '';
     const line = [cost && u ? `${u.today.toFixed(1)} kWh` : '', compare].filter(Boolean).join(' · ');
     const nowHour = new Date().getHours();
@@ -106,7 +117,7 @@ export class GlassElectricity extends GlassElement {
         <span class="head">
           <h2 id="h">${this.config.title ?? `${fuel} today`}</h2>
           <span class="big">${big}</span>
-          ${line ? html`<span class="line">${line}</span>` : nothing}
+          ${line ? html`<span class="line">${line}</span>` : wait ? html`<span class="skel" style="width: 160px; height: 12px; margin: 4px 0;"></span>` : nothing}
         </span>
         <span class="icon" aria-hidden="true"><glass-icon name=${gas ? 'flame' : 'zap'} size="18" stroke="1.7"></glass-icon></span>
       </span>

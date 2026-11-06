@@ -55,7 +55,9 @@ export class GlassBrightness extends GlassElement {
   }
 
   setConfig(config: BrightnessConfig): void {
-    if (!config.entity?.startsWith('light.')) throw new Error('Choose a light or light group');
+
+    this.needs = undefined;
+    if (!config.entity?.startsWith('light.')) return this.setUp(config, 'Choose a light or light group');
     this.config = config;
   }
 
@@ -73,6 +75,7 @@ export class GlassBrightness extends GlassElement {
   }
 
   protected shouldUpdate(changed: PropertyValues): boolean {
+    if (this.needs) return true;
     if (!changed.has('hass') || changed.size > 1 || !this.config) return true;
     const old = changed.get('hass') as HomeAssistant | undefined;
     const ids = [this.config.entity, ...(this.config.lamps ? (groupMembers(this.hass!.states[this.config.entity]) ?? []) : [])];
@@ -107,9 +110,10 @@ export class GlassBrightness extends GlassElement {
   }
 
   render() {
+    if (this.needs) return this.renderSetup('sun');
     if (!this.config || !this.hass) return nothing;
     const e = this.hass.states[this.config.entity];
-    if (!e) return nothing;
+    if (!e) return this.renderMissing(this.config.entity);
     const offline = isUnavailable(e);
     const on = isLightOn(e, this.hass.states);
     const pct = this.dragging ?? (on ? (brightnessPct(e) ?? 100) : 0);

@@ -33,7 +33,9 @@ export class GlassRoomDevices extends GlassElement {
   }
 
   setConfig(config: RoomDevicesConfig): void {
-    if (!config.area) throw new Error('Choose a room');
+
+    this.needs = undefined;
+    if (!config.area) return this.setUp(config, 'Choose a room');
     this.config = config;
   }
 
@@ -51,6 +53,7 @@ export class GlassRoomDevices extends GlassElement {
   }
 
   protected shouldUpdate(changed: PropertyValues): boolean {
+    if (this.needs) return true;
     if (!changed.has('hass') || changed.size > 1 || !this.config) return true;
     const old = changed.get('hass') as HomeAssistant | undefined;
     return !old || old.entities !== this.hass!.entities || this.watched.some((id) => old.states[id] !== this.hass!.states[id]);
@@ -66,6 +69,7 @@ export class GlassRoomDevices extends GlassElement {
   }
 
   render() {
+    if (this.needs) return this.renderSetup('layers');
     if (!this.config || !this.hass) return nothing;
     const hass = this.hass;
     const areaName = hass.areas?.[this.config.area]?.name ?? '';

@@ -78,10 +78,12 @@ export class GlassSwitchSheet extends GlassEntitySheet {
     this.onToday = on.reduce((n, sp) => n + (sp.to - sp.from) * span, 0);
     const energy = this.sibling('energy');
     this.usedToday = energy ? (await dailyUsage(this.hass!, energy.entity_id)).today : undefined;
+    this.loaded = true;
   }
 
   @state() private onToday = 0;
   @state() private usedToday?: number;
+  @state() private loaded = false;
 
   protected renderBody() {
     const e = this.entity;
@@ -112,7 +114,7 @@ export class GlassSwitchSheet extends GlassEntitySheet {
       ${power || energy
         ? html`<div class="pair">
             <span class="tile"><span class="label">Using now</span><span class="fv">${power ? `${round(Number(power.state))} W` : nil}</span></span>
-            <span class="tile"><span class="label">Used today</span><span class="fv">${energy && this.usedToday !== undefined ? `${this.usedToday.toFixed(2)} ${energy.attributes.unit_of_measurement ?? 'kWh'}` : nil}</span></span>
+            <span class="tile"><span class="label">Used today</span><span class="fv">${energy && this.usedToday !== undefined ? `${this.usedToday.toFixed(2)} ${energy.attributes.unit_of_measurement ?? 'kWh'}` : this.loaded ? nil : html`<span class="skel" style="width: 64px; height: 0.8em; margin: 0.1em 0;"></span>`}</span></span>
           </div>`
         : nothing}
       <div class="card">
@@ -126,7 +128,7 @@ export class GlassSwitchSheet extends GlassEntitySheet {
           <span><i style="background: rgba(var(--glass-line-rgb), 0.06)"></i>Off</span>
         </div>
       </div>
-      ${this.facts.length ? this.renderFacts(this.facts) : nothing}
+      ${this.facts.length ? this.renderFacts(this.facts) : this.loaded ? nothing : this.renderFacts(['Switched on', this.sibling('power') ? 'Peak' : 'Longest', this.sibling('power') ? 'Lowest' : 'Last off'].map((label) => ({ label, value: html`<span class="skel" style="width: 48px; height: 0.8em; margin: 0.1em 0;"></span>` })))}
     `;
   }
 

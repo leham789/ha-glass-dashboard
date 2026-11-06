@@ -47,7 +47,9 @@ export class GlassCamera extends GlassElement {
   }
 
   setConfig(config: CameraConfig): void {
-    if (!config.entity?.startsWith('camera.')) throw new Error('Choose a camera');
+
+    this.needs = undefined;
+    if (!config.entity?.startsWith('camera.')) return this.setUp(config, 'Choose a camera');
     this.config = config;
   }
 
@@ -75,6 +77,7 @@ export class GlassCamera extends GlassElement {
   }
 
   protected shouldUpdate(changed: PropertyValues): boolean {
+    if (this.needs) return true;
     // Keep an open cameras pop-up current.
     if (this.sheet?.isConnected && this.hass) this.sheet.hass = this.hass;
     if (!changed.has('hass') || changed.size > 1 || !this.config) return true;
@@ -84,9 +87,11 @@ export class GlassCamera extends GlassElement {
   }
 
   render() {
+    if (this.needs) return this.renderSetup('cctv');
     if (!this.config || !this.hass) return nothing;
     const c = this.config;
     const cam = this.hass.states[c.entity];
+    if (!cam) return this.renderMissing(c.entity);
     if (!cam) return nothing;
     const motion = c.motion_entity ? this.hass.states[c.motion_entity] : undefined;
     const ding = c.ding_entity ? this.hass.states[c.ding_entity] : undefined;

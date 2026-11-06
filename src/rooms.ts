@@ -67,7 +67,7 @@ export function roomSummary(hass: HomeAssistant, areaId: string, exclude: string
     name,
     lights,
     onCount: lights.filter((l) => l.on).length,
-    ...roomMeta(hass, ids, name, quiet ? `Sensor ${quiet.charAt(0).toLowerCase()}${quiet.slice(1)}` : climateText(temperature, humidity)),
+    ...roomMeta(hass, ids, name, quiet ? 'Sensor not reporting' : climateText(temperature, humidity)),
     temperature,
     humidity,
     quiet,

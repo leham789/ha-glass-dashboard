@@ -1,4 +1,7 @@
-import { LitElement, css, type CSSResultGroup, type CSSResultOrNative, type PropertyValues } from 'lit';
+import { LitElement, css, html, type CSSResultGroup, type CSSResultOrNative, type PropertyValues, type TemplateResult } from 'lit';
+import { property } from 'lit/decorators.js';
+import type { IconName } from './icons.js';
+import './elements/glass-icon.js';
 import type { HomeAssistant } from './ha.js';
 import { GlassOffline } from './elements/glass-offline.js';
 import { press, sliderHaptic, sliderStart } from './motion.js';
@@ -21,6 +24,96 @@ const offlineStyles = css`
 `;
 
 /**
+ * The shared states (Library: Shared states), drawn once here for every card:
+ * "needs setting up" in place of HA's red error card, "can't find it" when a
+ * card's entity no longer exists, and the loading bar.
+ */
+const sharedStates = css`
+  .glass-setup {
+    box-sizing: border-box;
+    padding: var(--glass-space-edge);
+    border-radius: var(--glass-radius-card);
+    background: var(--glass-surface);
+    border: 1.5px dashed rgba(var(--glass-line-rgb), 0.2);
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    font-family: var(--glass-font);
+    color: var(--glass-ink);
+  }
+  .glass-setup .ic {
+    width: 44px;
+    height: 44px;
+    flex: none;
+    border-radius: 50%;
+    background: var(--glass-neutral-tint);
+    color: var(--glass-text-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .glass-setup .t {
+    display: block;
+    font-size: var(--glass-text-body);
+  }
+  .glass-setup .s {
+    display: block;
+    font-size: var(--glass-text-caption);
+    color: var(--glass-text-muted);
+    line-height: 1.4;
+  }
+  .glass-missing {
+    box-sizing: border-box;
+    padding: var(--glass-space-edge);
+    border-radius: var(--glass-radius-card);
+    background: var(--glass-surface);
+    border: 1px solid var(--glass-surface-border);
+    box-shadow: var(--glass-tile-shadow);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    font-family: var(--glass-font);
+    color: var(--glass-ink);
+  }
+  .glass-missing .pill {
+    align-self: flex-start;
+    height: 30px;
+    padding: 0 12px;
+    border-radius: 15px;
+    background: var(--glass-attention-tint);
+    color: var(--glass-attention-ink);
+    font-size: var(--glass-text-caption);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .glass-missing .pill i {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--glass-attention);
+  }
+  .glass-missing .t {
+    font-size: var(--glass-text-body);
+    overflow-wrap: anywhere;
+  }
+  .glass-missing code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 0.9em;
+  }
+  .glass-missing .s {
+    font-size: var(--glass-text-small);
+    color: var(--glass-text-muted);
+  }
+  /* Loading: a soft bar the size of what's on its way (style its width and height) */
+  .skel {
+    display: block;
+    border-radius: 8px;
+    background: rgba(var(--glass-line-rgb), 0.08);
+  }
+`;
+
+/**
  * Base for every card and sheet. It follows Home Assistant's light / dark
  * mode: when HA's dark theme is on, the host gets a `dark` attribute and the
  * tokens in tokens.ts switch to their dark values. While HA's connection is
@@ -37,6 +130,35 @@ const ticking = new Set<LitElement>();
 let tick: number | undefined;
 
 export class GlassElement extends LitElement {
+  /** Set by setConfig when a required option is missing: what to choose, in the card's own words. */
+  @property({ attribute: false }) protected needs?: string;
+
+  /**
+   * In setConfig, in place of throwing: keep the config (so the editor still
+   * opens) and show "needs setting up" until it's complete.
+   */
+  protected setUp(config: unknown, what: string): void {
+    (this as unknown as { config?: unknown }).config = config;
+    this.needs = what;
+  }
+
+  /** "Needs setting up": the card's icon, what's missing, and how to fix it. */
+  protected renderSetup(icon: IconName): TemplateResult {
+    return html`<div class="glass-setup" role="note">
+      <span class="ic"><glass-icon name=${icon} size="20" stroke="1.7"></glass-icon></span>
+      <span><span class="t">${this.needs}</span><span class="s">Edit this card to finish setting it up.</span></span>
+    </div>`;
+  }
+
+  /** "Can't find it": the card was set up, but its entity no longer exists. */
+  protected renderMissing(id: string): TemplateResult {
+    return html`<div class="glass-missing" role="note">
+      <span class="pill"><i></i>Check card settings</span>
+      <span class="t">Can’t find <code>${id}</code></span>
+      <span class="s">It may have been renamed. Open the card’s editor to pick it again.</span>
+    </div>`;
+  }
+
   connectedCallback(): void {
     super.connectedCallback();
     ticking.add(this);
@@ -49,7 +171,7 @@ export class GlassElement extends LitElement {
   }
 
   protected static finalizeStyles(styles?: CSSResultGroup): CSSResultOrNative[] {
-    return [...super.finalizeStyles(styles), offlineStyles];
+    return [...super.finalizeStyles(styles), offlineStyles, sharedStates];
   }
 
   constructor() {

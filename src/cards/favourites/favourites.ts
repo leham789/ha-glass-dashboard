@@ -66,7 +66,9 @@ export class GlassFavourites extends GlassElement {
   }
 
   setConfig(config: FavouritesConfig): void {
-    if (!Array.isArray(config.entities) || !config.entities.length) throw new Error('Choose at least one favourite');
+
+    this.needs = undefined;
+    if (!Array.isArray(config.entities) || !config.entities.length) return this.setUp(config, 'Choose at least one favourite');
     this.config = config;
   }
 
@@ -84,12 +86,14 @@ export class GlassFavourites extends GlassElement {
   }
 
   protected shouldUpdate(changed: PropertyValues): boolean {
+    if (this.needs) return true;
     if (!changed.has('hass') || changed.size > 1 || !this.config) return true;
     const old = changed.get('hass') as HomeAssistant | undefined;
     return !old || this.config.entities.some((id) => old.states[id] !== this.hass!.states[id]);
   }
 
   render() {
+    if (this.needs) return this.renderSetup('lightbulb');
     if (!this.config || !this.hass) return nothing;
     if (this.config.style !== 'pills') return this.renderTiles();
     return html`<nav aria-label="Favourites">

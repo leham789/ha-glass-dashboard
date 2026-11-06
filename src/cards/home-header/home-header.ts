@@ -98,6 +98,7 @@ export class GlassHomeHeader extends GlassElement {
       room: room?.name,
       temperature: room?.temperature,
       humidity: room?.humidity,
+      quiet: !!room?.quiet,
       outside: typeof outside === 'number' ? Math.round(outside) : undefined,
     };
   }
@@ -129,15 +130,17 @@ export class GlassHomeHeader extends GlassElement {
       </header>
       ${whole !== undefined
         ? html`<section aria-label="${v.room} temperature">
-            <span class="hero"><span>${whole}</span><span class="decimal">.${decimal}°</span></span>
+            <span class="hero ${v.quiet ? 'quiet' : ''}"><span>${whole}</span><span class="decimal">.${decimal}°</span></span>
             <span class="chips">
               <span class="chip subject">${v.room}</span>
               ${v.outside !== undefined
                 ? html`<span class="chip"><glass-icon name="cloud" size="14" stroke="1.8"></glass-icon>${v.outside}° outside</span>`
                 : nothing}
-              ${v.humidity !== undefined
-                ? html`<span class="chip"><glass-icon name="droplet" size="14" stroke="1.8"></glass-icon>${Math.round(v.humidity)}%</span>`
-                : nothing}
+              ${v.quiet
+                ? html`<span class="chip quiet"><i class="dot"></i>Not reporting</span>`
+                : v.humidity !== undefined
+                  ? html`<span class="chip"><glass-icon name="droplet" size="14" stroke="1.8"></glass-icon>${Math.round(v.humidity)}%</span>`
+                  : nothing}
             </span>
           </section>`
         : nothing}
@@ -217,10 +220,23 @@ export class GlassHomeHeader extends GlassElement {
         line-height: 0.9;
         font-size: 104px;
         font-weight: 200;
-        letter-spacing: -4px;
+        letter-spacing: -5px;
       }
       .decimal {
         color: var(--glass-grey);
+      }
+      /* the room's sensor has gone quiet: the whole number greys too */
+      .hero.quiet {
+        color: var(--glass-grey);
+      }
+      .chip.quiet {
+        color: var(--glass-text-muted);
+      }
+      .chip.quiet .dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--glass-grey);
       }
       .chips {
         display: flex;

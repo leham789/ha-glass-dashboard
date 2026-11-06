@@ -44,7 +44,9 @@ export class GlassRoomLights extends GlassElement {
   }
 
   setConfig(config: RoomLightsConfig): void {
-    if (!config.area) throw new Error('Choose a room');
+
+    this.needs = undefined;
+    if (!config.area) return this.setUp(config, 'Choose a room');
     this.config = config;
   }
 
@@ -68,6 +70,7 @@ export class GlassRoomLights extends GlassElement {
   }
 
   protected shouldUpdate(changed: PropertyValues): boolean {
+    if (this.needs) return true;
     if (this.hass) loadPrefs(this.hass);
     if (!changed.has('hass') || changed.size > 1 || !this.config) return true;
     const old = changed.get('hass') as HomeAssistant | undefined;
@@ -76,6 +79,7 @@ export class GlassRoomLights extends GlassElement {
   }
 
   render() {
+    if (this.needs) return this.renderSetup('lamp');
     if (!this.config || !this.hass) return nothing;
     // Leave out lights hidden here in the card or from Room options.
     const hidden = [...(this.config.exclude_entities ?? []), ...(prefs().hidden[this.config.area] ?? [])];

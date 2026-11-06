@@ -44,7 +44,9 @@ export class GlassThermostatDial extends GlassElement {
   }
 
   setConfig(config: ThermostatDialConfig): void {
-    if (!config.entity?.startsWith('climate.')) throw new Error('Choose a thermostat');
+
+    this.needs = undefined;
+    if (!config.entity?.startsWith('climate.')) return this.setUp(config, 'Choose a thermostat');
     this.config = config;
   }
 
@@ -62,12 +64,13 @@ export class GlassThermostatDial extends GlassElement {
   }
 
   protected shouldUpdate(changed: PropertyValues): boolean {
+    if (this.needs) return true;
     if (!changed.has('hass') || changed.size > 1 || !this.config) return true;
     const old = changed.get('hass') as HomeAssistant | undefined;
     return !old || old.states[this.config.entity] !== this.hass!.states[this.config.entity] || this.roomQuiet() !== this.shownQuiet;
   }
 
-  /** The room's temperature sensor has gone quiet: "Last heard 3 h ago". */
+  /** The room's temperature sensor has gone quiet (its "Last heard" line, which the card shows as "Room sensor not reporting"). */
   private roomQuiet(): string | undefined {
     const areaId = areaOf(this.hass!, this.config!.entity);
     return areaId ? roomSummary(this.hass!, areaId).quiet : undefined;
@@ -81,9 +84,10 @@ export class GlassThermostatDial extends GlassElement {
   private shownQuiet?: string;
 
   render() {
+    if (this.needs) return this.renderSetup('thermometer');
     if (!this.config || !this.hass) return nothing;
     const e = this.hass.states[this.config.entity];
-    if (!e) return nothing;
+    if (!e) return this.renderMissing(this.config.entity);
     const a = e.attributes;
     const off = e.state === 'off' || isUnavailable(e);
     const { min, max } = this.limits();
@@ -96,7 +100,7 @@ export class GlassThermostatDial extends GlassElement {
     const roomQuiet = this.roomQuiet();
     this.shownQuiet = roomQuiet;
     const nowLine = roomQuiet
-      ? `Room sensor ${roomQuiet.charAt(0).toLowerCase()}${roomQuiet.slice(1)}`
+      ? 'Room sensor not reporting'
       : off
         ? [nowText, 'heating off'].filter(Boolean).join(' · ')
         : now === undefined

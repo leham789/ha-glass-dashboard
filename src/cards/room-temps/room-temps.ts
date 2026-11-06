@@ -81,7 +81,7 @@ export class GlassRoomTemps extends GlassElement {
       .filter((r) => r.temperature !== undefined);
     this.watched = rooms.flatMap((r) => r.watch);
     if (!rooms.length) return nothing;
-    // a room whose sensor has gone quiet drops to the end, greyed, with when it was last heard
+    // a room whose sensor has gone quiet drops to the end, greyed, saying "Not reporting"
     rooms.sort((a, b) => Number(!!a.quiet) - Number(!!b.quiet));
 
     return html`<section aria-labelledby="h">
@@ -103,7 +103,7 @@ export class GlassRoomTemps extends GlassElement {
           <span class="name">
             <span>${r.name}</span>
             ${r.quiet
-              ? html`<span class="hum">${r.quiet}</span>`
+              ? html`<span class="hum">Not reporting</span>`
               : r.humidity !== undefined
                 ? html`<span class="hum">${Math.round(r.humidity)}% humidity</span>`
                 : nothing}
@@ -181,7 +181,7 @@ export class GlassRoomTemps extends GlassElement {
         outline: 2px solid var(--glass-ink);
         outline-offset: -2px;
       }
-      /* 120 wide so "Last heard 3 h ago" stays on one line; every row the same, so the scales line up */
+      /* 120 wide so "Not reporting" stays on one line; every row the same, so the scales line up */
       .name {
         width: 120px;
         flex: none;

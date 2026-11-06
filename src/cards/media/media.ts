@@ -37,7 +37,9 @@ export class GlassMedia extends GlassElement {
   }
 
   setConfig(config: MediaConfig): void {
-    if (!config.entity?.startsWith('media_player.')) throw new Error('Choose a media player');
+
+    this.needs = undefined;
+    if (!config.entity?.startsWith('media_player.')) return this.setUp(config, 'Choose a media player');
     this.config = config;
   }
 
@@ -55,6 +57,7 @@ export class GlassMedia extends GlassElement {
   }
 
   protected shouldUpdate(changed: PropertyValues): boolean {
+    if (this.needs) return true;
     if (!changed.has('hass') || changed.size > 1 || !this.config) return true;
     const old = changed.get('hass') as HomeAssistant | undefined;
     const ids = [this.config.entity, ...(this.config.buttons ?? [])];
@@ -62,9 +65,10 @@ export class GlassMedia extends GlassElement {
   }
 
   render() {
+    if (this.needs) return this.renderSetup('music');
     if (!this.config || !this.hass) return nothing;
     const p = this.hass.states[this.config.entity];
-    if (!p) return nothing;
+    if (!p) return this.renderMissing(this.config.entity);
     const a = p.attributes;
     const active = p.state === 'playing' || p.state === 'paused';
     const playing = p.state === 'playing';

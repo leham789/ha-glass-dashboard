@@ -38,7 +38,9 @@ export class GlassSwitchRows extends GlassElement {
   }
 
   setConfig(config: SwitchRowsConfig): void {
-    if (!Array.isArray(config.entities) || !config.entities.length) throw new Error('Choose at least one switch');
+
+    this.needs = undefined;
+    if (!Array.isArray(config.entities) || !config.entities.length) return this.setUp(config, 'Choose at least one switch');
     this.config = config;
   }
 
@@ -56,6 +58,7 @@ export class GlassSwitchRows extends GlassElement {
   }
 
   protected shouldUpdate(changed: PropertyValues): boolean {
+    if (this.needs) return true;
     if (!changed.has('hass') || changed.size > 1 || !this.config) return true;
     const old = changed.get('hass') as HomeAssistant | undefined;
     return !old || this.watched.some((id) => old.states[id] !== this.hass!.states[id]);
@@ -73,6 +76,7 @@ export class GlassSwitchRows extends GlassElement {
   }
 
   render() {
+    if (this.needs) return this.renderSetup('plug');
     if (!this.config || !this.hass) return nothing;
     const hass = this.hass;
     this.watched = this.config.entities.map(idOf).flatMap((id) => [id, ...this.readings(id)]);
