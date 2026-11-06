@@ -71,12 +71,12 @@ export function collections(entities: HassEntity[], now = new Date()): Collectio
 /** Dot colour from the bin's name: green, red, grey/black, blue, brown, yellow. */
 export function binColour(name: string): string {
   const n = name.toLowerCase();
-  if (/green|garden|food|organic/.test(n)) return '#4FA65B';
-  if (/red/.test(n)) return '#D9473A';
-  if (/blue|recycl|paper/.test(n)) return '#3B7DD8';
-  if (/brown/.test(n)) return '#8A5A3B';
-  if (/yellow|plastic/.test(n)) return '#E5B22D';
-  return '#8A8D94';
+  if (/green|garden|food|organic/.test(n)) return 'var(--glass-bin-green)';
+  if (/red/.test(n)) return 'var(--glass-bin-red)';
+  if (/blue|recycl|paper/.test(n)) return 'var(--glass-bin-blue)';
+  if (/brown/.test(n)) return 'var(--glass-bin-brown)';
+  if (/yellow|plastic/.test(n)) return 'var(--glass-bin-yellow)';
+  return 'var(--glass-grey)';
 }
 
 const COLOURS = /\b(green|red|grey|gray|black|blue|brown|yellow|purple)\b/i;

@@ -186,7 +186,7 @@ export class GlassHomeHeader extends GlassElement {
         display: flex;
         align-items: center;
         justify-content: center;
-        box-shadow: 0 6px 20px rgba(20, 20, 40, 0.08);
+        box-shadow: var(--glass-tile-shadow);
         cursor: pointer;
       }
       .avatar:focus-visible {
@@ -201,10 +201,10 @@ export class GlassHomeHeader extends GlassElement {
         height: 12px;
         border-radius: 50%;
         border: 2px solid var(--glass-ground);
-        background: #8a8d94;
+        background: var(--glass-grey);
       }
       .presence.home {
-        background: #2fa84f;
+        background: var(--glass-go);
       }
       section {
         display: flex;
@@ -220,7 +220,7 @@ export class GlassHomeHeader extends GlassElement {
         letter-spacing: -4px;
       }
       .decimal {
-        color: #8a8d94;
+        color: var(--glass-grey);
       }
       .chips {
         display: flex;

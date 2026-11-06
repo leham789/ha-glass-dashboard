@@ -1,6 +1,7 @@
 import { css, html, nothing, type PropertyValues } from 'lit';
 import { GlassElement } from '../../glass-element.js';
 import { customElement, property, query, state } from 'lit/decorators.js';
+import { cardSurface } from '../../elements/surfaces.js';
 import { tokens } from '../../tokens.js';
 import { ensureFonts } from '../../fonts.js';
 import { type HomeAssistant, type LovelaceCardConfig, isUnavailable, registerCard, reportVisibility } from '../../ha.js';
@@ -257,14 +258,10 @@ export class GlassGoodnight extends GlassElement {
         display: none;
       }
       .card {
+        ${cardSurface}
         box-sizing: border-box;
         padding: 24px var(--glass-space-edge) var(--glass-space-edge);
         border-radius: var(--glass-radius-card);
-        background: var(--glass-surface);
-        border: 1px solid var(--glass-surface-border);
-        box-shadow: 0 20px 50px rgba(60, 40, 110, 0.1);
-        backdrop-filter: blur(24px);
-        -webkit-backdrop-filter: blur(24px);
         display: flex;
         flex-direction: column;
         gap: 20px;
@@ -348,8 +345,8 @@ export class GlassGoodnight extends GlassElement {
         height: 56px;
         border-radius: 50%;
         background: var(--glass-go);
-        color: #fff;
-        box-shadow: 0 8px 20px rgba(47, 180, 87, 0.35);
+        color: var(--glass-on-go);
+        box-shadow: var(--glass-go-shadow);
         display: flex;
         align-items: center;
         justify-content: center;

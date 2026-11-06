@@ -1,4 +1,5 @@
 import { css, html, nothing, type CSSResultGroup, type PropertyValues } from 'lit';
+import { heading } from '../elements/type.js';
 import { customElement, property, state } from 'lit/decorators.js';
 import { keyed } from 'lit/directives/keyed.js';
 import { GlassSheet } from '../elements/glass-sheet.js';
@@ -52,7 +53,7 @@ export class GlassCamerasSheet extends GlassSheet {
 
   protected sheetTitle = 'Cameras';
   protected sheetIcon = 'cctv' as const;
-  protected sheetIconBg = '#9CC3F2';
+  protected sheetIconBg = 'var(--glass-blue)';
 
   connectedCallback(): void {
     super.connectedCallback();
@@ -302,25 +303,25 @@ export class GlassCamerasSheet extends GlassSheet {
       }
       .none {
         font-size: var(--glass-text-caption);
-        color: rgba(255, 255, 255, 0.65);
+        color: var(--glass-on-picture-muted);
       }
       .badge {
         position: absolute;
-        top: 14px;
-        height: 26px;
+        top: 12px;
+        height: 24px;
         padding: 0 12px;
-        border-radius: 13px;
-        background: rgba(0, 0, 0, 0.45);
+        border-radius: 12px;
+        background: var(--glass-scrim);
         font-size: var(--glass-text-small);
         display: flex;
         align-items: center;
         gap: 8px;
       }
       .tl {
-        left: 14px;
+        left: 12px;
       }
       .tr {
-        right: 14px;
+        right: 12px;
       }
       .dot {
         width: 6px;
@@ -328,13 +329,13 @@ export class GlassCamerasSheet extends GlassSheet {
         border-radius: 50%;
       }
       .dot.rec {
-        background: #ff5a4e;
+        background: var(--glass-live);
       }
       .dot.live {
         background: var(--glass-go);
       }
       .dot.off {
-        background: #8a8d94;
+        background: var(--glass-grey);
       }
       .arrow {
         all: unset;
@@ -344,7 +345,7 @@ export class GlassCamerasSheet extends GlassSheet {
         width: 44px;
         height: 44px;
         border-radius: 50%;
-        background: rgba(0, 0, 0, 0.4);
+        background: var(--glass-scrim);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -377,7 +378,7 @@ export class GlassCamerasSheet extends GlassSheet {
         height: 36px;
         flex: none;
         border-radius: 50%;
-        background: rgba(0, 0, 0, 0.45);
+        background: var(--glass-scrim);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -478,8 +479,8 @@ export class GlassCamerasSheet extends GlassSheet {
         width: 26px;
         height: 26px;
         border-radius: 50%;
-        background: #fff;
-        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+        background: var(--glass-knob);
+        box-shadow: var(--glass-knob-shadow);
         transition: left 0.2s ease;
       }
       .switch.on .knob {
@@ -496,9 +497,7 @@ export class GlassCamerasSheet extends GlassSheet {
         align-items: baseline;
       }
       h2 {
-        margin: 0;
-        font-size: 20px;
-        font-weight: 400;
+        ${heading}
       }
       .hint {
         font-size: var(--glass-text-caption);

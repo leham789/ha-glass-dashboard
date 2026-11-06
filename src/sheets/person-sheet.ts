@@ -1,4 +1,5 @@
-import { css, html, type CSSResultGroup, type PropertyValues } from 'lit';
+import { css, html, type CSSResultGroup, type PropertyValues, type TemplateResult } from 'lit';
+import { nil } from '../elements/nil.js';
 import { customElement, state } from 'lit/decorators.js';
 import { GlassEntitySheet, type Tone } from './entity-sheet.js';
 import type { ChartBand } from '../elements/glass-history-chart.js';
@@ -6,9 +7,9 @@ import '../elements/glass-history-chart.js';
 import { spans, stateHistory } from '../history.js';
 import { clock, hoursMinutes as hm, todayLabels } from '../time.js';
 
-const HOME = '#2FB457';
-const ZONE = '#3B7DD8';
-const AWAY = '#8A8D94';
+const HOME = 'var(--glass-go)';
+const ZONE = 'var(--glass-info)';
+const AWAY = 'var(--glass-grey)';
 
 /** What today's history says: when they left and got back, time in the current place, where they were before. */
 interface Today {
@@ -93,14 +94,14 @@ export class GlassPersonSheet extends GlassEntitySheet {
   }
 
   /** The tracking phone's battery, from the companion app's battery sensor on the same device. */
-  private phoneBattery(): string {
+  private phoneBattery(): string | TemplateResult {
     const source: string | undefined = this.entity?.attributes.source;
     const device = source ? this.hass?.entities?.[source]?.device_id : undefined;
-    if (!device) return '—';
+    if (!device) return nil;
     const id = Object.keys(this.hass!.states).find(
       (s) => this.hass!.entities?.[s]?.device_id === device && this.hass!.states[s].attributes.device_class === 'battery' && s.startsWith('sensor.'),
     );
-    return id ? `${Math.round(Number(this.hass!.states[id].state))}%` : '—';
+    return id ? `${Math.round(Number(this.hass!.states[id].state))}%` : nil;
   }
 
   private where(): { word?: string; tone: Tone } {
@@ -116,7 +117,7 @@ export class GlassPersonSheet extends GlassEntitySheet {
     if (!e) return html``;
     const { word } = this.where();
     const t = this.today;
-    const at = (ms?: number) => (ms ? clock(new Date(ms).toISOString()) : '—');
+    const at = (ms?: number) => (ms ? clock(new Date(ms).toISOString()) : nil);
     const place = (st?: string) => (st === 'home' ? 'home' : st);
     // "Since 17:42 · arrived from Work", "Since 08:36 · left home 08:10", "Since 18:05 · left Work"
     const how =
@@ -159,9 +160,9 @@ export class GlassPersonSheet extends GlassEntitySheet {
         </div>
         <glass-history-chart kind="timeline" .bands=${this.bands} .xLabels=${todayLabels()} label="Where ${this.sheetTitle} was today"></glass-history-chart>
         <div class="legend">
-          <span><i style="background: rgba(47, 180, 87, 0.6)"></i>Home</span>
-          ${legendZones.map((z) => html`<span><i style="background: rgba(59, 125, 216, 0.55)"></i>${z}</span>`)}
-          <span><i style="background: rgba(138, 141, 148, 0.35)"></i>Away</span>
+          <span><i style="background: var(--glass-go); opacity: 0.6"></i>Home</span>
+          ${legendZones.map((z) => html`<span><i style="background: var(--glass-info); opacity: 0.55"></i>${z}</span>`)}
+          <span><i style="background: var(--glass-grey); opacity: 0.35"></i>Away</span>
         </div>
       </div>
       ${this.renderFacts([...facts, { label: 'Phone', value: this.phoneBattery() }])}

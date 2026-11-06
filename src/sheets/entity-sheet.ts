@@ -1,4 +1,6 @@
 import { css, html, nothing, type CSSResultGroup, type PropertyValues, type TemplateResult } from 'lit';
+import { heading } from '../elements/type.js';
+import { cardSurface, tileSurface } from '../elements/surfaces.js';
 import { property } from 'lit/decorators.js';
 import { GlassSheet } from '../elements/glass-sheet.js';
 import { type HassEntity, isUnavailable } from '../ha.js';
@@ -9,7 +11,7 @@ import type { IconName } from '../icons.js';
 /** A fact tile under a sheet's chart: "Lowest · 16.1°". */
 export interface Fact {
   label: string;
-  value: string;
+  value: string | TemplateResult;
 }
 
 export type Tone = 'success' | 'attention' | 'info' | 'neutral';
@@ -133,15 +135,6 @@ export abstract class GlassEntitySheet extends GlassSheet {
         color: var(--glass-text-muted);
         margin-left: 8px;
       }
-      /* no reading: the Empty value component */
-      .nil {
-        display: inline-block;
-        width: 0.5em;
-        height: max(2px, 0.05em);
-        border-radius: 1px;
-        background: currentColor;
-        vertical-align: 0.33em;
-      }
       .caption {
         font-size: var(--glass-text-caption);
         color: var(--glass-text-muted);
@@ -163,7 +156,7 @@ export abstract class GlassEntitySheet extends GlassSheet {
         width: 7px;
         height: 7px;
         border-radius: 50%;
-        background: #8a8d94;
+        background: var(--glass-grey);
       }
       .pill.success {
         background: var(--glass-success-tint);
@@ -187,14 +180,13 @@ export abstract class GlassEntitySheet extends GlassSheet {
         background: var(--glass-info);
       }
       .card {
+        ${cardSurface}
         box-sizing: border-box;
         padding: var(--glass-space-edge);
         border-radius: var(--glass-radius-card);
-        background: rgba(var(--glass-surface-rgb), 0.74);
-        border: 1px solid var(--glass-surface-border);
         display: flex;
         flex-direction: column;
-        gap: 16px;
+        gap: var(--glass-space-tile-gap);
       }
       .card-head {
         display: flex;
@@ -203,9 +195,7 @@ export abstract class GlassEntitySheet extends GlassSheet {
         gap: 12px;
       }
       h2 {
-        margin: 0;
-        font-size: 20px;
-        font-weight: 400;
+        ${heading}
       }
       .note {
         font-size: var(--glass-text-caption);
@@ -234,11 +224,10 @@ export abstract class GlassEntitySheet extends GlassSheet {
       }
       .fact,
       .tile {
+        ${tileSurface}
         height: 92px;
         box-sizing: border-box;
         border-radius: var(--glass-radius-small-tile);
-        background: rgba(var(--glass-surface-rgb), 0.78);
-        border: 1px solid var(--glass-surface-border);
         padding: var(--glass-space-small-tile);
         display: flex;
         flex-direction: column;
@@ -299,7 +288,7 @@ export abstract class GlassEntitySheet extends GlassSheet {
       }
       .segmented button.on {
         background: var(--glass-raised);
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        box-shadow: var(--glass-raised-shadow);
       }
       .switch {
         all: unset;
@@ -320,8 +309,8 @@ export abstract class GlassEntitySheet extends GlassSheet {
         width: 26px;
         height: 26px;
         border-radius: 50%;
-        background: #fff;
-        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+        background: var(--glass-knob);
+        box-shadow: var(--glass-knob-shadow);
         transition: left 0.2s ease;
       }
       .switch.on {

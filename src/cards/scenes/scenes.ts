@@ -1,6 +1,8 @@
 import { css, html, nothing, type PropertyValues } from 'lit';
+import { heading } from '../../elements/type.js';
 import { GlassElement } from '../../glass-element.js';
 import { customElement, property, state } from 'lit/decorators.js';
+import { cardSurface } from '../../elements/surfaces.js';
 import { tokens } from '../../tokens.js';
 import { ensureFonts } from '../../fonts.js';
 import { type HassEntity, type HomeAssistant, type LovelaceCardConfig, registerCard } from '../../ha.js';
@@ -25,15 +27,15 @@ interface Look {
 
 // Tile colours for the usual Hue scene names; anything else gets a soft neutral.
 const LOOKS: [RegExp, Look][] = [
-  [/energi[sz]e|work|focus/i, { bg: 'linear-gradient(160deg, #E8F1FF 0%, #A9C6EE 100%)' }],
-  [/concentrate|cool|day/i, { bg: 'linear-gradient(160deg, #FFFFFF 0%, #DCE7F5 100%)' }],
-  [/bright/i, { bg: 'linear-gradient(160deg, #FFF8E6 0%, #F6E3B0 100%)' }],
-  [/read/i, { bg: 'linear-gradient(160deg, #FFF1D6 0%, #F7D58C 100%)' }],
-  [/relax|warm|evening|cosy|cozy/i, { bg: 'linear-gradient(160deg, #F7D58C 0%, #EFA86A 100%)' }],
-  [/night|dim|sleep/i, { bg: 'linear-gradient(160deg, #E0683A 0%, #8A3A1C 100%)', dark: true }],
-  [/gam|party|colou?r|disco/i, { bg: 'linear-gradient(160deg, #9CC3F2 0%, #CDB8F5 50%, #F59AA0 100%)' }],
+  [/energi[sz]e|work|focus/i, { bg: 'var(--glass-scene-focus)' }],
+  [/concentrate|cool|day/i, { bg: 'var(--glass-scene-day)' }],
+  [/bright/i, { bg: 'var(--glass-scene-bright)' }],
+  [/read/i, { bg: 'var(--glass-scene-read)' }],
+  [/relax|warm|evening|cosy|cozy/i, { bg: 'var(--glass-scene-relax)' }],
+  [/night|dim|sleep/i, { bg: 'var(--glass-scene-night)', dark: true }],
+  [/gam|party|colou?r|disco/i, { bg: 'var(--glass-scene-party)' }],
 ];
-const DEFAULT_LOOK: Look = { bg: 'linear-gradient(160deg, #FFFFFF 0%, #EDEEF1 100%)' };
+const DEFAULT_LOOK: Look = { bg: 'var(--glass-scene-default)' };
 
 /**
  * Scene tiles, three across. The one you ran last gets a dark ring and is
@@ -135,17 +137,13 @@ export class GlassScenes extends GlassElement {
         display: block;
       }
       section {
+        ${cardSurface}
         box-sizing: border-box;
         padding: var(--glass-space-edge);
         border-radius: var(--glass-radius-card);
-        background: var(--glass-surface);
-        border: 1px solid var(--glass-surface-border);
-        box-shadow: 0 18px 44px rgba(80, 60, 140, 0.1);
-        backdrop-filter: blur(24px);
-        -webkit-backdrop-filter: blur(24px);
         display: flex;
         flex-direction: column;
-        gap: 16px;
+        gap: var(--glass-space-tile-gap);
       }
       section.plain {
         padding: 0;
@@ -163,9 +161,7 @@ export class GlassScenes extends GlassElement {
         gap: 8px;
       }
       h2 {
-        margin: 0;
-        font-size: 20px;
-        font-weight: 400;
+        ${heading}
       }
       .note {
         font-size: var(--glass-text-caption);
@@ -185,7 +181,7 @@ export class GlassScenes extends GlassElement {
         display: flex;
         align-items: flex-end;
         font-size: var(--glass-text-caption);
-        color: #121316; /* scene colours are pastel in both themes */
+        color: var(--glass-on-pastel); /* scene colours are pastel in both themes */
         cursor: pointer;
         -webkit-tap-highlight-color: transparent;
       }

@@ -1,6 +1,8 @@
 import { css, html, nothing, type PropertyValues } from 'lit';
+import { nil } from '../../elements/nil.js';
 import { GlassElement } from '../../glass-element.js';
 import { customElement, property, state } from 'lit/decorators.js';
+import { cardSurface } from '../../elements/surfaces.js';
 import { tokens } from '../../tokens.js';
 import { ensureFonts } from '../../fonts.js';
 import { type HomeAssistant, type LovelaceCardConfig, isUnavailable, openMoreInfo, registerCard } from '../../ha.js';
@@ -73,7 +75,7 @@ export class GlassThermostatRow extends GlassElement {
       <button type="button" class="info" @click=${() => openMoreInfo(this, this.config!.entity)}>
         <span class="label">${label}</span>
         <span class="value"
-          >${off ? 'Off' : typeof target === 'number' ? html`<glass-roll .value=${target} text="${fmt(target)}°"></glass-roll>` : '–'}</span
+          >${off ? 'Off' : typeof target === 'number' ? html`<glass-roll .value=${target} text="${fmt(target)}°"></glass-roll>` : nil}</span
         >
       </button>
       <span class="buttons">
@@ -104,13 +106,10 @@ export class GlassThermostatRow extends GlassElement {
         display: block;
       }
       section {
+        ${cardSurface}
         box-sizing: border-box;
         padding: 16px 16px 16px var(--glass-space-edge);
         border-radius: var(--glass-radius-card);
-        background: var(--glass-surface);
-        border: 1px solid var(--glass-surface-border);
-        backdrop-filter: blur(20px);
-        -webkit-backdrop-filter: blur(20px);
         display: flex;
         align-items: center;
         justify-content: space-between;

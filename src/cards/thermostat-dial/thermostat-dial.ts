@@ -1,6 +1,7 @@
 import { css, html, nothing, svg, type PropertyValues } from 'lit';
 import { GlassElement } from '../../glass-element.js';
 import { customElement, property, state } from 'lit/decorators.js';
+import { cardSurface } from '../../elements/surfaces.js';
 import { tokens } from '../../tokens.js';
 import { ensureFonts } from '../../fonts.js';
 import { type HomeAssistant, type LovelaceCardConfig, isUnavailable, registerCard } from '../../ha.js';
@@ -135,9 +136,9 @@ export class GlassThermostatDial extends GlassElement {
         >
           <defs>
             <linearGradient id="heat" x1="40" y1="170" x2="280" y2="170" gradientUnits="userSpaceOnUse">
-              <stop offset="0" stop-color="#9CC3F2"></stop>
-              <stop offset="0.5" stop-color="#F7C66B"></stop>
-              <stop offset="1" stop-color="#E0683A"></stop>
+              <stop offset="0" style="stop-color: var(--glass-dial-cool)"></stop>
+              <stop offset="0.5" style="stop-color: var(--glass-dial-mid)"></stop>
+              <stop offset="1" style="stop-color: var(--glass-dial-warm)"></stop>
             </linearGradient>
           </defs>
           <path d="M 40 170 A 120 120 0 0 1 280 170" stroke="currentColor" stroke-opacity="0.08" stroke-width="14" stroke-linecap="round" fill="none"></path>
@@ -245,14 +246,10 @@ export class GlassThermostatDial extends GlassElement {
         display: block;
       }
       section {
+        ${cardSurface}
         box-sizing: border-box;
         padding: var(--glass-space-edge);
         border-radius: var(--glass-radius-card);
-        background: rgba(var(--glass-surface-rgb), 0.74);
-        border: 1px solid var(--glass-surface-border);
-        box-shadow: 0 20px 50px rgba(160, 90, 80, 0.12);
-        backdrop-filter: blur(24px);
-        -webkit-backdrop-filter: blur(24px);
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -274,10 +271,10 @@ export class GlassThermostatDial extends GlassElement {
         color: var(--glass-text-secondary);
       }
       .status .dot {
-        width: 7px;
-        height: 7px;
+        width: 8px;
+        height: 8px;
         border-radius: 50%;
-        background: #8a8d94;
+        background: var(--glass-grey);
       }
       .status.heating {
         color: var(--glass-attention-text);

@@ -1,4 +1,5 @@
 import { css, html, nothing, type PropertyValues } from 'lit';
+import { heading } from '../../elements/type.js';
 import { GlassElement } from '../../glass-element.js';
 import { customElement, property, state } from 'lit/decorators.js';
 import { tokens } from '../../tokens.js';
@@ -123,9 +124,7 @@ export class GlassSwitchRows extends GlassElement {
         gap: 12px;
       }
       h2 {
-        margin: 0;
-        font-size: 20px;
-        font-weight: 400;
+        ${heading}
       }
       .row {
         box-sizing: border-box;
@@ -183,8 +182,8 @@ export class GlassSwitchRows extends GlassElement {
         width: 26px;
         height: 26px;
         border-radius: 50%;
-        background: #fff;
-        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+        background: var(--glass-knob);
+        box-shadow: var(--glass-knob-shadow);
         transition: left 0.2s ease;
       }
       .on .knob {

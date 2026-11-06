@@ -1,4 +1,5 @@
 import { css, html, type CSSResultGroup, type TemplateResult } from 'lit';
+import { heading } from '../elements/type.js';
 import { GlassElement, openOverlays } from '../glass-element.js';
 import { property, state } from 'lit/decorators.js';
 import { tokens } from '../tokens.js';
@@ -242,7 +243,7 @@ export abstract class GlassSheet extends GlassElement {
       .backdrop {
         position: absolute;
         inset: 0;
-        background: rgba(var(--glass-line-rgb), 0.25);
+        background: var(--glass-dim);
         opacity: 0;
         transition: opacity 0.25s ease;
       }
@@ -261,7 +262,7 @@ export abstract class GlassSheet extends GlassElement {
         border-radius: var(--glass-radius-sheet) var(--glass-radius-sheet) 0 0;
         background: var(--glass-sheet);
         border-top: 1px solid var(--glass-surface-border);
-        box-shadow: 0 -20px 60px rgba(20, 20, 40, 0.15);
+        box-shadow: var(--glass-sheet-shadow);
         backdrop-filter: blur(30px);
         -webkit-backdrop-filter: blur(30px);
         display: flex;
@@ -353,7 +354,7 @@ export abstract class GlassSheet extends GlassElement {
         width: 48px;
         height: 48px;
         border-radius: 50%;
-        color: #121316; /* pastel circle in both themes */
+        color: var(--glass-on-pastel); /* pastel circle in both themes */
         display: flex;
         align-items: center;
         justify-content: center;
@@ -365,9 +366,7 @@ export abstract class GlassSheet extends GlassElement {
         line-height: 1.2;
       }
       h1 {
-        margin: 0;
-        font-size: 20px;
-        font-weight: 400;
+        ${heading}
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;

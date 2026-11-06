@@ -1,4 +1,5 @@
 import { css, html, nothing, type CSSResultGroup, type PropertyValues } from 'lit';
+import { nil } from '../elements/nil.js';
 import { customElement, state } from 'lit/decorators.js';
 import { GlassEntitySheet, type Fact } from './entity-sheet.js';
 import type { ChartBand } from '../elements/glass-history-chart.js';
@@ -54,7 +55,7 @@ export class GlassSwitchSheet extends GlassEntitySheet {
     midnight.setHours(0, 0, 0, 0);
     const points = await stateHistory(this.hass!, this.entityId, midnight);
     const on = spans(points, midnight).filter((sp) => sp.s === 'on');
-    this.bands = on.map((sp) => ({ from: sp.from, to: sp.to, colour: '#2FB457', opacity: 0.6 }));
+    this.bands = on.map((sp) => ({ from: sp.from, to: sp.to, colour: 'var(--glass-go)', opacity: 0.6 }));
     const span = Date.now() - midnight.getTime();
     const times = points.filter((p, i) => p.s === 'on' && points[i - 1]?.s !== 'on' && p.t >= midnight.getTime()).length;
     const longest = Math.max(0, ...on.map((sp) => (sp.to - sp.from) * span));
@@ -63,15 +64,15 @@ export class GlassSwitchSheet extends GlassEntitySheet {
       const watts = (await stateHistory(this.hass!, power.entity_id, midnight)).map((p) => Number(p.s)).filter(Number.isFinite);
       this.facts = [
         { label: 'Switched on', value: `${times} ${times === 1 ? 'time' : 'times'}` },
-        { label: 'Peak', value: watts.length ? `${Math.round(Math.max(...watts))} W` : '—' },
-        { label: 'Lowest', value: watts.length ? `${round(Math.min(...watts))} W` : '—' },
+        { label: 'Peak', value: watts.length ? `${Math.round(Math.max(...watts))} W` : nil },
+        { label: 'Lowest', value: watts.length ? `${round(Math.min(...watts))} W` : nil },
       ];
     } else {
       const lastOff = [...points].reverse().find((p) => p.s === 'off');
       this.facts = [
         { label: 'Switched on', value: `${times} ${times === 1 ? 'time' : 'times'}` },
-        { label: 'Longest', value: longest ? duration(new Date(Date.now() - longest).toISOString()) : '—' },
-        { label: 'Last off', value: lastOff ? clock(new Date(lastOff.t).toISOString()) : '—' },
+        { label: 'Longest', value: longest ? duration(new Date(Date.now() - longest).toISOString()) : nil },
+        { label: 'Last off', value: lastOff ? clock(new Date(lastOff.t).toISOString()) : nil },
       ];
     }
     this.onToday = on.reduce((n, sp) => n + (sp.to - sp.from) * span, 0);
@@ -110,8 +111,8 @@ export class GlassSwitchSheet extends GlassEntitySheet {
       </div>
       ${power || energy
         ? html`<div class="pair">
-            <span class="tile"><span class="label">Using now</span><span class="fv">${power ? `${round(Number(power.state))} W` : '—'}</span></span>
-            <span class="tile"><span class="label">Used today</span><span class="fv">${energy && this.usedToday !== undefined ? `${this.usedToday.toFixed(2)} ${energy.attributes.unit_of_measurement ?? 'kWh'}` : '—'}</span></span>
+            <span class="tile"><span class="label">Using now</span><span class="fv">${power ? `${round(Number(power.state))} W` : nil}</span></span>
+            <span class="tile"><span class="label">Used today</span><span class="fv">${energy && this.usedToday !== undefined ? `${this.usedToday.toFixed(2)} ${energy.attributes.unit_of_measurement ?? 'kWh'}` : nil}</span></span>
           </div>`
         : nothing}
       <div class="card">
@@ -121,7 +122,7 @@ export class GlassSwitchSheet extends GlassEntitySheet {
         </div>
         <glass-history-chart kind="timeline" .bands=${this.bands} .xLabels=${todayLabels()} label="When ${this.sheetTitle} was on today"></glass-history-chart>
         <div class="legend">
-          <span><i style="background: rgba(47, 180, 87, 0.6)"></i>On</span>
+          <span><i style="background: var(--glass-go); opacity: 0.6"></i>On</span>
           <span><i style="background: rgba(var(--glass-line-rgb), 0.06)"></i>Off</span>
         </div>
       </div>

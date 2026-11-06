@@ -1,4 +1,5 @@
 import { css, html, nothing, type PropertyValues } from 'lit';
+import { heading } from '../../elements/type.js';
 import { GlassElement } from '../../glass-element.js';
 import { customElement, property, state } from 'lit/decorators.js';
 import { tokens } from '../../tokens.js';
@@ -147,9 +148,7 @@ export class GlassRooms extends GlassElement {
         gap: 8px;
       }
       h2 {
-        margin: 0;
-        font-size: 20px;
-        font-weight: 400;
+        ${heading}
       }
       .floors {
         display: flex;

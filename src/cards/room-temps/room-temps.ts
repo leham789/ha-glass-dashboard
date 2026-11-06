@@ -1,6 +1,8 @@
 import { css, html, nothing, type PropertyValues } from 'lit';
+import { heading } from '../../elements/type.js';
 import { GlassElement, openOverlays } from '../../glass-element.js';
 import { customElement, property, state } from 'lit/decorators.js';
+import { cardSurface } from '../../elements/surfaces.js';
 import { tokens } from '../../tokens.js';
 import { ensureFonts } from '../../fonts.js';
 import { type HomeAssistant, type LovelaceCardConfig, openMoreInfo, registerCard } from '../../ha.js';
@@ -142,14 +144,11 @@ export class GlassRoomTemps extends GlassElement {
         outline-offset: 2px;
       }
       section {
+        ${cardSurface}
         position: relative;
         box-sizing: border-box;
         padding: var(--glass-space-edge) var(--glass-space-edge) 8px;
         border-radius: var(--glass-radius-card);
-        background: rgba(var(--glass-surface-rgb), 0.62);
-        border: 1px solid var(--glass-surface-border);
-        backdrop-filter: blur(20px);
-        -webkit-backdrop-filter: blur(20px);
         display: flex;
         flex-direction: column;
       }
@@ -157,12 +156,10 @@ export class GlassRoomTemps extends GlassElement {
         display: flex;
         justify-content: space-between;
         align-items: baseline;
-        margin-bottom: 8px;
+        margin-bottom: 12px;
       }
       h2 {
-        margin: 0;
-        font-size: 20px;
-        font-weight: 400;
+        ${heading}
       }
       .legend {
         font-size: var(--glass-text-caption);
@@ -207,7 +204,7 @@ export class GlassRoomTemps extends GlassElement {
         flex: 1;
         height: 8px;
         border-radius: 4px;
-        background: linear-gradient(90deg, #cfe3f7 0%, #e9f3d2 40%, #e9f3d2 60%, #f7c2a4 100%);
+        background: var(--glass-temp-scale);
       }
       .marker {
         position: absolute;

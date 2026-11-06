@@ -216,7 +216,7 @@ export class GlassMenu extends GlassElement {
         border-radius: 36px;
         background: rgba(var(--glass-surface-rgb), 0.7);
         border: 1px solid var(--glass-surface-border);
-        box-shadow: 0 16px 40px rgba(20, 30, 20, 0.14);
+        box-shadow: var(--glass-float-shadow);
         backdrop-filter: blur(24px);
         -webkit-backdrop-filter: blur(24px);
         position: relative;

@@ -42,7 +42,7 @@ export class GlassMediaSheet extends GlassEntitySheet {
   }
 
   protected iconBgFor(): string {
-    return '#9CC3F2';
+    return 'var(--glass-blue)';
   }
 
   protected get sheetSubtitle(): string {
@@ -256,7 +256,7 @@ export class GlassMediaSheet extends GlassEntitySheet {
         margin-left: -8px;
         border-radius: 50%;
         background: var(--glass-ink);
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+        box-shadow: var(--glass-raised-shadow);
       }
       .times {
         display: flex;

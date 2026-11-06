@@ -1,4 +1,5 @@
 import { css, html, nothing, type PropertyValues } from 'lit';
+import { nil } from '../../elements/nil.js';
 import { GlassElement } from '../../glass-element.js';
 import { customElement, property, state } from 'lit/decorators.js';
 import { tokens } from '../../tokens.js';
@@ -109,7 +110,7 @@ export class GlassEnergyTiles extends GlassElement {
     if (!e) return nothing;
     const a = e.attributes;
     const off = e.state === 'off' || isUnavailable(e);
-    const target = typeof a.temperature === 'number' ? `${Math.round(a.temperature * 2) / 2}°` : '–';
+    const target = typeof a.temperature === 'number' ? `${Math.round(a.temperature * 2) / 2}°` : nil;
     const room = typeof a.current_temperature === 'number' ? `Room is ${a.current_temperature.toFixed(1)}°` : '';
     // Only what it's actually doing (heating, idle); the mode alone ("heat") doesn't say.
     const action = a.hvac_action ? String(a.hvac_action).replace('_', ' ') : '';
@@ -136,7 +137,7 @@ export class GlassEnergyTiles extends GlassElement {
       ? watts >= 1000
         ? { n: (watts / 1000).toFixed(1), u: 'kW' }
         : { n: String(Math.round(watts)), u: 'W' }
-      : { n: '–', u: '' };
+      : { n: nil, u: '' };
 
     const max = Math.max(...this.hours, 1);
     const cost = this.cost();
@@ -145,7 +146,7 @@ export class GlassEnergyTiles extends GlassElement {
       <span class="top">
         <span class="now">
           <span class="label">Using now</span>
-          <span class="stat">${now.n}<span class="unit"> ${now.u}</span></span>
+          <span class="stat">${now.n}${now.u ? html`<span class="unit"> ${now.u}</span>` : nothing}</span>
         </span>
         <span class="go" aria-hidden="true"><glass-icon name="arrow-up-right" size="16" stroke="1.8"></glass-icon></span>
       </span>
@@ -208,13 +209,13 @@ export class GlassEnergyTiles extends GlassElement {
       }
       .heating {
         color: #fff;
-        background: linear-gradient(160deg, #c98579 0%, #b0675e 55%, #c59a72 100%);
-        box-shadow: 0 14px 30px rgba(160, 90, 80, 0.25);
+        background: var(--glass-gas);
+        box-shadow: var(--glass-tile-shadow);
       }
       .energy {
         color: var(--glass-ink);
-        background: linear-gradient(160deg, #7e9a2c 0%, #a6c23a 55%, #d2ee6a 100%);
-        box-shadow: 0 14px 30px rgba(120, 150, 40, 0.25);
+        background: var(--glass-energy);
+        box-shadow: var(--glass-tile-shadow);
       }
       .top {
         display: flex;

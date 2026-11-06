@@ -59,6 +59,60 @@ export const tokens = css`
     --glass-attention-text: #9a3e22;
     --glass-tile-shadow: 0 10px 30px rgba(30, 20, 60, 0.06);
     --glass-float-shadow: 0 16px 40px rgba(20, 20, 40, 0.16); /* things floating over the page: the connection banner */
+    --glass-sheet-shadow: 0 -20px 60px rgba(20, 20, 40, 0.15);
+    --glass-raised-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* the chosen segment, a seek knob */
+    --glass-knob: #fff; /* switch knobs and slider markers, in both themes */
+    --glass-knob-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+    --glass-marker-shadow: 0 0 0 1px rgba(18, 19, 22, 0.25), 0 2px 8px rgba(0, 0, 0, 0.15);
+    --glass-dim: rgba(18, 19, 22, 0.25); /* the screen behind a pop-up */
+
+    /* Pastels: icon circles on chips and pop-ups, and the dark icon on them (same in both themes) */
+    --glass-peach: #f7c2a4;
+    --glass-lilac: #cdb8f5;
+    --glass-blue: #9cc3f2;
+    --glass-mint: #9fe3b0;
+    --glass-amber: #f7d9a0;
+    --glass-on-pastel: #121316;
+    --glass-grey: #8a8d94; /* offline dots, away, grey decimals */
+    --glass-live: #ff5a4e; /* the live badge's dot */
+    --glass-scrim: rgba(0, 0, 0, 0.45); /* controls on a camera picture */
+    --glass-on-picture: #fff;
+    --glass-on-picture-muted: rgba(255, 255, 255, 0.65);
+    --glass-on-go: #fff; /* the icon on a go-green knob */
+    --glass-go-shadow: 0 8px 20px rgba(47, 180, 87, 0.35);
+    --glass-hot-tint: #fde7e7;
+    --glass-hot-ink: #9b1c1c;
+
+    /* Fills */
+    --glass-energy: linear-gradient(160deg, #7e9a2c 0%, #a6c23a 55%, #d2ee6a 100%); /* electricity cards and tiles */
+    --glass-gas: linear-gradient(160deg, #c98579 0%, #b0675e 55%, #c59a72 100%); /* gas and heating */
+    --glass-temp-scale: linear-gradient(90deg, #cfe3f7 0%, #e9f3d2 40%, #e9f3d2 60%, #f7c2a4 100%); /* cold, a flat comfort band, warm */
+    --glass-kelvin-scale: linear-gradient(90deg, #ffb46b 0%, #ffd9a8 30%, #fff1de 55%, #f2f4ff 80%, #d9e5ff 100%);
+    --glass-hue-scale: linear-gradient(90deg, hsl(0, 80%, 62%), hsl(60, 80%, 62%), hsl(120, 80%, 62%), hsl(180, 80%, 62%), hsl(240, 80%, 62%), hsl(300, 80%, 62%), hsl(360, 80%, 62%));
+    --glass-dial-cool: #9cc3f2;
+    --glass-dial-mid: #f7c66b;
+    --glass-dial-warm: #e0683a;
+    --glass-swatch-warm: #f5b866;
+    --glass-swatch-neutral: #f6e7c8;
+    --glass-swatch-cool: #cfe3f7;
+    --glass-swatch-colour: conic-gradient(#f59aa0, #f7d58c, #9fe3b0, #9cc3f2, #cdb8f5, #f59aa0);
+
+    /* Scene tiles, by the scene's name (pastel in both themes) */
+    --glass-scene-focus: linear-gradient(160deg, #e8f1ff 0%, #a9c6ee 100%);
+    --glass-scene-day: linear-gradient(160deg, #ffffff 0%, #dce7f5 100%);
+    --glass-scene-bright: linear-gradient(160deg, #fff8e6 0%, #f6e3b0 100%);
+    --glass-scene-read: linear-gradient(160deg, #fff1d6 0%, #f7d58c 100%);
+    --glass-scene-relax: linear-gradient(160deg, #f7d58c 0%, #efa86a 100%);
+    --glass-scene-night: linear-gradient(160deg, #e0683a 0%, #8a3a1c 100%);
+    --glass-scene-party: linear-gradient(160deg, #9cc3f2 0%, #cdb8f5 50%, #f59aa0 100%);
+    --glass-scene-default: linear-gradient(160deg, #ffffff 0%, #edeef1 100%);
+
+    /* Bins, by the bin's name */
+    --glass-bin-green: #4fa65b;
+    --glass-bin-red: #d9473a;
+    --glass-bin-blue: #3b7dd8;
+    --glass-bin-brown: #8a5a3b;
+    --glass-bin-yellow: #e5b22d;
 
     /* Radius */
     --glass-radius-inset: 16px;
@@ -81,6 +135,7 @@ export const tokens = css`
 
     /* Type */
     --glass-font: 'Outfit', system-ui, sans-serif;
+    --glass-text-heading: 20px; /* section headings and pop-up titles */
     --glass-text-tile-title: 17px;
     --glass-text-body: 15px;
     --glass-text-chip: 14px;
@@ -129,7 +184,19 @@ export const tokens = css`
     --glass-attention-text: #f4a47f;
     --glass-tile-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
     --glass-float-shadow: 0 16px 40px rgba(0, 0, 0, 0.4);
+    --glass-dim: rgba(0, 0, 0, 0.5); /* darker behind a pop-up in dark mode, as on iPhone */
 
     color-scheme: dark;
+  }
+
+  /* No reading: the short grey dash (elements/nil.ts) */
+  .nil {
+    display: inline-block;
+    width: 0.5em;
+    height: max(2px, 0.05em);
+    border-radius: 1px;
+    color: var(--glass-text-muted);
+    background: currentColor;
+    vertical-align: 0.33em;
   }
 `;

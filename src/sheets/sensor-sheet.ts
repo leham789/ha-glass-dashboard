@@ -1,4 +1,5 @@
 import { html, nothing, type PropertyValues } from 'lit';
+import { nil } from '../elements/nil.js';
 import { customElement, state } from 'lit/decorators.js';
 import { GlassEntitySheet, type Fact, type Tone } from './entity-sheet.js';
 import type { ChartBand } from '../elements/glass-history-chart.js';
@@ -63,9 +64,9 @@ export class GlassSensorSheet extends GlassEntitySheet {
   protected iconBgFor(e: HassEntity): string {
     const dc = e.attributes.device_class;
     if (dc === 'energy' || dc === 'power') return 'var(--glass-accent)';
-    if (dc === 'battery') return '#CDB8F5';
-    if (dc === 'humidity') return '#9CC3F2';
-    return '#F7C2A4';
+    if (dc === 'battery') return 'var(--glass-lilac)';
+    if (dc === 'humidity') return 'var(--glass-blue)';
+    return 'var(--glass-peach)';
   }
 
   protected updated(changed: PropertyValues): void {
@@ -132,11 +133,11 @@ export class GlassSensorSheet extends GlassEntitySheet {
         const verb = OPENINGS.has(e.attributes.device_class) ? 'Opened' : 'On';
         this.chart = {
           ...base,
-          bands: on.map((sp) => ({ from: sp.from, to: sp.to, colour: '#E0683A', opacity: 0.75 })),
+          bands: on.map((sp) => ({ from: sp.from, to: sp.to, colour: 'var(--glass-attention)', opacity: 0.75 })),
           facts: [
             { label: verb, value: `${opens.length} ${opens.length === 1 ? 'time' : 'times'}` },
-            { label: 'Longest', value: longest ? duration(new Date(Date.now() - longest).toISOString()) : '—' },
-            week ? { label: 'Per day', value: `${Math.round(opens.length / 7)}` } : { label: 'First', value: opens[0] ? clock(new Date(opens[0].t).toISOString()) : '—' },
+            { label: 'Longest', value: longest ? duration(new Date(Date.now() - longest).toISOString()) : nil },
+            week ? { label: 'Per day', value: `${Math.round(opens.length / 7)}` } : { label: 'First', value: opens[0] ? clock(new Date(opens[0].t).toISOString()) : nil },
           ],
         };
       } else {
@@ -154,8 +155,8 @@ export class GlassSensorSheet extends GlassEntitySheet {
           ...base, values, min, max, hi: `${max}${u}`, lo: `${min}${u}`,
           facts: battery
             ? [
-                { label: week ? '7 days ago' : '24 h ago', value: nums.length ? `${Math.round(nums[0])}%` : '—' },
-                { label: week ? 'Per week' : 'Per day', value: nums.length ? `${signed(Math.round(nums[nums.length - 1] - nums[0]))}%` : '—' },
+                { label: week ? '7 days ago' : '24 h ago', value: nums.length ? `${Math.round(nums[0])}%` : nil },
+                { label: week ? 'Per week' : 'Per day', value: nums.length ? `${signed(Math.round(nums[nums.length - 1] - nums[0]))}%` : nil },
                 { label: 'Lowest', value: `${Math.round(lo)}%` },
               ]
             : [

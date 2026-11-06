@@ -356,13 +356,13 @@ export class GlassCameraFull extends GlassElement {
         width: 7px;
         height: 7px;
         border-radius: 50%;
-        background: #2fb457;
+        background: var(--glass-go);
       }
       .dot.rec {
-        background: #ff5a4e;
+        background: var(--glass-live);
       }
       .dot.off {
-        background: #8a8d94;
+        background: var(--glass-grey);
       }
       .arrow {
         position: absolute;

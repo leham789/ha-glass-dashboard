@@ -1,4 +1,6 @@
 import { css, html, nothing, type PropertyValues } from 'lit';
+import { heading } from '../../elements/type.js';
+import { tileSurface } from '../../elements/surfaces.js';
 import { GlassElement } from '../../glass-element.js';
 import { customElement, property, state } from 'lit/decorators.js';
 import { tokens } from '../../tokens.js';
@@ -262,9 +264,7 @@ export class GlassFavourites extends GlassElement {
         gap: 12px;
       }
       h2 {
-        margin: 0;
-        font-size: 20px;
-        font-weight: 400;
+        ${heading}
       }
       /* Runs to the screen's edges, so the next tile peeks in and the row reads as one that scrolls sideways. */
       .tiles {
@@ -281,11 +281,11 @@ export class GlassFavourites extends GlassElement {
         display: none;
       }
       button.tile {
+        ${tileSurface}
         width: 104px;
         height: var(--glass-height-small-tile);
         padding: 12px;
         border-radius: var(--glass-radius-small-tile);
-        background: rgba(var(--glass-surface-rgb), 0.82);
         flex-direction: column;
         align-items: flex-start;
         justify-content: space-between;

@@ -32,7 +32,7 @@ export class GlassHeatingSheet extends GlassEntitySheet {
   }
 
   protected iconBgFor(): string {
-    return '#F7C2A4';
+    return 'var(--glass-peach)';
   }
 
   /** "Heat · comfort" above the dial, in place of the thermostat's name (the title has it). */
@@ -118,7 +118,7 @@ export class GlassHeatingSheet extends GlassEntitySheet {
             <div class="legend">
               <span><i class="room"></i>Room</span>
               <span><i class="target"></i>Target</span>
-              <span><i style="background: rgba(224, 104, 58, 0.12)"></i>Heating on</span>
+              <span><i style="background: var(--glass-attention); opacity: 0.12"></i>Heating on</span>
             </div>
           </div>`
         : nothing}
@@ -138,7 +138,7 @@ export class GlassHeatingSheet extends GlassEntitySheet {
         width: 14px;
         height: 0;
         border-radius: 0;
-        border-top: 2px dashed #e0683a;
+        border-top: 2px dashed var(--glass-attention);
       }
     `,
   ];

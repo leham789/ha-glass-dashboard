@@ -49,9 +49,9 @@ export class GlassHistoryChart extends LitElement {
     return html`<svg viewBox="0 0 ${W} ${h}" role="img" aria-label=${this.label}>
       ${timeline
         ? svg`<rect x="0" y="8" width=${W} height="36" rx="10" fill="currentColor" fill-opacity="0.06"></rect>
-            ${this.bands.map((b) => svg`<rect x=${(b.from * W).toFixed(1)} y="8" width=${Math.max(3, (b.to - b.from) * W).toFixed(1)} height="36" rx="4" fill=${b.colour} fill-opacity=${b.opacity}></rect>`)}`
+            ${this.bands.map((b) => svg`<rect x=${(b.from * W).toFixed(1)} y="8" width=${Math.max(3, (b.to - b.from) * W).toFixed(1)} height="36" rx="4" style=${`fill: ${b.colour}`} fill-opacity=${b.opacity}></rect>`)}`
         : svg`
-            ${this.runs.map((r) => svg`<rect x=${(r.from * W).toFixed(1)} y="0" width=${Math.max(4, (r.to - r.from) * W).toFixed(1)} height=${base} rx="6" fill="#E0683A" fill-opacity="0.12"></rect>`)}
+            ${this.runs.map((r) => svg`<rect x=${(r.from * W).toFixed(1)} y="0" width=${Math.max(4, (r.to - r.from) * W).toFixed(1)} height=${base} rx="6" style="fill: var(--glass-attention)" fill-opacity="0.12"></rect>`)}
             <line x1="0" x2=${W} y1=${top} y2=${top} stroke="currentColor" stroke-opacity="0.07"></line>
             <line x1="0" x2=${W} y1=${base} y2=${base} stroke="currentColor" stroke-opacity="0.07"></line>
             ${this.kind === 'bars' ? this.renderBars(y, base) : this.renderLine(y, x, n, base)}
@@ -74,7 +74,7 @@ export class GlassHistoryChart extends LitElement {
     const steps = t && t.length > 1 ? t.map((v, i) => (i ? `L${x(i, t.length).toFixed(1)} ${y(t[i - 1]).toFixed(1)} L` : 'M') + `${x(i, t.length).toFixed(1)} ${y(v).toFixed(1)}`).join(' ') : '';
     return svg`
       <path d="M0 ${base} L${pts.join(' L')} L${endX.toFixed(1)} ${base} Z" fill="currentColor" fill-opacity=${t ? 0 : 0.05}></path>
-      ${steps ? svg`<path d=${steps} fill="none" stroke="#E0683A" stroke-width="1.6" stroke-dasharray="4 4" stroke-linejoin="round"></path>` : nothing}
+      ${steps ? svg`<path d=${steps} fill="none" style="stroke: var(--glass-attention)" stroke-width="1.6" stroke-dasharray="4 4" stroke-linejoin="round"></path>` : nothing}
       <path d="M${pts.join(' L')}" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
       <circle cx=${endX.toFixed(1)} cy=${y(shown[shown.length - 1]).toFixed(1)} r="4" fill="currentColor"></circle>
       ${gap < n - 1 ? svg`<text x=${((endX + W) / 2).toFixed(1)} y="56" text-anchor="middle" class="axis">No data</text>` : nothing}`;

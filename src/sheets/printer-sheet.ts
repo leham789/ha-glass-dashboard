@@ -1,4 +1,5 @@
 import { css, html, nothing, type CSSResultGroup, type PropertyValues } from 'lit';
+import { nil } from '../elements/nil.js';
 import { customElement, property, state } from 'lit/decorators.js';
 import { GlassEntitySheet, type Fact, type Tone } from './entity-sheet.js';
 import { GlassCameraFull } from '../elements/glass-camera-full.js';
@@ -42,7 +43,7 @@ export class GlassPrinterSheet extends GlassEntitySheet {
   }
 
   protected iconBgFor(): string {
-    return '#9CC3F2';
+    return 'var(--glass-blue)';
   }
 
   protected willUpdate(changed: PropertyValues): void {
@@ -107,14 +108,14 @@ export class GlassPrinterSheet extends GlassEntitySheet {
     const pill = off ? { text: 'Offline', tone: 'neutral' as Tone } : PILL[p.phase];
     // "220°" once it's there; "205° → 220°" while it heats up.
     const temp = (e?: HassEntity, target = 0) => {
-      if (!e || isUnavailable(e)) return '—';
+      if (!e || isUnavailable(e)) return nil;
       const now = Math.round(Number(e.state));
       return active && target > 0 && Math.abs(now - target) > 2 ? `${now}° → ${Math.round(target)}°` : `${now}°`;
     };
     const facts: Fact[] = [
       { label: 'Nozzle', value: temp(nozzle, nozzleTarget) },
       { label: 'Bed', value: temp(bed, bedTarget) },
-      { label: 'AMS humidity', value: ams && !isUnavailable(ams) ? `${Math.round(Number(ams.state))}%` : '—' },
+      { label: 'AMS humidity', value: ams && !isUnavailable(ams) ? `${Math.round(Number(ams.state))}%` : nil },
     ];
     const pct = p.phase === 'done' ? 100 : (p.progress ?? 0);
 
@@ -246,7 +247,7 @@ export class GlassPrinterSheet extends GlassEntitySheet {
         justify-content: center;
         gap: 8px;
         font-size: var(--glass-text-caption);
-        background: rgba(0, 0, 0, 0.45);
+        background: var(--glass-scrim);
         color: #fff;
         cursor: pointer;
       }

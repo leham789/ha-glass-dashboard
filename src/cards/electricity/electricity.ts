@@ -149,15 +149,15 @@ export class GlassElectricity extends GlassElement {
         box-sizing: border-box;
         padding: var(--glass-space-edge);
         border-radius: var(--glass-radius-card);
-        background: linear-gradient(165deg, #7e9a2c 0%, #a6c23a 50%, #d2ee6a 100%);
-        box-shadow: 0 20px 44px rgba(120, 150, 40, 0.25);
+        background: var(--glass-energy);
+        box-shadow: var(--glass-tile-shadow);
         display: flex;
         flex-direction: column;
         gap: 20px;
       }
       section.gas {
-        background: linear-gradient(160deg, #c98579 0%, #b0675e 55%, #c59a72 100%);
-        box-shadow: 0 20px 44px rgba(160, 90, 80, 0.25);
+        background: var(--glass-gas);
+        box-shadow: var(--glass-tile-shadow);
       }
       .gas .axis {
         color: #fff;

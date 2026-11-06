@@ -9,7 +9,7 @@ import { clock } from '../time.js';
 import { haptic } from '../motion.js';
 
 const COLOUR_MODES = ['hs', 'rgb', 'rgbw', 'rgbww', 'xy'];
-const WHITES: [string, number][] = [['Warm', 2700], ['Neutral', 4000], ['Cool', 6500]];
+const WHITES: [string, number][] = [['Warm', 2700], ['Neutral', 4000], ['Cool', 5500]];
 const QUICK: [string, number][] = [['Red', 0], ['Orange', 30], ['Yellow', 50], ['Green', 130], ['Cyan', 185], ['Blue', 220], ['Purple', 275]];
 /** Hue colours as the slider and quick colours draw them: 80% saturation, 62% lightness. */
 const hueCss = (h: number) => `hsl(${h}, 80%, 62%)`;
@@ -273,7 +273,7 @@ export class GlassLightSheet extends GlassEntitySheet {
       }
       .tabs button.on {
         background: var(--glass-raised);
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        box-shadow: var(--glass-raised-shadow);
       }
       .row-label {
         display: flex;
@@ -294,10 +294,10 @@ export class GlassLightSheet extends GlassEntitySheet {
       .bar.temp {
         box-sizing: border-box;
         border: 1px solid rgba(var(--glass-line-rgb), 0.06);
-        background: linear-gradient(90deg, #ffb46b 0%, #ffd9a8 30%, #fff1de 55%, #f2f4ff 80%, #d9e5ff 100%);
+        background: var(--glass-kelvin-scale);
       }
       .bar.hue {
-        background: linear-gradient(90deg, hsl(0, 80%, 62%), hsl(60, 80%, 62%), hsl(120, 80%, 62%), hsl(180, 80%, 62%), hsl(240, 80%, 62%), hsl(300, 80%, 62%), hsl(360, 80%, 62%));
+        background: var(--glass-hue-scale);
       }
       .marker {
         position: absolute;
@@ -306,8 +306,8 @@ export class GlassLightSheet extends GlassEntitySheet {
         width: 6px;
         margin-left: -3px;
         border-radius: 3px;
-        background: #fff;
-        box-shadow: 0 0 0 1px rgba(18, 19, 22, 0.25), 0 2px 8px rgba(0, 0, 0, 0.15);
+        background: var(--glass-knob);
+        box-shadow: var(--glass-marker-shadow);
         pointer-events: none;
       }
       .whites {
@@ -337,16 +337,16 @@ export class GlassLightSheet extends GlassEntitySheet {
         width: 16px;
         height: 16px;
         border-radius: 50%;
-        box-shadow: inset 0 0 0 1px rgba(18, 19, 22, 0.1);
+        box-shadow: inset 0 0 0 1px var(--glass-hairline);
       }
       .swatch.warm {
-        background: #ffd9a8;
+        background: var(--glass-swatch-warm);
       }
       .swatch.neutral {
-        background: #fff1de;
+        background: var(--glass-swatch-neutral);
       }
       .swatch.cool {
-        background: #d9e5ff;
+        background: var(--glass-swatch-cool);
       }
       .quick {
         display: grid;

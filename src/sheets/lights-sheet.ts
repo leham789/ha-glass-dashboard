@@ -145,7 +145,7 @@ export class GlassLightsSheet extends GlassSheet {
       }
       .filters button.current {
         background: var(--glass-raised);
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        box-shadow: var(--glass-raised-shadow);
       }
       .group {
         display: flex;

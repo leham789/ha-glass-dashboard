@@ -1,6 +1,8 @@
 import { css, html, nothing, type PropertyValues } from 'lit';
+import { heading } from '../../elements/type.js';
 import { GlassElement } from '../../glass-element.js';
 import { customElement, property, state } from 'lit/decorators.js';
+import { cardSurface } from '../../elements/surfaces.js';
 import { tokens } from '../../tokens.js';
 import { ensureFonts } from '../../fonts.js';
 import { type HomeAssistant, type LovelaceCardConfig, isUnavailable, registerCard } from '../../ha.js';
@@ -121,9 +123,7 @@ export class GlassRoomLights extends GlassElement {
         gap: var(--glass-space-tile-gap);
       }
       h2 {
-        margin: 0;
-        font-size: 20px;
-        font-weight: 400;
+        ${heading}
       }
       h2 span {
         font-size: var(--glass-text-chip);
@@ -135,12 +135,9 @@ export class GlassRoomLights extends GlassElement {
         gap: var(--glass-space-tile-gap);
       }
       .card {
+        ${cardSurface}
         padding: var(--glass-space-edge);
         border-radius: var(--glass-radius-card);
-        background: var(--glass-surface);
-        border: 1px solid var(--glass-surface-border);
-        backdrop-filter: blur(24px);
-        -webkit-backdrop-filter: blur(24px);
         gap: 12px;
       }
       .offline {

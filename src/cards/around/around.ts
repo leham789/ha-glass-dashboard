@@ -1,4 +1,5 @@
 import { css, html, nothing, type PropertyValues } from 'lit';
+import { tileSurface } from '../../elements/surfaces.js';
 import { GlassElement } from '../../glass-element.js';
 import { customElement, property, state } from 'lit/decorators.js';
 import { tokens } from '../../tokens.js';
@@ -210,15 +211,12 @@ export class GlassAround extends GlassElement {
         grid-column: span 2;
       }
       .tile {
+        ${tileSurface}
         all: unset;
         box-sizing: border-box;
         height: 132px;
         padding: var(--glass-space-tile);
         border-radius: var(--glass-radius-tile);
-        background: var(--glass-surface);
-        border: 1px solid var(--glass-surface-border);
-        backdrop-filter: blur(20px);
-        -webkit-backdrop-filter: blur(20px);
         display: flex;
         flex-direction: column;
         justify-content: space-between;

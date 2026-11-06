@@ -1,4 +1,5 @@
 import { css, html, nothing, type CSSResultGroup } from 'lit';
+import { tileSurface } from '../elements/surfaces.js';
 import { customElement } from 'lit/decorators.js';
 import { GlassSheet } from '../elements/glass-sheet.js';
 import { openMoreInfo } from '../ha.js';
@@ -15,7 +16,7 @@ import { isQuiet, lastHeard } from '../stale.js';
 export class GlassBatteriesSheet extends GlassSheet {
   protected sheetTitle = 'Batteries';
   protected sheetIcon = 'battery-low' as const;
-  protected sheetIconBg = '#CDB8F5';
+  protected sheetIconBg = 'var(--glass-lilac)';
 
   // A battery sensor that's gone quiet is usually a flat battery: its last level fades and it says when it was last heard.
   private quiet(id: string): boolean {
@@ -119,13 +120,12 @@ export class GlassBatteriesSheet extends GlassSheet {
         gap: 12px;
       }
       .tile {
+        ${tileSurface}
         all: unset;
         box-sizing: border-box;
         height: var(--glass-height-small-tile);
         padding: var(--glass-space-small-tile);
         border-radius: var(--glass-radius-small-tile);
-        background: rgba(var(--glass-surface-rgb), 0.82);
-        border: 1px solid var(--glass-surface-border);
         display: flex;
         flex-direction: column;
         justify-content: space-between;

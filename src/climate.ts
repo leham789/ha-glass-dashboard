@@ -17,7 +17,7 @@ const BANDS: Record<Band, { pillBg: string; pillFg: string; tint?: string }> = {
   Cool: { pillBg: 'var(--glass-neutral-tint)', pillFg: 'var(--glass-text-secondary)' },
   Comfy: { pillBg: 'var(--glass-neutral-tint)', pillFg: 'var(--glass-text-secondary)' },
   Warm: { pillBg: 'var(--glass-attention-tint)', pillFg: 'var(--glass-attention-ink)', tint: '247, 170, 120' },
-  Hot: { pillBg: '#FDE7E7', pillFg: '#9B1C1C', tint: '229, 72, 77' },
+  Hot: { pillBg: 'var(--glass-hot-tint)', pillFg: 'var(--glass-hot-ink)', tint: '229, 72, 77' },
 };
 
 /** A tile whose sensor has gone quiet: plain glass and a grey "Not reporting" pill. */

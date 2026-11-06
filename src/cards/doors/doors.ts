@@ -1,4 +1,6 @@
 import { css, html, nothing, type PropertyValues } from 'lit';
+import { heading } from '../../elements/type.js';
+import { tileSurface } from '../../elements/surfaces.js';
 import { GlassElement } from '../../glass-element.js';
 import { customElement, property, state } from 'lit/decorators.js';
 import { tokens } from '../../tokens.js';
@@ -169,8 +171,8 @@ export class GlassDoors extends GlassElement {
         gap: 8px;
       }
       .pill .dot {
-        width: 7px;
-        height: 7px;
+        width: 8px;
+        height: 8px;
         border-radius: 50%;
       }
       .pill.attention {
@@ -185,14 +187,14 @@ export class GlassDoors extends GlassElement {
         color: var(--glass-success-ink);
       }
       .pill.ok .dot {
-        background: #2fa84f;
+        background: var(--glass-go);
       }
       .pill.quiet {
         background: var(--glass-neutral-tint);
         color: var(--glass-text-secondary);
       }
       .pill.quiet .dot {
-        background: #8a8d94;
+        background: var(--glass-grey);
       }
       section {
         display: flex;
@@ -200,9 +202,7 @@ export class GlassDoors extends GlassElement {
         gap: var(--glass-space-tile-gap);
       }
       h2 {
-        margin: 0;
-        font-size: 20px;
-        font-weight: 400;
+        ${heading}
       }
       .grid {
         display: grid;
@@ -210,15 +210,12 @@ export class GlassDoors extends GlassElement {
         gap: var(--glass-space-tile-gap);
       }
       .tile {
+        ${tileSurface}
         all: unset;
         box-sizing: border-box;
         height: 132px;
         padding: var(--glass-space-tile);
         border-radius: var(--glass-radius-tile);
-        background: var(--glass-surface);
-        border: 1px solid var(--glass-surface-border);
-        backdrop-filter: blur(20px);
-        -webkit-backdrop-filter: blur(20px);
         display: flex;
         flex-direction: column;
         justify-content: space-between;

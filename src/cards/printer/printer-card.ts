@@ -1,6 +1,9 @@
 import { css, html, nothing, svg, type PropertyValues } from 'lit';
+import { heading } from '../../elements/type.js';
+import { nil } from '../../elements/nil.js';
 import { GlassElement } from '../../glass-element.js';
 import { customElement, property, state } from 'lit/decorators.js';
+import { cardSurface } from '../../elements/surfaces.js';
 import { tokens } from '../../tokens.js';
 import { ensureFonts } from '../../fonts.js';
 import { type HomeAssistant, type LovelaceCardConfig, isUnavailable, openMoreInfo, registerCard } from '../../ha.js';
@@ -142,7 +145,7 @@ export class GlassPrinter extends GlassElement {
           : `Finished ${ago(p.status.last_changed)}`;
     const reading = (id?: string, unit = '') => {
       const e = id ? hass.states[id] : undefined;
-      return e && !isUnavailable(e) ? `${Math.round(Number(e.state))}${unit}` : '–';
+      return e && !isUnavailable(e) ? `${Math.round(Number(e.state))}${unit}` : nil;
     };
 
     return html`<section aria-labelledby="h">
@@ -179,7 +182,7 @@ export class GlassPrinter extends GlassElement {
       <div class="progress">
         <svg width="76" height="76" viewBox="0 0 76 76" role="img" aria-label="Print ${pct}% complete">
           <circle cx="38" cy="38" r="32" stroke="currentColor" stroke-opacity="0.08" stroke-width="8" fill="none"></circle>
-          ${svg`<circle cx="38" cy="38" r="32" stroke=${p.phase === 'done' ? '#2FB457' : '#3B7DD8'} stroke-width="8" fill="none"
+          ${svg`<circle cx="38" cy="38" r="32" style=${`stroke: ${p.phase === 'done' ? 'var(--glass-go)' : 'var(--glass-info)'}`} stroke-width="8" fill="none"
             stroke-linecap="round" stroke-dasharray="${(pct / 100) * circumference} ${circumference}" transform="rotate(-90 38 38)"></circle>`}
           <text x="38" y="43" text-anchor="middle" font-family="Outfit, sans-serif" font-size="16" fill="currentColor">${pct}%</text>
         </svg>
@@ -243,17 +246,13 @@ export class GlassPrinter extends GlassElement {
         color: var(--glass-text-muted);
       }
       section {
+        ${cardSurface}
         box-sizing: border-box;
         padding: var(--glass-space-edge);
         border-radius: var(--glass-radius-card);
-        background: rgba(var(--glass-surface-rgb), 0.8);
-        border: 1px solid var(--glass-surface-border);
-        box-shadow: 0 18px 44px rgba(40, 80, 30, 0.1);
-        backdrop-filter: blur(24px);
-        -webkit-backdrop-filter: blur(24px);
         display: flex;
         flex-direction: column;
-        gap: 16px;
+        gap: 12px;
       }
       .head {
         display: flex;
@@ -262,9 +261,7 @@ export class GlassPrinter extends GlassElement {
         gap: 8px;
       }
       h2 {
-        margin: 0;
-        font-size: 20px;
-        font-weight: 400;
+        ${heading}
       }
       .right {
         display: flex;
@@ -297,7 +294,7 @@ export class GlassPrinter extends GlassElement {
         color: var(--glass-success-ink);
       }
       .pill.success .dot {
-        background: #2fa84f;
+        background: var(--glass-go);
       }
       .pill.attention {
         background: var(--glass-attention-tint);
@@ -311,7 +308,7 @@ export class GlassPrinter extends GlassElement {
         color: var(--glass-text-secondary);
       }
       .pill.neutral .dot {
-        background: #8a8d94;
+        background: var(--glass-grey);
       }
       .collapse {
         all: unset;
@@ -341,7 +338,7 @@ export class GlassPrinter extends GlassElement {
       }
       .none {
         font-size: var(--glass-text-caption);
-        color: rgba(255, 255, 255, 0.65);
+        color: var(--glass-on-picture-muted);
       }
       .badge {
         position: absolute;
@@ -350,7 +347,7 @@ export class GlassPrinter extends GlassElement {
         height: 24px;
         padding: 0 12px;
         border-radius: 12px;
-        background: rgba(0, 0, 0, 0.45);
+        background: var(--glass-scrim);
         color: #fff;
         font-size: var(--glass-text-small);
         display: flex;
@@ -361,7 +358,7 @@ export class GlassPrinter extends GlassElement {
         width: 6px;
         height: 6px;
         border-radius: 50%;
-        background: #ff5a4e;
+        background: var(--glass-live);
       }
       .expand {
         all: unset;
@@ -371,7 +368,7 @@ export class GlassPrinter extends GlassElement {
         width: 36px;
         height: 36px;
         border-radius: 50%;
-        background: rgba(0, 0, 0, 0.45);
+        background: var(--glass-scrim);
         color: #fff;
         display: flex;
         align-items: center;

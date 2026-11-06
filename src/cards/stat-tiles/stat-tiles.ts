@@ -1,4 +1,5 @@
 import { css, html, nothing, type PropertyValues } from 'lit';
+import { tileSurface } from '../../elements/surfaces.js';
 import { GlassElement } from '../../glass-element.js';
 import { customElement, property, state } from 'lit/decorators.js';
 import { tokens } from '../../tokens.js';
@@ -101,13 +102,12 @@ export class GlassStatTiles extends GlassElement {
         gap: 12px;
       }
       button {
+        ${tileSurface}
         all: unset;
         box-sizing: border-box;
         height: var(--glass-height-small-tile);
         padding: var(--glass-space-small-tile);
         border-radius: var(--glass-radius-small-tile);
-        background: rgba(var(--glass-surface-rgb), 0.78);
-        border: 1px solid var(--glass-surface-border);
         display: flex;
         flex-direction: column;
         justify-content: space-between;

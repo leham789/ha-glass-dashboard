@@ -112,7 +112,7 @@ export class GlassStatusChips extends GlassElement {
           ?disabled=${!c.onTap}
           @click=${c.onTap}
         >
-          <span class="icon" style="background: ${c.iconBg}; color: ${c.iconBg.includes('neutral') ? 'var(--glass-ink)' : '#121316'}"><glass-icon name=${c.icon} size="15" stroke="1.8"></glass-icon></span>
+          <span class="icon" style="background: ${c.iconBg}; color: ${c.iconBg.includes('neutral') ? 'var(--glass-ink)' : 'var(--glass-on-pastel)'}"><glass-icon name=${c.icon} size="15" stroke="1.8"></glass-icon></span>
           ${c.label}
         </button>`,
       )}
@@ -139,7 +139,7 @@ export class GlassStatusChips extends GlassElement {
         key: 'open',
         label: open.length === 1 ? `${sentence(shortName(hass.states[open[0]], ''))} open` : `${open.length} doors open`,
         icon: 'door-open',
-        iconBg: '#F7C2A4',
+        iconBg: 'var(--glass-peach)',
         attention: true,
         onTap: path ? () => navigate(path) : undefined,
       });
@@ -171,7 +171,7 @@ export class GlassStatusChips extends GlassElement {
         key: 'temps',
         label: lo === hi ? `Rooms ${lo}°` : `Rooms ${lo}–${hi}°`,
         icon: 'thermometer',
-        iconBg: '#F7C2A4',
+        iconBg: 'var(--glass-peach)',
         onTap: () => this.openSheet<GlassTempsSheet>('glass-temps-sheet', (s) => (s.energyPath = this.config?.energy_path)),
       });
     }
@@ -183,7 +183,7 @@ export class GlassStatusChips extends GlassElement {
         key: 'batteries',
         label: low === 1 ? '1 low battery' : low ? `${low} low batteries` : 'Batteries OK',
         icon: batteryIcon(all[0].level),
-        iconBg: '#CDB8F5',
+        iconBg: 'var(--glass-lilac)',
         onTap: () => this.openSheet('glass-batteries-sheet'),
       });
     }
@@ -210,7 +210,7 @@ export class GlassStatusChips extends GlassElement {
           ? [name, p.progress !== undefined ? `${Math.round(p.progress)}%` : '', p.phase === 'paused' ? 'paused' : p.left].filter(Boolean).join(' · ')
           : `${name} ${p.phase === 'failed' ? 'failed' : 'done'}`,
         icon: 'printer',
-        iconBg: active ? '#9CC3F2' : p.phase === 'failed' ? '#F7C2A4' : '#9FE3B0',
+        iconBg: active ? 'var(--glass-blue)' : p.phase === 'failed' ? 'var(--glass-peach)' : 'var(--glass-mint)',
         onTap: () =>
           this.openSheet<GlassPrinterSheet>('glass-printer-sheet', (s) => {
             s.printer = this.config!;

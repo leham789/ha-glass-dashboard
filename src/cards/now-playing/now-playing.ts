@@ -1,6 +1,7 @@
 import { css, html, nothing, type PropertyValues } from 'lit';
 import { GlassElement } from '../../glass-element.js';
 import { customElement, property, state } from 'lit/decorators.js';
+import { cardSurface } from '../../elements/surfaces.js';
 import { tokens } from '../../tokens.js';
 import { ensureFonts } from '../../fonts.js';
 import {
@@ -158,14 +159,11 @@ export class GlassNowPlaying extends GlassElement {
         display: none;
       }
       .card {
+        ${cardSurface}
         position: relative;
         box-sizing: border-box;
         padding: 16px;
         border-radius: var(--glass-radius-card);
-        background: rgba(var(--glass-surface-rgb), 0.6);
-        border: 1px solid var(--glass-surface-border);
-        backdrop-filter: blur(20px);
-        -webkit-backdrop-filter: blur(20px);
         display: flex;
         align-items: center;
         gap: 16px;
@@ -224,7 +222,7 @@ export class GlassNowPlaying extends GlassElement {
       .bar {
         position: relative;
         height: 3px;
-        margin-top: 8px;
+        margin-top: 4px;
         border-radius: 2px;
         background: rgba(var(--glass-line-rgb), 0.12);
       }

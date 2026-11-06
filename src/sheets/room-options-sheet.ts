@@ -1,4 +1,5 @@
 import { css, html, nothing, type CSSResultGroup } from 'lit';
+import { heading } from '../elements/type.js';
 import { customElement, property, state } from 'lit/decorators.js';
 import { GlassSheet } from '../elements/glass-sheet.js';
 import { isUnavailable } from '../ha.js';
@@ -24,7 +25,7 @@ export class GlassRoomOptionsSheet extends GlassSheet {
 
   protected sheetTitle = '';
   protected sheetIcon: IconName = 'house';
-  protected sheetIconBg = '#F7D9A0';
+  protected sheetIconBg = 'var(--glass-amber)';
 
   connectedCallback(): void {
     super.connectedCallback();
@@ -213,9 +214,7 @@ export class GlassRoomOptionsSheet extends GlassSheet {
         margin-bottom: 4px;
       }
       h2 {
-        margin: 0;
-        font-size: 20px;
-        font-weight: 400;
+        ${heading}
       }
       .count {
         font-size: var(--glass-text-small);
@@ -292,8 +291,8 @@ export class GlassRoomOptionsSheet extends GlassSheet {
         width: 26px;
         height: 26px;
         border-radius: 50%;
-        background: #fff;
-        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+        background: var(--glass-knob);
+        box-shadow: var(--glass-knob-shadow);
         transition: left 0.2s ease;
       }
       .switch.on .knob {

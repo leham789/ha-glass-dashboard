@@ -1,6 +1,8 @@
 import { css, html, nothing, type PropertyValues } from 'lit';
+import { heading } from '../../elements/type.js';
 import { GlassElement } from '../../glass-element.js';
 import { customElement, property, state } from 'lit/decorators.js';
+import { cardSurface } from '../../elements/surfaces.js';
 import { tokens } from '../../tokens.js';
 import { ensureFonts } from '../../fonts.js';
 import { type HomeAssistant, type LovelaceCardConfig, isUnavailable, openMoreInfo, registerCard } from '../../ha.js';
@@ -146,19 +148,14 @@ export class GlassCamera extends GlassElement {
         gap: var(--glass-space-tile-gap);
       }
       h2 {
-        margin: 0;
-        font-size: 20px;
-        font-weight: 400;
+        ${heading}
       }
       section {
+        ${cardSurface}
         position: relative;
         box-sizing: border-box;
         padding: 8px 8px 16px;
         border-radius: var(--glass-radius-card);
-        background: var(--glass-surface);
-        border: 1px solid var(--glass-surface-border);
-        backdrop-filter: blur(24px);
-        -webkit-backdrop-filter: blur(24px);
         display: flex;
         flex-direction: column;
         gap: 16px;
@@ -180,7 +177,7 @@ export class GlassCamera extends GlassElement {
       }
       .none {
         font-size: var(--glass-text-caption);
-        color: rgba(255, 255, 255, 0.65);
+        color: var(--glass-on-picture-muted);
       }
       .badge {
         position: absolute;
@@ -189,7 +186,7 @@ export class GlassCamera extends GlassElement {
         height: 24px;
         padding: 0 12px;
         border-radius: 12px;
-        background: rgba(0, 0, 0, 0.45);
+        background: var(--glass-scrim);
         color: #fff;
         font-size: var(--glass-text-small);
         display: flex;
@@ -202,13 +199,13 @@ export class GlassCamera extends GlassElement {
         border-radius: 50%;
       }
       .dot.rec {
-        background: #ff5a4e;
+        background: var(--glass-live);
       }
       .dot.live {
         background: var(--glass-go);
       }
       .dot.off {
-        background: #8a8d94;
+        background: var(--glass-grey);
       }
       .view,
       .foot {
@@ -234,7 +231,7 @@ export class GlassCamera extends GlassElement {
         width: 36px;
         height: 36px;
         border-radius: 50%;
-        background: rgba(0, 0, 0, 0.45);
+        background: var(--glass-scrim);
         color: #fff;
         display: flex;
         align-items: center;

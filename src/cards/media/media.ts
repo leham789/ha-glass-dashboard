@@ -1,6 +1,7 @@
 import { css, html, nothing, type PropertyValues } from 'lit';
 import { GlassElement } from '../../glass-element.js';
 import { customElement, property, state } from 'lit/decorators.js';
+import { cardSurface } from '../../elements/surfaces.js';
 import { tokens } from '../../tokens.js';
 import { ensureFonts } from '../../fonts.js';
 import { type HomeAssistant, type LovelaceCardConfig, isUnavailable, openMoreInfo, registerCard } from '../../ha.js';
@@ -139,10 +140,7 @@ export class GlassMedia extends GlassElement {
         --chip-on: rgba(255, 255, 255, 0.12);
       }
       .light {
-        background: var(--glass-surface);
-        border: 1px solid var(--glass-surface-border);
-        backdrop-filter: blur(20px);
-        -webkit-backdrop-filter: blur(20px);
+        ${cardSurface}
         color: var(--glass-ink);
         --muted: var(--glass-text-muted);
         --play-bg: var(--glass-ink);

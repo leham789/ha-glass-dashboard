@@ -1,4 +1,5 @@
 import { css, html, nothing, type CSSResultGroup } from 'lit';
+import { nil } from '../elements/nil.js';
 import { customElement, property, state } from 'lit/decorators.js';
 import { styleMap } from 'lit/directives/style-map.js';
 import { GlassSheet } from '../elements/glass-sheet.js';
@@ -20,7 +21,7 @@ export class GlassTempsSheet extends GlassSheet {
 
   protected sheetTitle = 'Room temperatures';
   protected sheetIcon = 'thermometer' as const;
-  protected sheetIconBg = '#F7C2A4';
+  protected sheetIconBg = 'var(--glass-peach)';
 
   protected renderBody() {
     const hass = this.hass!;
@@ -42,7 +43,7 @@ export class GlassTempsSheet extends GlassSheet {
       <div class="summary">
         <span class="avg">
           <span class="label">${live.length < rooms.length ? `Average of ${live.length} rooms` : 'House average'}</span>
-          <span class="n">${average === undefined ? '–' : `${average.toFixed(1)}°`}</span>
+          <span class="n">${average === undefined ? nil : `${average.toFixed(1)}°`}</span>
         </span>
         ${weather && typeof outside === 'number'
           ? html`<span class="outside">
@@ -164,7 +165,7 @@ export class GlassTempsSheet extends GlassSheet {
       }
       .segmented button.current {
         background: var(--glass-raised);
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        box-shadow: var(--glass-raised-shadow);
       }
       .grid {
         display: grid;
@@ -240,7 +241,7 @@ export class GlassTempsSheet extends GlassSheet {
         position: relative;
         height: 6px;
         border-radius: 3px;
-        background: linear-gradient(90deg, #cfe3f7 0%, #e9f3d2 45%, #f7c2a4 100%);
+        background: var(--glass-temp-scale);
       }
       .marker {
         position: absolute;

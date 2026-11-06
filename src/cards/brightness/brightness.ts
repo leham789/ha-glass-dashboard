@@ -1,6 +1,7 @@
 import { css, html, nothing, type PropertyValues } from 'lit';
 import { GlassElement } from '../../glass-element.js';
 import { customElement, property, state } from 'lit/decorators.js';
+import { cardSurface } from '../../elements/surfaces.js';
 import { tokens } from '../../tokens.js';
 import { ensureFonts } from '../../fonts.js';
 import { type HomeAssistant, type LovelaceCardConfig, isUnavailable, openMoreInfo, registerCard } from '../../ha.js';
@@ -25,10 +26,10 @@ interface Tone {
 }
 
 const TONES: Tone[] = [
-  { name: 'Warm', swatch: '#F5B866', kelvin: 2700 },
-  { name: 'Neutral', swatch: '#F6E7C8', kelvin: 4000 },
-  { name: 'Cool', swatch: '#CFE3F7', kelvin: 5500 },
-  { name: 'Colour', swatch: 'conic-gradient(#F59AA0, #F7D58C, #9FE3B0, #9CC3F2, #CDB8F5, #F59AA0)' },
+  { name: 'Warm', swatch: 'var(--glass-swatch-warm)', kelvin: 2700 },
+  { name: 'Neutral', swatch: 'var(--glass-swatch-neutral)', kelvin: 4000 },
+  { name: 'Cool', swatch: 'var(--glass-swatch-cool)', kelvin: 5500 },
+  { name: 'Colour', swatch: 'var(--glass-swatch-colour)' },
 ];
 const COLOUR_MODES = new Set(['hs', 'rgb', 'rgbw', 'rgbww', 'xy']);
 
@@ -178,14 +179,10 @@ export class GlassBrightness extends GlassElement {
         display: block;
       }
       section {
+        ${cardSurface}
         box-sizing: border-box;
         padding: var(--glass-space-edge);
         border-radius: var(--glass-radius-card);
-        background: var(--glass-surface);
-        border: 1px solid var(--glass-surface-border);
-        box-shadow: 0 18px 44px rgba(120, 90, 30, 0.1);
-        backdrop-filter: blur(24px);
-        -webkit-backdrop-filter: blur(24px);
         display: flex;
         flex-direction: column;
         gap: 16px;
