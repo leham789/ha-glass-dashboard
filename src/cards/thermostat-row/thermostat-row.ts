@@ -105,7 +105,7 @@ export class GlassThermostatRow extends GlassElement {
       }
       section {
         box-sizing: border-box;
-        padding: 14px 14px 14px var(--glass-space-edge);
+        padding: 16px 16px 16px var(--glass-space-edge);
         border-radius: var(--glass-radius-card);
         background: var(--glass-surface);
         border: 1px solid var(--glass-surface-border);

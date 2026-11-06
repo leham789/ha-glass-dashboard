@@ -166,7 +166,7 @@ export class GlassDoors extends GlassElement {
         font-size: var(--glass-text-caption);
         display: flex;
         align-items: center;
-        gap: 6px;
+        gap: 8px;
       }
       .pill .dot {
         width: 7px;
@@ -257,7 +257,7 @@ export class GlassDoors extends GlassElement {
       .bottom {
         display: flex;
         flex-direction: column;
-        gap: 2px;
+        gap: 4px;
       }
       .name {
         font-size: var(--glass-text-tile-title);

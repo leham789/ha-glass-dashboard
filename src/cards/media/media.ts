@@ -123,14 +123,14 @@ export class GlassMedia extends GlassElement {
       }
       section {
         box-sizing: border-box;
-        padding: 16px 14px 16px var(--glass-space-edge);
+        padding: 16px 16px 16px var(--glass-space-edge);
         border-radius: var(--glass-radius-card);
         display: flex;
         flex-direction: column;
-        gap: 14px;
+        gap: 16px;
       }
       .dark {
-        background: linear-gradient(135deg, #2a2d33 0%, #4a4e57 100%);
+        background: var(--glass-dark-surface);
         color: #fff;
         --muted: rgba(255, 255, 255, 0.75);
         --play-bg: #fff;
@@ -161,7 +161,7 @@ export class GlassMedia extends GlassElement {
         min-width: 0;
         display: flex;
         flex-direction: column;
-        gap: 2px;
+        gap: 4px;
         cursor: pointer;
       }
       .context {
@@ -203,7 +203,7 @@ export class GlassMedia extends GlassElement {
         all: unset;
         box-sizing: border-box;
         height: 40px;
-        padding: 0 14px;
+        padding: 0 16px;
         border-radius: 20px;
         border: 1px solid var(--chip-border);
         font-size: var(--glass-text-caption);

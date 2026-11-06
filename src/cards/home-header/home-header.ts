@@ -161,7 +161,7 @@ export class GlassHomeHeader extends GlassElement {
       .hello {
         display: flex;
         flex-direction: column;
-        gap: 2px;
+        gap: 4px;
       }
       .date {
         font-size: var(--glass-text-chip);
@@ -209,7 +209,7 @@ export class GlassHomeHeader extends GlassElement {
       section {
         display: flex;
         flex-direction: column;
-        gap: 10px;
+        gap: 12px;
       }
       .hero {
         display: flex;
@@ -224,7 +224,7 @@ export class GlassHomeHeader extends GlassElement {
       }
       .chips {
         display: flex;
-        gap: 6px;
+        gap: 8px;
         white-space: nowrap;
         overflow-x: auto;
         scrollbar-width: none;
@@ -237,7 +237,7 @@ export class GlassHomeHeader extends GlassElement {
         background: rgba(var(--glass-surface-rgb), 0.7);
         display: flex;
         align-items: center;
-        gap: 6px;
+        gap: 8px;
         font-size: var(--glass-text-caption);
       }
       .chip.subject {

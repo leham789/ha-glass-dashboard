@@ -120,7 +120,7 @@ export class GlassSwitchRows extends GlassElement {
       section {
         display: flex;
         flex-direction: column;
-        gap: 10px;
+        gap: 12px;
       }
       h2 {
         margin: 0;

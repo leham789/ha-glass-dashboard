@@ -141,7 +141,7 @@ export function roomTileStyles() {
       position: relative;
       box-sizing: border-box;
       height: 100%;
-      min-height: 176px;
+      min-height: var(--glass-height-room-tile);
       padding: var(--glass-space-tile);
       border-radius: var(--glass-radius-tile);
       border: 1px solid var(--glass-surface-border);
@@ -183,13 +183,13 @@ export function roomTileStyles() {
     .head {
       display: flex;
       flex-direction: column;
-      gap: 2px;
+      gap: 4px;
     }
     .title {
       display: flex;
       justify-content: space-between;
       align-items: baseline;
-      gap: 6px;
+      gap: 8px;
     }
     .name {
       font-size: var(--glass-text-tile-title);
@@ -212,7 +212,7 @@ export function roomTileStyles() {
     }
     .dots {
       display: flex;
-      gap: 6px;
+      gap: 8px;
       align-items: center;
       min-height: 8px;
     }
@@ -235,7 +235,7 @@ export function roomTileStyles() {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      gap: 6px;
+      gap: 8px;
     }
     .bulb {
       all: unset;

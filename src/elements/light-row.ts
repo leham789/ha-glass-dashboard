@@ -37,7 +37,7 @@ export const lightRowStyles = css`
     overflow: hidden;
     box-sizing: border-box;
     height: 64px;
-    padding: 0 16px 0 10px;
+    padding: 0 16px 0 12px;
     border-radius: 32px;
     border: 1px solid var(--glass-hairline);
     background: var(--glass-solid);

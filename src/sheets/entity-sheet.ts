@@ -111,7 +111,7 @@ export abstract class GlassEntitySheet extends GlassSheet {
       .reading .left {
         display: flex;
         flex-direction: column;
-        gap: 6px;
+        gap: 8px;
         min-width: 0;
       }
       .value {
@@ -131,7 +131,7 @@ export abstract class GlassEntitySheet extends GlassSheet {
         font-size: 22px;
         font-weight: 300;
         color: var(--glass-text-muted);
-        margin-left: 6px;
+        margin-left: 8px;
       }
       /* no reading: the Empty value component */
       .nil {
@@ -155,7 +155,7 @@ export abstract class GlassEntitySheet extends GlassSheet {
         font-size: var(--glass-text-caption);
         display: flex;
         align-items: center;
-        gap: 6px;
+        gap: 8px;
         background: var(--glass-neutral-tint);
         color: var(--glass-text-secondary);
       }
@@ -194,7 +194,7 @@ export abstract class GlassEntitySheet extends GlassSheet {
         border: 1px solid var(--glass-surface-border);
         display: flex;
         flex-direction: column;
-        gap: 14px;
+        gap: 16px;
       }
       .card-head {
         display: flex;
@@ -220,7 +220,7 @@ export abstract class GlassEntitySheet extends GlassSheet {
       .legend span {
         display: flex;
         align-items: center;
-        gap: 6px;
+        gap: 8px;
       }
       .legend i {
         width: 12px;
@@ -230,7 +230,7 @@ export abstract class GlassEntitySheet extends GlassSheet {
       .facts {
         display: grid;
         grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 10px;
+        gap: 12px;
       }
       .fact,
       .tile {
@@ -263,7 +263,7 @@ export abstract class GlassEntitySheet extends GlassSheet {
         all: unset;
         box-sizing: border-box;
         height: 44px;
-        padding: 0 18px;
+        padding: 0 20px;
         border-radius: 22px;
         border: 1px solid var(--glass-surface-border);
         background: rgba(var(--glass-surface-rgb), 0.7);

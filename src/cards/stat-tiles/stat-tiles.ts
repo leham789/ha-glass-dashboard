@@ -98,12 +98,12 @@ export class GlassStatTiles extends GlassElement {
       section {
         display: grid;
         grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 10px;
+        gap: 12px;
       }
       button {
         all: unset;
         box-sizing: border-box;
-        height: 120px;
+        height: var(--glass-height-small-tile);
         padding: var(--glass-space-small-tile);
         border-radius: var(--glass-radius-small-tile);
         background: rgba(var(--glass-surface-rgb), 0.78);

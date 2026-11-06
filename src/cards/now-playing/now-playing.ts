@@ -160,7 +160,7 @@ export class GlassNowPlaying extends GlassElement {
       .card {
         position: relative;
         box-sizing: border-box;
-        padding: 14px;
+        padding: 16px;
         border-radius: var(--glass-radius-card);
         background: rgba(var(--glass-surface-rgb), 0.6);
         border: 1px solid var(--glass-surface-border);
@@ -168,7 +168,7 @@ export class GlassNowPlaying extends GlassElement {
         -webkit-backdrop-filter: blur(20px);
         display: flex;
         align-items: center;
-        gap: 14px;
+        gap: 16px;
       }
       .open {
         all: unset;
@@ -192,7 +192,7 @@ export class GlassNowPlaying extends GlassElement {
         height: 64px;
         flex: none;
         border-radius: var(--glass-radius-inset);
-        background: linear-gradient(135deg, #2a2d33, #4a4e57) center / cover;
+        background: var(--glass-dark-surface) center / cover;
         color: rgba(255, 255, 255, 0.8);
         display: flex;
         align-items: center;
@@ -203,7 +203,7 @@ export class GlassNowPlaying extends GlassElement {
         min-width: 0;
         display: flex;
         flex-direction: column;
-        gap: 2px;
+        gap: 4px;
       }
       .context {
         font-size: var(--glass-text-small);
@@ -224,7 +224,7 @@ export class GlassNowPlaying extends GlassElement {
       .bar {
         position: relative;
         height: 3px;
-        margin-top: 6px;
+        margin-top: 8px;
         border-radius: 2px;
         background: rgba(var(--glass-line-rgb), 0.12);
       }

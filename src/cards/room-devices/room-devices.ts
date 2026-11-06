@@ -99,7 +99,7 @@ export class GlassRoomDevices extends GlassElement {
       button {
         all: unset;
         height: 36px;
-        padding: 0 14px;
+        padding: 0 16px;
         border-radius: 18px;
         background: rgba(var(--glass-surface-rgb), 0.7);
         font-size: var(--glass-text-caption);

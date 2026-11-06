@@ -256,7 +256,7 @@ export class GlassStatusChips extends GlassElement {
         flex: none;
         box-sizing: border-box;
         height: 40px;
-        padding: 0 14px 0 6px;
+        padding: 0 16px 0 8px;
         border-radius: 20px;
         background: rgba(var(--glass-surface-rgb), 0.55);
         border: 1px solid var(--glass-surface-border);

@@ -72,11 +72,11 @@ export class GlassOffline extends LitElement {
         max-width: 448px;
         margin: 0 auto;
         box-sizing: border-box;
-        padding: 14px 14px 14px 16px;
+        padding: 16px 16px 16px 16px;
         border-radius: 28px;
         background: var(--glass-solid);
         border: 1px solid var(--glass-surface-border);
-        box-shadow: 0 16px 40px rgba(20, 20, 40, 0.16);
+        box-shadow: var(--glass-float-shadow);
         display: flex;
         align-items: center;
         gap: 12px;
@@ -97,7 +97,7 @@ export class GlassOffline extends LitElement {
         min-width: 0;
         display: flex;
         flex-direction: column;
-        gap: 2px;
+        gap: 4px;
       }
       .title {
         font-size: var(--glass-text-body);
@@ -109,7 +109,7 @@ export class GlassOffline extends LitElement {
       button {
         all: unset;
         height: 40px;
-        padding: 0 14px;
+        padding: 0 16px;
         flex: none;
         border-radius: 20px;
         background: var(--glass-ink);
@@ -117,7 +117,7 @@ export class GlassOffline extends LitElement {
         font-size: var(--glass-text-caption);
         display: flex;
         align-items: center;
-        gap: 6px;
+        gap: 8px;
         cursor: pointer;
       }
       button:focus-visible {

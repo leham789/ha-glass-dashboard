@@ -185,7 +185,7 @@ export class GlassPrinterSheet extends GlassEntitySheet {
         display: flex;
         flex-direction: column;
         gap: 8px;
-        margin-top: -6px;
+        margin-top: -8px;
       }
       .bar {
         position: relative;
@@ -218,7 +218,7 @@ export class GlassPrinterSheet extends GlassEntitySheet {
         height: 196px;
         border-radius: var(--glass-radius-small-tile);
         overflow: hidden;
-        background: linear-gradient(135deg, #2a2d33 0%, #4a4e57 100%);
+        background: var(--glass-dark-surface);
         color: #fff;
       }
       .cam img {
@@ -244,7 +244,7 @@ export class GlassPrinterSheet extends GlassEntitySheet {
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: 6px;
+        gap: 8px;
         font-size: var(--glass-text-caption);
         background: rgba(0, 0, 0, 0.45);
         color: #fff;
@@ -265,7 +265,7 @@ export class GlassPrinterSheet extends GlassEntitySheet {
       .controls {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
-        gap: 10px;
+        gap: 12px;
       }
       .controls button {
         all: unset;

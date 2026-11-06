@@ -308,13 +308,13 @@ export class GlassCamerasSheet extends GlassSheet {
         position: absolute;
         top: 14px;
         height: 26px;
-        padding: 0 10px;
+        padding: 0 12px;
         border-radius: 13px;
         background: rgba(0, 0, 0, 0.45);
         font-size: var(--glass-text-small);
         display: flex;
         align-items: center;
-        gap: 6px;
+        gap: 8px;
       }
       .tl {
         left: 14px;
@@ -391,7 +391,7 @@ export class GlassCamerasSheet extends GlassSheet {
       }
       .dots {
         display: flex;
-        gap: 6px;
+        gap: 8px;
       }
       .dots button {
         all: unset;
@@ -436,7 +436,7 @@ export class GlassCamerasSheet extends GlassSheet {
       .group {
         border-radius: var(--glass-radius-tile);
         background: rgba(var(--glass-surface-rgb), 0.75);
-        padding: 6px 16px;
+        padding: 8px 16px;
       }
       .row {
         min-height: 56px;
@@ -488,7 +488,7 @@ export class GlassCamerasSheet extends GlassSheet {
       .recent {
         display: flex;
         flex-direction: column;
-        gap: 10px;
+        gap: 12px;
       }
       .top {
         display: flex;
@@ -507,13 +507,13 @@ export class GlassCamerasSheet extends GlassSheet {
       .clips {
         display: grid;
         grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 10px;
+        gap: 12px;
       }
       .clip {
         all: unset;
         display: flex;
         flex-direction: column;
-        gap: 6px;
+        gap: 8px;
         cursor: pointer;
       }
       .thumb {
@@ -521,7 +521,7 @@ export class GlassCamerasSheet extends GlassSheet {
         height: 84px;
         overflow: hidden;
         border-radius: var(--glass-radius-inset);
-        background: #2a2d33;
+        background: var(--glass-dark);
       }
       /* A slow drift, so the tiles read as clips rather than flat thumbnails. */
       .pan {
@@ -558,14 +558,14 @@ export class GlassCamerasSheet extends GlassSheet {
         align-items: center;
       }
       .when {
-        padding: 0 2px;
+        padding: 0 4px;
         font-size: var(--glass-text-small);
         color: var(--glass-text-secondary);
       }
       .actions {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
-        gap: 10px;
+        gap: 12px;
       }
       .actions button {
         all: unset;

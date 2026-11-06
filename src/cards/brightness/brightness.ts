@@ -236,12 +236,12 @@ export class GlassBrightness extends GlassElement {
       .lamps {
         display: grid;
         grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 10px;
+        gap: 12px;
       }
       .lamp {
         all: unset;
         box-sizing: border-box;
-        height: 112px;
+        height: var(--glass-height-small-tile);
         padding: 12px;
         border-radius: var(--glass-radius-small-tile);
         border: 1px solid var(--glass-hairline);

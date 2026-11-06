@@ -230,7 +230,7 @@ export class GlassFavourites extends GlassElement {
         flex: none;
         box-sizing: border-box;
         height: 44px;
-        padding: 0 18px;
+        padding: 0 20px;
         border-radius: 22px;
         border: 1px solid var(--glass-surface-border);
         background: rgba(var(--glass-surface-rgb), 0.7);
@@ -269,7 +269,7 @@ export class GlassFavourites extends GlassElement {
       /* Runs to the screen's edges, so the next tile peeks in and the row reads as one that scrolls sideways. */
       .tiles {
         display: flex;
-        gap: 10px;
+        gap: 12px;
         margin: 0 calc(-1 * var(--glass-space-edge));
         padding: 0 var(--glass-space-edge);
         overflow-x: auto;
@@ -282,7 +282,7 @@ export class GlassFavourites extends GlassElement {
       }
       button.tile {
         width: 104px;
-        height: 120px;
+        height: var(--glass-height-small-tile);
         padding: 12px;
         border-radius: var(--glass-radius-small-tile);
         background: rgba(var(--glass-surface-rgb), 0.82);

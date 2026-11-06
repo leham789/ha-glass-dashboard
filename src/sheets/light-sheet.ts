@@ -203,8 +203,8 @@ export class GlassLightSheet extends GlassEntitySheet {
         display: flex;
         flex-direction: column;
         align-items: flex-end;
-        gap: 10px;
-        padding-bottom: 6px;
+        gap: 12px;
+        padding-bottom: 8px;
       }
       .right .pill {
         margin: 0;
@@ -220,7 +220,7 @@ export class GlassLightSheet extends GlassEntitySheet {
         background: rgba(var(--glass-line-rgb), 0.06);
         display: flex;
         align-items: center;
-        padding-left: 22px;
+        padding-left: 20px;
       }
       .slider .fill {
         position: absolute;
@@ -253,7 +253,7 @@ export class GlassLightSheet extends GlassEntitySheet {
       .section {
         display: flex;
         flex-direction: column;
-        gap: 14px;
+        gap: 16px;
       }
       .tabs {
         display: flex;
@@ -284,7 +284,7 @@ export class GlassLightSheet extends GlassEntitySheet {
         color: var(--glass-text-secondary);
         display: flex;
         align-items: center;
-        gap: 6px;
+        gap: 8px;
       }
       .dim .dot {
         width: 12px;
@@ -371,7 +371,7 @@ export class GlassLightSheet extends GlassEntitySheet {
         border-radius: 32px;
         border: 1px solid rgba(var(--glass-line-rgb), 0.08);
         background: var(--glass-solid);
-        padding: 0 16px 0 10px;
+        padding: 0 16px 0 12px;
         display: flex;
         align-items: center;
         gap: 12px;

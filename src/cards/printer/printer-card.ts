@@ -208,7 +208,7 @@ export class GlassPrinter extends GlassElement {
         box-sizing: border-box;
         width: 100%;
         height: 76px;
-        padding: 0 18px 0 12px;
+        padding: 0 20px 0 12px;
         border-radius: 38px;
         background: var(--glass-surface);
         border: 1px solid var(--glass-surface-border);
@@ -216,7 +216,7 @@ export class GlassPrinter extends GlassElement {
         -webkit-backdrop-filter: blur(20px);
         display: flex;
         align-items: center;
-        gap: 14px;
+        gap: 16px;
         cursor: pointer;
       }
       .round {
@@ -233,7 +233,7 @@ export class GlassPrinter extends GlassElement {
         flex: 1;
         display: flex;
         flex-direction: column;
-        gap: 2px;
+        gap: 4px;
       }
       .t {
         font-size: var(--glass-text-body);
@@ -253,7 +253,7 @@ export class GlassPrinter extends GlassElement {
         -webkit-backdrop-filter: blur(24px);
         display: flex;
         flex-direction: column;
-        gap: 14px;
+        gap: 16px;
       }
       .head {
         display: flex;
@@ -269,7 +269,7 @@ export class GlassPrinter extends GlassElement {
       .right {
         display: flex;
         align-items: center;
-        gap: 6px;
+        gap: 8px;
       }
       .pill {
         height: 30px;
@@ -278,7 +278,7 @@ export class GlassPrinter extends GlassElement {
         font-size: var(--glass-text-caption);
         display: flex;
         align-items: center;
-        gap: 6px;
+        gap: 8px;
       }
       .pill .dot {
         width: 7px;
@@ -329,7 +329,7 @@ export class GlassPrinter extends GlassElement {
         height: 180px;
         overflow: hidden;
         border-radius: var(--glass-radius-small-tile);
-        background: linear-gradient(135deg, #2a2d33 0%, #4a4e57 100%);
+        background: var(--glass-dark-surface);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -348,14 +348,14 @@ export class GlassPrinter extends GlassElement {
         top: 12px;
         left: 12px;
         height: 24px;
-        padding: 0 10px;
+        padding: 0 12px;
         border-radius: 12px;
         background: rgba(0, 0, 0, 0.45);
         color: #fff;
         font-size: var(--glass-text-small);
         display: flex;
         align-items: center;
-        gap: 6px;
+        gap: 8px;
       }
       .live {
         width: 6px;
@@ -403,7 +403,7 @@ export class GlassPrinter extends GlassElement {
         min-width: 0;
         display: flex;
         flex-direction: column;
-        gap: 2px;
+        gap: 4px;
       }
       .l1 {
         font-size: var(--glass-text-caption);
@@ -423,7 +423,7 @@ export class GlassPrinter extends GlassElement {
       .readings > span {
         box-sizing: border-box;
         height: 64px;
-        padding: 10px 12px;
+        padding: 12px 12px;
         border-radius: var(--glass-radius-inset);
         background: var(--glass-inset);
         display: flex;

@@ -220,13 +220,13 @@ export class GlassMediaSheet extends GlassEntitySheet {
         color: var(--glass-text-muted);
       }
       .now .pill {
-        margin: 2px 0 0;
+        margin: 4px 0 0;
       }
       .seek {
         display: flex;
         flex-direction: column;
-        gap: 6px;
-        margin-top: -6px;
+        gap: 8px;
+        margin-top: -8px;
       }
       .track {
         position: relative;

@@ -129,8 +129,8 @@ export class GlassTempsSheet extends GlassSheet {
       }
       .outside {
         align-items: flex-end;
-        gap: 2px;
-        padding-bottom: 6px;
+        gap: 4px;
+        padding-bottom: 8px;
         font-size: var(--glass-text-body);
       }
       .label {
@@ -192,7 +192,7 @@ export class GlassTempsSheet extends GlassSheet {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        gap: 6px;
+        gap: 8px;
       }
       .name {
         font-size: var(--glass-text-body);
@@ -218,7 +218,7 @@ export class GlassTempsSheet extends GlassSheet {
       .hum {
         display: flex;
         flex-direction: column;
-        gap: 6px;
+        gap: 8px;
       }
       .row {
         display: flex;

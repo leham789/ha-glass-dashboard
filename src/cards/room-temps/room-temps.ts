@@ -157,7 +157,7 @@ export class GlassRoomTemps extends GlassElement {
         display: flex;
         justify-content: space-between;
         align-items: baseline;
-        margin-bottom: 6px;
+        margin-bottom: 8px;
       }
       h2 {
         margin: 0;

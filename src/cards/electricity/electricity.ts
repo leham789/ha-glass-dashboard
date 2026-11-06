@@ -153,7 +153,7 @@ export class GlassElectricity extends GlassElement {
         box-shadow: 0 20px 44px rgba(120, 150, 40, 0.25);
         display: flex;
         flex-direction: column;
-        gap: 18px;
+        gap: 20px;
       }
       section.gas {
         background: linear-gradient(160deg, #c98579 0%, #b0675e 55%, #c59a72 100%);

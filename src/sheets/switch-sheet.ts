@@ -136,8 +136,8 @@ export class GlassSwitchSheet extends GlassEntitySheet {
         display: flex;
         flex-direction: column;
         align-items: flex-end;
-        gap: 10px;
-        padding-bottom: 6px;
+        gap: 12px;
+        padding-bottom: 8px;
       }
       .right .pill {
         margin: 0;
@@ -145,7 +145,7 @@ export class GlassSwitchSheet extends GlassEntitySheet {
       .pair {
         display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 10px;
+        gap: 12px;
       }
     `,
   ];

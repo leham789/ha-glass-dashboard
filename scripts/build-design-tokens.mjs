@@ -37,6 +37,11 @@ const NAMES = [
   ['sheet', 'sheet'],
   ['neutral-tint', 'neutral-tint'],
   ['on-ink', 'on-ink'],
+  ['on-dark', 'on-dark'],
+  ['on-dark-ink', 'on-dark-ink'],
+  ['dark', 'dark'],
+  ['dark-2', 'dark-2'],
+  ['dark-surface', 'dark-surface'],
   ['glass-rgb', 'surface-rgb'],
   ['line-rgb', 'line-rgb'],
   ['accent & status'],
@@ -63,6 +68,7 @@ const NAMES = [
   ['room-alert', 'room-alert'],
   ['attention-text', 'attention-text'],
   ['tile-shadow', 'tile-shadow'],
+  ['float-shadow', 'float-shadow'],
   ['shape (8-pt based; pills are always height ÷ 2)'],
   ['r-inset', 'radius-inset'],
   ['r-small-tile', 'radius-small-tile'],
@@ -75,6 +81,10 @@ const NAMES = [
   ['pad-tile', 'space-tile'],
   ['pad-small-tile', 'space-small-tile'],
   ['space', 'space-edge'],
+  ['tile heights'],
+  ['h-small-tile', 'height-small-tile'],
+  ['h-tile', 'height-tile'],
+  ['h-room-tile', 'height-room-tile'],
 ];
 
 // Only the canvas needs these: the grey behind a pop-up and the library's specimen boxes.

@@ -135,7 +135,7 @@ export class GlassRoomClimate extends GlassElement {
       .tile {
         all: unset;
         box-sizing: border-box;
-        height: 150px;
+        height: var(--glass-height-tile);
         padding: var(--glass-space-tile);
         border-radius: var(--glass-radius-tile);
         background: rgba(var(--glass-surface-rgb), 0.75);
@@ -176,7 +176,7 @@ export class GlassRoomClimate extends GlassElement {
       .bottom {
         display: flex;
         flex-direction: column;
-        gap: 6px;
+        gap: 8px;
       }
       .value {
         font-size: 40px;

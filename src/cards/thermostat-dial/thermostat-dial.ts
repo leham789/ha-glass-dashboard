@@ -256,7 +256,7 @@ export class GlassThermostatDial extends GlassElement {
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 14px;
+        gap: 16px;
       }
       .head {
         width: 100%;
@@ -270,7 +270,7 @@ export class GlassThermostatDial extends GlassElement {
       .status {
         display: flex;
         align-items: center;
-        gap: 6px;
+        gap: 8px;
         color: var(--glass-text-secondary);
       }
       .status .dot {
@@ -357,7 +357,7 @@ export class GlassThermostatDial extends GlassElement {
       }
       .modes {
         display: flex;
-        gap: 6px;
+        gap: 8px;
         padding: 4px;
         border-radius: 26px;
         background: rgba(var(--glass-line-rgb), 0.06);

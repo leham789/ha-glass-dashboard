@@ -171,7 +171,7 @@ export class GlassLightTile extends GlassElement {
         box-sizing: border-box;
         width: 100%;
         height: 100%;
-        min-height: 132px;
+        min-height: var(--glass-height-tile);
         padding: var(--glass-space-tile);
         border-radius: var(--glass-radius-tile);
         border: 1px solid var(--glass-surface-border);

@@ -109,7 +109,7 @@ export class GlassLightsSheet extends GlassSheet {
         letter-spacing: -3px;
       }
       .unit {
-        margin-left: 6px;
+        margin-left: 8px;
         font-size: 22px;
         font-weight: 300;
         color: var(--glass-text-muted);

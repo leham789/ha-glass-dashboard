@@ -106,7 +106,7 @@ export class GlassQuietSheet extends GlassSheet {
         letter-spacing: -3px;
       }
       .unit {
-        margin-left: 6px;
+        margin-left: 8px;
         font-size: 22px;
         font-weight: 300;
         color: var(--glass-text-muted);
@@ -126,7 +126,7 @@ export class GlassQuietSheet extends GlassSheet {
         all: unset;
         box-sizing: border-box;
         height: 64px;
-        padding: 0 16px 0 10px;
+        padding: 0 16px 0 12px;
         border-radius: 32px;
         border: 1px solid var(--glass-hairline);
         background: var(--glass-solid);
@@ -176,7 +176,7 @@ export class GlassQuietSheet extends GlassSheet {
         font-size: var(--glass-text-body);
       }
       .tip {
-        padding: 14px 16px;
+        padding: 16px 16px;
         border-radius: var(--glass-radius-small-tile);
         background: rgba(var(--glass-surface-rgb), 0.6);
         display: flex;

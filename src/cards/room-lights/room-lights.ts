@@ -148,7 +148,7 @@ export class GlassRoomLights extends GlassElement {
         color: var(--glass-text-muted);
         display: flex;
         align-items: center;
-        gap: 6px;
+        gap: 8px;
       }
       .offline i {
         width: 7px;

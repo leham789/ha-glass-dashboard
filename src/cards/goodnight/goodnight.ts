@@ -267,7 +267,7 @@ export class GlassGoodnight extends GlassElement {
         -webkit-backdrop-filter: blur(24px);
         display: flex;
         flex-direction: column;
-        gap: 18px;
+        gap: 20px;
       }
       .top {
         display: flex;
@@ -279,7 +279,7 @@ export class GlassGoodnight extends GlassElement {
         flex: 1;
         display: flex;
         flex-direction: column;
-        gap: 6px;
+        gap: 8px;
       }
       .headline {
         font-size: var(--glass-text-tile-title);
@@ -315,7 +315,7 @@ export class GlassGoodnight extends GlassElement {
         position: relative;
         box-sizing: border-box;
         height: 68px;
-        padding: 6px;
+        padding: 8px;
         border-radius: 34px;
         background: rgba(var(--glass-line-rgb), 0.06);
         display: flex;
@@ -330,12 +330,12 @@ export class GlassGoodnight extends GlassElement {
         color: var(--glass-text-secondary);
       }
       .done .slide-text {
-        padding-left: 18px;
+        padding-left: 20px;
       }
       .dot {
         width: 8px;
         height: 8px;
-        margin-right: 18px;
+        margin-right: 20px;
         border-radius: 50%;
         background: var(--glass-go);
       }

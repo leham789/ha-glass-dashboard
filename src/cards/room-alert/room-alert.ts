@@ -101,7 +101,7 @@ export class GlassRoomAlert extends GlassElement {
         border: 1px solid var(--glass-attention-edge);
         display: flex;
         align-items: center;
-        gap: 14px;
+        gap: 16px;
       }
       .text {
         flex: 1;

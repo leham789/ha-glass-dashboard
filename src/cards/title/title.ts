@@ -112,7 +112,7 @@ export class GlassTitle extends GlassElement {
         all: unset;
         box-sizing: border-box;
         height: 40px;
-        padding: 0 18px;
+        padding: 0 20px;
         border-radius: 20px;
         border: 1px solid var(--glass-surface-border);
         background: rgba(var(--glass-surface-rgb), 0.7);

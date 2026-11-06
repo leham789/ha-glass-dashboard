@@ -9,9 +9,9 @@ Decisions Liam has made on the design canvas, so they aren't undone. The canvas 
 - **Spacing:** 8 chip gap · 12 tile grid gap (small tiles too; no 10s) and small-tile padding · 16 tile padding · 20 screen edge, gap between cards and card padding.
 - **Radius:** 16 thumbnails and insets · 24 small tiles · 28 tiles · 32 cards · 40 sheets · pills are height ÷ 2.
 - **Type:** one size per style (see the Type frame). Section headings and pop-up titles share one Heading style, 20 Regular.
-- **Icon buttons:** four styles (Dark, White, Glass, Grey) and four sizes (64 sheet close, 52 default, 40 on tiles, 36 compact).
+- **Icon buttons:** six looks (Dark, White, Glass, Grey, Icon only, On dark) and five sizes (64 sheet close, 52 default, 44 media, 40 on tiles, 36 compact).
 - **One Tile part** for any single thing (lights, switches, scenes…). The Light tile card is the Tile on its own. The icon sits in a ring by default, or on its own (`icon_style: plain`, Favourites' default).
-- **Light tiles** show the brightness under the name in grey, never top right, at every size. Three styles: tile (default), small (97 × 112, also Brightness's lamps) and row (56 high, bulb on the left). At a quarter width (79px) a tile takes the small style by itself; row needs at least half. One part, not copies. Favourites' tiles are this part too (small, and row at half width): nested in another card it takes any entity, with ink for something on that isn't a light and glass for scenes.
+- **Light tiles** show the brightness under the name in grey, never top right, at every size. Three styles: tile (default), small (97 × 92 with a 32 ring, also Brightness's lamps) and row (56 high, bulb on the left). At a quarter width (79px) a tile takes the small style by itself; row needs at least half. One part, not copies. Favourites' tiles are this part too (small, and row at half width): nested in another card it takes any entity, with ink for something on that isn't a light and glass for scenes.
 - **Light rows are a separate part from the Tile.** The Light row (lists of lights: the Lights pop-up, Room lights) is 64 high with a 32 radius, and shows brightness as a fill with rounded ends. **A Tile never shows brightness as a background**, in any style, its row style included: it's solid (the bulb's tint when on), with the brightness in grey under the name. Decided 2026-11-02, after a merge of the two was tried and undone.
 
 ## Screens and navigation
@@ -25,6 +25,7 @@ Decisions Liam has made on the design canvas, so they aren't undone. The canvas 
 - **Security** stacks every camera except the 3D printer's, plus the door states.
 - **Room header's big number** is a choice (`show`): lights on (default), temperature, power use, one sensor, or nothing. What it is joins the room name above it ("Study · Power use"), never a line under the number.
 - **Favourites** are tiles under a heading, three across with the next one peeking in. Pills stay as a card option.
+- **Scenes** has a `look` option: coloured tiles by the scene's name (default), or glass, the Tile's scene look as in Favourites. Decided 2026-11-06.
 - **Heating presets** sit inside the dial card as a row of chips, with no "Presets" heading.
 
 ## Colour and states
@@ -43,22 +44,30 @@ Decisions Liam has made on the design canvas, so they aren't undone. The canvas 
 
 ## Design system frames
 
-- **Components** holds every part with all its states. Each state hugs its content, with even spacing.
-- **Card Library** holds every card with the rule for when it shows. It doesn't repeat parts that live in Components, such as the menu or light rows. Its card containers are plain grey (`#E3E4E8`), in three fixed columns per section, grouped by topic in screen order.
+- **The Library page** holds every part, card and pop-up, each on its own board with all its states (the old Components and Card Library frames are retired).
 
 ## Library review (2026-11-02)
 
 - **One card shadow** for every glass card (a token), not a tint per card.
-- **Tile heights:** only 92, 132 and 176 (the Sizing frame).
+- **Tile heights:** only 92, 132 and 176 (the Sizing frame). Stat tiles, Batteries and the Tile at small (112–120) take 92, Room climate (150) 132, Heating & Energy tiles (200) 176. Decided 2026-11-06; boards, screens and code all use them (tokens in `src/tokens.ts`), except the Tile's small style, which isn't built yet.
 - **Cool white is 5500 K** everywhere (Brightness card and Light pop-up).
-- **Icon button gets a 44 size and an icon-only look** (shuffle and repeat: just the icon when off, ink when on), and an **"on dark" style** (white, for the dark Media card's play button).
+- **Icon button gets a 44 size and an icon-only look** (shuffle and repeat: just the icon when off, ink when on), and an **"on dark" style** (white, for the dark Media card's play button; tokens `--glass-on-dark` and `--glass-on-dark-ink`).
 - **History chart** keeps its height (120, small labels) and only stretches wider. Its colour key is part of the chart. The Energy pop-up's bars use the chart part (bars with yesterday's ticks and a fill colour).
 - **Quick colours** (Light pop-up) are a swatch-only look of the Colour preset chip. The colour preset shares its row's width.
 - **White/Colour tabs** use the segmented control as it is (solid), in pop-ups too.
 - **One pill row part** (64 high): Power switches and the Not reporting list use it, and the Light row is the pill row plus its brightness fill.
 - **Dropped:** the Usage card's Electricity/Gas toggle (use one Energy today card per fuel), the unused link row, and the blue level bar.
 
+## Backlog: public pack (2026-11-06)
+
+Things other homes will have. Each goes on the canvas (parts, card, pop-up) before code.
+
+- **Must-haves:** locks (unlock with Slide to confirm); covers (blinds, garage: open, stop, close, position); climate beyond heating (Cool, Auto, Fan, heat-and-cool range); fans and purifiers (speed, presets); alarm panel (arm modes, keypad); robot vacuum (start, pause, dock, status); weather forecast card and pop-up.
+- **Useful:** a generic entity card and pop-up for anything without its own; helpers (input select, input number, scripts and buttons, timers); calendar and to-do; solar and home battery on Energy; updates-available chip.
+- **Sharing:** °F and imperial units, 12-hour clock, translatable text, homes without floors or Kiosk mode, tablet and desktop widths.
+
 ## Still open
+
 
 - **Backlog: brightness as a fill on the Tile.** An option on the Tile card, for a light with a brightness, to show it as a fill across every style. Hard to make work in rectangular tiles, so not now.
 

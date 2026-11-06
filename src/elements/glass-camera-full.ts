@@ -336,7 +336,7 @@ export class GlassCameraFull extends GlassElement {
       .who {
         display: flex;
         align-items: center;
-        gap: 10px;
+        gap: 12px;
         min-width: 0;
       }
       .name {
@@ -350,7 +350,7 @@ export class GlassCameraFull extends GlassElement {
         font-size: var(--glass-text-caption);
         display: flex;
         align-items: center;
-        gap: 6px;
+        gap: 8px;
       }
       .dot {
         width: 7px;
@@ -389,11 +389,11 @@ export class GlassCameraFull extends GlassElement {
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 10px;
+        gap: 12px;
       }
       .dots {
         display: flex;
-        gap: 6px;
+        gap: 8px;
       }
       .dots button {
         width: 8px;

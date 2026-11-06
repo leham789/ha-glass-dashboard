@@ -290,10 +290,10 @@ export abstract class GlassSheet extends GlassElement {
         left: 0;
         right: 0;
         z-index: 1;
-        padding: 10px var(--glass-space-edge) 0;
+        padding: 12px var(--glass-space-edge) 0;
         display: flex;
         flex-direction: column;
-        gap: 18px;
+        gap: 20px;
         touch-action: none; /* the drag is ours, not the page's scroll */
         /* no band behind it: the handle, title and close float over what scrolls under,
            and taps between them reach the content */
@@ -312,10 +312,10 @@ export abstract class GlassSheet extends GlassElement {
         overflow-y: auto;
         overscroll-behavior: contain;
         box-sizing: border-box;
-        padding: calc(var(--bar) + 18px) var(--glass-space-edge) calc(40px + env(safe-area-inset-bottom, 0px));
+        padding: calc(var(--bar) + 20px) var(--glass-space-edge) calc(40px + env(safe-area-inset-bottom, 0px));
         display: flex;
         flex-direction: column;
-        gap: 18px;
+        gap: 20px;
         -webkit-mask-image: linear-gradient(to bottom, transparent calc(var(--bar) - 12px), #000 calc(var(--bar) + 18px));
         mask-image: linear-gradient(to bottom, transparent calc(var(--bar) - 12px), #000 calc(var(--bar) + 18px));
       }
@@ -334,7 +334,7 @@ export abstract class GlassSheet extends GlassElement {
       header {
         display: flex;
         align-items: center;
-        gap: 10px;
+        gap: 12px;
       }
       .title {
         flex: 1;

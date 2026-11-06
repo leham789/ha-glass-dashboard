@@ -161,14 +161,14 @@ export class GlassCamera extends GlassElement {
         -webkit-backdrop-filter: blur(24px);
         display: flex;
         flex-direction: column;
-        gap: 14px;
+        gap: 16px;
       }
       .view {
         position: relative;
         height: 196px;
         overflow: hidden;
         border-radius: var(--glass-radius-small-tile);
-        background: linear-gradient(135deg, #2a2d33 0%, #4a4e57 100%);
+        background: var(--glass-dark-surface);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -187,14 +187,14 @@ export class GlassCamera extends GlassElement {
         top: 12px;
         left: 12px;
         height: 24px;
-        padding: 0 10px;
+        padding: 0 12px;
         border-radius: 12px;
         background: rgba(0, 0, 0, 0.45);
         color: #fff;
         font-size: var(--glass-text-small);
         display: flex;
         align-items: center;
-        gap: 6px;
+        gap: 8px;
       }
       .dot {
         width: 6px;
@@ -250,7 +250,7 @@ export class GlassCamera extends GlassElement {
       .info {
         display: flex;
         flex-direction: column;
-        gap: 2px;
+        gap: 4px;
         min-width: 0;
       }
       .name {

@@ -21,6 +21,11 @@ export const tokens = css`
     --glass-sheet: rgba(248, 248, 250, 0.86);
     --glass-neutral-tint: #f1f1f4;
     --glass-on-ink: #fff; /* text and icons on an ink button */
+    --glass-on-dark: #fff; /* a button on a dark card (the dark Media card's play); the same in both themes */
+    --glass-on-dark-ink: #121316; /* its icon */
+    --glass-dark: #2a2d33; /* dark cards, artwork and camera placeholders, the dark secondary button; the same in both themes */
+    --glass-dark-2: #4a4e57; /* its lighter end, and a dark button that's on */
+    --glass-dark-surface: linear-gradient(135deg, #2a2d33 0%, #4a4e57 100%); /* the dark card: Media, Camera, 3D printer */
     --glass-surface-rgb: 255, 255, 255; /* rgba(var(--glass-surface-rgb), a) surfaces */
     --glass-line-rgb: 18, 19, 22; /* rgba(var(--glass-line-rgb), a) lines, tracks, outlines */
 
@@ -53,6 +58,7 @@ export const tokens = css`
     --glass-room-alert: rgba(252, 237, 230, 0.9);
     --glass-attention-text: #9a3e22;
     --glass-tile-shadow: 0 10px 30px rgba(30, 20, 60, 0.06);
+    --glass-float-shadow: 0 16px 40px rgba(20, 20, 40, 0.16); /* things floating over the page: the connection banner */
 
     /* Radius */
     --glass-radius-inset: 16px;
@@ -60,6 +66,11 @@ export const tokens = css`
     --glass-radius-tile: 28px;
     --glass-radius-card: 32px;
     --glass-radius-sheet: 40px;
+
+    /* Tile heights (the Sizing frame): only these three */
+    --glass-height-small-tile: 92px;
+    --glass-height-tile: 132px;
+    --glass-height-room-tile: 176px;
 
     /* Spacing */
     --glass-space-chip: 8px;
@@ -117,6 +128,7 @@ export const tokens = css`
     --glass-room-alert: rgba(224, 104, 58, 0.2);
     --glass-attention-text: #f4a47f;
     --glass-tile-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+    --glass-float-shadow: 0 16px 40px rgba(0, 0, 0, 0.4);
 
     color-scheme: dark;
   }

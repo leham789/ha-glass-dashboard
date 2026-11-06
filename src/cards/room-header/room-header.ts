@@ -288,7 +288,7 @@ export class GlassRoomHeader extends GlassElement {
         position: relative; /* above the highlight */
         flex: none;
         height: 38px;
-        padding: 0 14px;
+        padding: 0 16px;
         border-radius: 19px;
         display: flex;
         align-items: center;
@@ -319,7 +319,7 @@ export class GlassRoomHeader extends GlassElement {
       }
       .right {
         align-items: flex-end;
-        gap: 6px;
+        gap: 8px;
         padding-bottom: 8px;
         text-align: right;
       }

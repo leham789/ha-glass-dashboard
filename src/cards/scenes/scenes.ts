@@ -145,7 +145,7 @@ export class GlassScenes extends GlassElement {
         -webkit-backdrop-filter: blur(24px);
         display: flex;
         flex-direction: column;
-        gap: 14px;
+        gap: 16px;
       }
       section.plain {
         padding: 0;
@@ -174,7 +174,7 @@ export class GlassScenes extends GlassElement {
       .grid {
         display: grid;
         grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 10px;
+        gap: 12px;
       }
       button {
         all: unset;
@@ -193,7 +193,7 @@ export class GlassScenes extends GlassElement {
         color: #fff;
       }
       .plain button {
-        height: 100px;
+        height: var(--glass-height-small-tile);
         flex-direction: column;
         justify-content: space-between;
         align-items: stretch;

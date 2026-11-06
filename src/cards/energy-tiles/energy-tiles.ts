@@ -192,7 +192,7 @@ export class GlassEnergyTiles extends GlassElement {
       .tile {
         all: unset;
         box-sizing: border-box;
-        height: 200px;
+        height: var(--glass-height-room-tile);
         padding: var(--glass-space-tile);
         border-radius: var(--glass-radius-tile);
         display: flex;
@@ -246,7 +246,7 @@ export class GlassEnergyTiles extends GlassElement {
       .now {
         display: flex;
         flex-direction: column;
-        gap: 2px;
+        gap: 4px;
       }
       .now {
         color: #fff;
@@ -276,7 +276,7 @@ export class GlassEnergyTiles extends GlassElement {
       .col {
         display: flex;
         flex-direction: column-reverse;
-        gap: 3px;
+        gap: 4px;
       }
       .d {
         width: 5px;

@@ -167,7 +167,7 @@ export class GlassRoomOptionsSheet extends GlassSheet {
       .actions {
         display: grid;
         grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 10px;
+        gap: 12px;
       }
       .actions button {
         all: unset;
@@ -199,12 +199,12 @@ export class GlassRoomOptionsSheet extends GlassSheet {
       .group {
         border-radius: var(--glass-radius-tile);
         background: rgba(var(--glass-surface-rgb), 0.75);
-        padding: 16px 16px 6px;
+        padding: 16px 16px 8px;
         display: flex;
         flex-direction: column;
       }
       .settings {
-        padding: 6px 16px;
+        padding: 8px 16px;
       }
       .top {
         display: flex;

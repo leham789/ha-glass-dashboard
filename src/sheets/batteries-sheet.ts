@@ -91,7 +91,7 @@ export class GlassBatteriesSheet extends GlassSheet {
         letter-spacing: -3px;
       }
       .unit {
-        margin-left: 6px;
+        margin-left: 8px;
         font-size: 22px;
         font-weight: 300;
         color: var(--glass-text-muted);
@@ -116,12 +116,12 @@ export class GlassBatteriesSheet extends GlassSheet {
       .grid {
         display: grid;
         grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 10px;
+        gap: 12px;
       }
       .tile {
         all: unset;
         box-sizing: border-box;
-        height: 120px;
+        height: var(--glass-height-small-tile);
         padding: var(--glass-space-small-tile);
         border-radius: var(--glass-radius-small-tile);
         background: rgba(var(--glass-surface-rgb), 0.82);

@@ -254,7 +254,7 @@ export class GlassMenu extends GlassElement {
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: 10px;
+        gap: 12px;
         font-size: var(--glass-text-body);
         color: var(--glass-ink);
         cursor: pointer;
