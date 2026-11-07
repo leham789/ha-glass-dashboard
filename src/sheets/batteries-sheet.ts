@@ -1,4 +1,5 @@
 import '../elements/glass-number.js';
+import '../elements/glass-popup-summary.js';
 import { css, html, nothing, type CSSResultGroup } from 'lit';
 import { tileSurface } from '../elements/surfaces.js';
 import { customElement } from 'lit/decorators.js';
@@ -32,14 +33,11 @@ export class GlassBatteriesSheet extends GlassSheet {
     const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
 
     return html`
-      <div class="summary">
-        <glass-number size="display" value="${low}" unit="below ${LOW_BATTERY}%"></glass-number>
-        <span class="counts">
-          ${plural(sensors.length, 'sensor', 'sensors')}${phones.length
-            ? html`<br />${plural(phones.length, 'phone', 'phones')}`
-            : nothing}
-        </span>
-      </div>
+      <glass-popup-summary
+        value="${low}"
+        unit="below ${LOW_BATTERY}%"
+        note=${[plural(sensors.length, 'sensor', 'sensors'), phones.length ? plural(phones.length, 'phone', 'phones') : ''].filter(Boolean).join('\n')}
+      ></glass-popup-summary>
       ${this.section('Sensors & remotes', sensors)} ${this.section('Phones', phones)}
       ${!all.length ? html`<p class="empty">No battery sensors found.</p>` : nothing}
     `;
@@ -47,8 +45,8 @@ export class GlassBatteriesSheet extends GlassSheet {
 
   private section(title: string, items: Battery[]) {
     if (!items.length) return nothing;
-    return html`<div class="section">
-      <h2>${title}</h2>
+    return html`<div class="group">
+      <h2 class="group-label">${title}</h2>
       <div class="grid">
         ${items.map(
           (b) => html`<button
@@ -76,29 +74,6 @@ export class GlassBatteriesSheet extends GlassSheet {
   static styles: CSSResultGroup = [
     GlassSheet.styles,
     css`
-      .summary {
-        display: flex;
-        align-items: flex-end;
-        justify-content: space-between;
-        gap: 12px;
-      }
-      .counts {
-        padding-bottom: 8px;
-        text-align: right;
-        font-size: var(--glass-text-caption);
-        color: var(--glass-text-muted);
-      }
-      .section {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-      }
-      h2 {
-        margin: 4px 0 0;
-        font-size: var(--glass-text-chip);
-        font-weight: 400;
-        color: var(--glass-text-muted);
-      }
       .grid {
         display: grid;
         grid-template-columns: repeat(3, minmax(0, 1fr));

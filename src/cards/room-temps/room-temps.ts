@@ -69,7 +69,7 @@ export class GlassRoomTemps extends GlassElement {
   /** The whole card opens the room temperatures pop-up, one at a time. */
   private openTemps = () => {
     if ([...openOverlays].some((o) => o instanceof GlassSheet)) return;
-    const sheet = GlassSheet.open<GlassTempsSheet>('glass-temps-sheet', this.hass!);
+    const sheet = GlassSheet.open<GlassTempsSheet>('glass-temps-sheet', this.hass!, this);
     sheet.excludeAreas = this.config?.exclude_areas ?? [];
   };
 

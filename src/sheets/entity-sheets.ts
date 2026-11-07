@@ -32,7 +32,7 @@ setEntityOpener((node, entityId) => {
   }
   const tag = SHEETS[domain];
   if (!tag) return false;
-  const sheet = GlassSheet.open<GlassEntitySheet>(tag, hass);
+  const sheet = GlassSheet.open<GlassEntitySheet>(tag, hass, node);
   sheet.entityId = entityId;
   return true;
 });

@@ -12,6 +12,7 @@ import { brightnessPct, groupMembers, isLightOn, lightLook } from '../light-colo
 import { nameInRoom } from '../rooms.js';
 import { clock } from '../time.js';
 import { haptic } from '../motion.js';
+import { lightRow } from '../elements/light-row.js';
 
 const COLOUR_MODES = ['hs', 'rgb', 'rgbw', 'rgbww', 'xy'];
 
@@ -62,17 +63,11 @@ export class GlassLightSheet extends GlassEntitySheet {
     const effects: string[] = Array.isArray(a.effect_list) ? a.effect_list : [];
 
     return html`
-      <div class="reading">
-        <span class="left">
-          <glass-number size="display" .value=${off ? '' : on ? (dims ? String(bri) : 'On') : 'Off'} unit=${on && dims ? '%' : ''} ?grey=${!on}></glass-number>
-          <span class="caption">${caption}</span>
-        </span>
-        <span class="right">
+      <glass-popup-summary .value=${off ? '' : on ? (dims ? String(bri) : 'On') : 'Off'} unit=${on && dims ? '%' : ''} line=${caption} ?grey=${!on}>
           ${off ? this.renderPill('Unavailable', 'neutral') : nothing}
           <glass-switch ?checked=${on} label="Power"
             ?disabled=${off} @change=${() => (haptic('light'), this.hass!.callService('light', on ? 'turn_off' : 'turn_on', { entity_id: e.entity_id }))}></glass-switch>
-        </span>
-      </div>
+      </glass-popup-summary>
 
       ${dims
         ? html`<glass-slider
@@ -102,18 +97,11 @@ export class GlassLightSheet extends GlassEntitySheet {
         : nothing}
 
       ${members
-        ? html`<div class="section">
-            <h2>In this group</h2>
+        ? html`<div class="group">
+            <h2 class="group-label">In this group</h2>
             ${members.map((id) => {
               const m = this.hass!.states[id];
-              const mOn = m?.state === 'on';
-              const pct = brightnessPct(m) ?? (mOn ? 100 : 0);
-              return html`<button type="button" class="member ${m && m.state !== 'unavailable' ? '' : 'faded'}" aria-pressed=${mOn ? 'true' : 'false'} @click=${() => (haptic('light'), this.hass!.callService('light', 'toggle', { entity_id: id }))}>
-                <span class="mfill" style="width: ${mOn ? pct : 0}%"></span>
-                <span class="micon ${mOn ? 'lit' : ''}"><glass-icon name="lightbulb" size="19"></glass-icon></span>
-                <span class="mname">${m ? nameInRoom(this.hass!, m) : id}</span>
-                <span class="mstate">${!m || m.state === 'unavailable' ? 'Offline' : mOn ? `${pct}%` : 'Off'}</span>
-              </button>`;
+              return lightRow(this.hass!, { id, name: m ? nameInRoom(this.hass!, m) : id, on: m?.state === 'on' });
             })}
           </div>`
         : nothing}
@@ -123,69 +111,10 @@ export class GlassLightSheet extends GlassEntitySheet {
   static styles: CSSResultGroup = [
     GlassEntitySheet.styles,
     css`
-      .right {
-        display: flex;
-        flex-direction: column;
-        align-items: flex-end;
-        gap: 12px;
-        padding-bottom: 8px;
-      }
-      .right .pill {
-        margin: 0;
-      }
       .section {
         display: flex;
         flex-direction: column;
         gap: 16px;
-      }
-      .member {
-        all: unset;
-        position: relative;
-        overflow: hidden;
-        box-sizing: border-box;
-        height: 64px;
-        border-radius: 32px;
-        border: 1px solid rgba(var(--glass-line-rgb), 0.08);
-        background: var(--glass-solid);
-        padding: 0 16px 0 12px;
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        cursor: pointer;
-      }
-      .mfill {
-        position: absolute;
-        left: 0;
-        top: 0;
-        bottom: 0;
-        border-radius: 32px;
-        background: var(--glass-light-fill);
-        transition: width 0.25s ease;
-      }
-      .micon,
-      .mname,
-      .mstate {
-        position: relative;
-      }
-      .micon {
-        width: 44px;
-        height: 44px;
-        border-radius: 50%;
-        background: var(--glass-neutral-tint);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      }
-      .micon.lit {
-        background: rgba(var(--glass-surface-rgb), 0.7);
-      }
-      .mname {
-        flex: 1;
-        font-size: var(--glass-text-body);
-      }
-      .mstate {
-        font-size: var(--glass-text-caption);
-        color: var(--glass-text-secondary);
       }
     `,
   ];

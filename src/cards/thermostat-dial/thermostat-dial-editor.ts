@@ -4,6 +4,8 @@ import type { ThermostatDialConfig } from './thermostat-dial.js';
 
 @customElement('glass-thermostat-dial-editor')
 export class GlassThermostatDialEditor extends GlassFormEditor<ThermostatDialConfig> {
+  protected popupGroup = false;
+
   protected fields() {
     return [
       { name: 'entity', label: 'Thermostat', required: true, selector: { entity: { domain: 'climate' } } },

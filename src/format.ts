@@ -19,3 +19,10 @@ export function formatValue(e: HassEntity): { value: string; after: string } {
   const decimals = Math.abs(n) >= 100 || Number.isInteger(n) ? 0 : 1;
   return { value: unit ? `${n.toFixed(decimals)} ${unit}` : n.toFixed(decimals), after: '' };
 }
+
+/** "12% more than yesterday", "same as yesterday": today's use against yesterday's by the same time. */
+export function comparison(today: number, yesterday: number): string {
+  const pct = Math.round(((today - yesterday) / yesterday) * 100);
+  if (pct === 0) return 'same as yesterday';
+  return `${Math.abs(pct)}% ${pct > 0 ? 'more' : 'less'} than yesterday`;
+}

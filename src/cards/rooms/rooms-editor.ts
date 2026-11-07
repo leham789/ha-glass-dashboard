@@ -4,6 +4,8 @@ import type { RoomsConfig } from './rooms.js';
 
 @customElement('glass-rooms-editor')
 export class GlassRoomsEditor extends GlassFormEditor<RoomsConfig> {
+  protected popupGroup = false;
+
   protected fields() {
     return [
       { name: 'title', label: 'Title (default: Rooms)', selector: { text: {} } },

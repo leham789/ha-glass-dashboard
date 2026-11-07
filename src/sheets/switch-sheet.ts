@@ -94,17 +94,11 @@ export class GlassSwitchSheet extends GlassEntitySheet {
     const power = this.sibling('power');
     const energy = this.sibling('energy');
     return html`
-      <div class="reading">
-        <span class="left">
-          <glass-number size="display" .value=${off ? '' : on ? 'On' : 'Off'} ?grey=${!on}></glass-number>
-          <span class="caption">${off ? this.sinceLine() : `Since ${clock(e.last_changed)}`}</span>
-        </span>
-        <span class="right">
+      <glass-popup-summary .value=${off ? '' : on ? 'On' : 'Off'} line=${off ? this.sinceLine() : `Since ${clock(e.last_changed)}`} ?grey=${!on}>
           ${off ? this.renderPill('Unavailable', 'neutral') : nothing}
           <glass-switch ?checked=${on} label="Power"
             ?disabled=${off} @change=${() => (haptic('light'), this.hass!.callService('homeassistant', on ? 'turn_off' : 'turn_on', { entity_id: e.entity_id }))}></glass-switch>
-        </span>
-      </div>
+      </glass-popup-summary>
       ${power || energy
         ? html`<div class="pair">
             <span class="tile"><span class="label">Using now</span><glass-number size="small" .value=${power && !isUnavailable(power) ? `${round(Number(power.state))}` : ''} unit="W"></glass-number></span>
@@ -140,16 +134,6 @@ export class GlassSwitchSheet extends GlassEntitySheet {
   static styles: CSSResultGroup = [
     GlassEntitySheet.styles,
     css`
-      .right {
-        display: flex;
-        flex-direction: column;
-        align-items: flex-end;
-        gap: 12px;
-        padding-bottom: 8px;
-      }
-      .right .pill {
-        margin: 0;
-      }
       .pair {
         display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));

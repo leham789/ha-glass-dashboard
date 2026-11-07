@@ -232,7 +232,7 @@ export class GlassStatusChips extends GlassElement {
   /** Opens one sheet at a time; every sheet gets the card's excluded areas where it uses them. */
   private openSheet<T extends GlassSheet>(tag: string, setup?: (sheet: T) => void) {
     if (this.sheet?.isConnected) return;
-    const sheet = GlassSheet.open<T>(tag, this.hass!);
+    const sheet = GlassSheet.open<T>(tag, this.hass!, this);
     (sheet as unknown as { excludeAreas?: string[] }).excludeAreas = this.config?.exclude_areas ?? [];
     setup?.(sheet);
     this.sheet = sheet;

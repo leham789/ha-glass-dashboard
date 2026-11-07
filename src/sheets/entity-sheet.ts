@@ -1,6 +1,7 @@
 import { css, html, nothing, type CSSResultGroup, type PropertyValues, type TemplateResult } from 'lit';
 import '../elements/glass-chip.js';
 import '../elements/glass-number.js';
+import '../elements/glass-popup-summary.js';
 import { nil } from '../elements/nil.js';
 import { heading } from '../elements/type.js';
 import { cardSurface, tileSurface } from '../elements/surfaces.js';
@@ -72,13 +73,7 @@ export abstract class GlassEntitySheet extends GlassSheet {
   /** The big reading: a value with its unit, or a word; a grey dash when there's none. */
   /** `dim`: the sensor has gone quiet, so its last value shows greyed. */
   protected renderReading(value: string | undefined, unit = '', caption = '', pill?: { text: string; tone: Tone }, dim = false): TemplateResult {
-    return html`<div class="reading">
-      <span class="left">
-        <glass-number size="display" .value=${value ?? ''} unit=${unit} ?grey=${dim}></glass-number>
-        ${caption ? html`<span class="caption">${caption}</span>` : nothing}
-      </span>
-      ${pill ? this.renderPill(pill.text, pill.tone) : nothing}
-    </div>`;
+    return html`<glass-popup-summary .value=${value ?? ''} unit=${unit} line=${caption} ?grey=${dim}>${pill ? this.renderPill(pill.text, pill.tone) : nothing}</glass-popup-summary>`;
   }
 
   protected renderPill(text: string, tone: Tone): TemplateResult {
@@ -108,22 +103,6 @@ export abstract class GlassEntitySheet extends GlassSheet {
   static styles: CSSResultGroup = [
     GlassSheet.styles,
     css`
-      .reading {
-        display: flex;
-        align-items: flex-end;
-        justify-content: space-between;
-        gap: 12px;
-      }
-      .reading .left {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-        min-width: 0;
-      }
-      .caption {
-        font-size: var(--glass-text-caption);
-        color: var(--glass-text-muted);
-      }
       .card {
         ${cardSurface}
         box-sizing: border-box;

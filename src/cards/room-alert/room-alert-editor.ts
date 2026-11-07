@@ -4,6 +4,8 @@ import type { RoomAlertConfig } from './room-alert.js';
 
 @customElement('glass-room-alert-editor')
 export class GlassRoomAlertEditor extends GlassFormEditor<RoomAlertConfig> {
+  protected popupGroup = false;
+
   protected fields() {
     return [
       { name: 'light', label: 'Smart bulb', required: true, selector: { entity: { domain: 'light' } } },

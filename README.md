@@ -376,9 +376,18 @@ Tapping something on a card opens our own pop-up instead of Home Assistant's mor
 - **People:** home, a zone or away, since when, today's timeline and the phone's battery.
 - **Switches and plugs:** on / off, what a plug is using now and today, and today's timeline.
 - **3D printer** (from the printer tile): progress, camera, temperatures, and Pause / Resume / Stop.
+- **Energy** (from Energy today): today's cost and use against yesterday, use each hour with yesterday's as ticks or each of the last 7 days, and a few facts.
 - **Cameras:** the full-screen view.
 
 Anything else (scenes, scripts, covers, locks…) still opens Home Assistant's own dialog, as do pop-ups opened from outside these cards (HA's search, the logbook).
+
+Every card that opens a pop-up can give it its own name, icon and icon colour, in the **Pop-up (optional)** group at the end of its editor. Leave them empty and the pop-up picks its own:
+
+```yaml
+popup_name: Reading lamp
+popup_icon: lamp             # any icon from the icon set
+popup_icon_colour: peach     # lime, peach, lilac, blue, amber or grey
+```
 
 ## Motion and haptics
 

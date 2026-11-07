@@ -1,5 +1,6 @@
 import '../elements/glass-meters.js';
 import '../elements/glass-number.js';
+import '../elements/glass-popup-summary.js';
 import { css, html, nothing, type CSSResultGroup } from 'lit';
 import '../elements/glass-chip.js';
 import '../elements/glass-button.js';
@@ -44,11 +45,11 @@ export class GlassTempsSheet extends GlassSheet {
     const outside = weather?.attributes.temperature;
 
     return html`
-      <div class="summary">
-        <span class="avg">
-          <span class="label">${live.length < rooms.length ? `Average of ${live.length} rooms` : 'House average'}</span>
-          <glass-number size="display-s" .value=${average === undefined ? '' : `${average.toFixed(1)}°`}></glass-number>
-        </span>
+      <glass-popup-summary
+        size="display-s"
+        label=${live.length < rooms.length ? `Average of ${live.length} rooms` : 'House average'}
+        .value=${average === undefined ? '' : `${average.toFixed(1)}°`}
+      >
         ${weather && typeof outside === 'number'
           ? html`<span class="outside">
               <span>Outside ${outside.toFixed(1)}°</span>
@@ -57,7 +58,7 @@ export class GlassTempsSheet extends GlassSheet {
               }</span>
             </span>`
           : nothing}
-      </div>
+      </glass-popup-summary>
       <glass-segmented
         label="Sort"
         .options=${(['Rooms', 'Coldest', 'Warmest'] as Sort[]).map((s) => ({ value: s, label: s }))}
@@ -110,30 +111,16 @@ export class GlassTempsSheet extends GlassSheet {
   static styles: CSSResultGroup = [
     GlassSheet.styles,
     css`
-      .summary {
-        display: flex;
-        align-items: flex-end;
-        justify-content: space-between;
-        gap: 12px;
-      }
-      .avg,
       .outside {
         display: flex;
         flex-direction: column;
-        gap: 4px;
-      }
-      .outside {
         align-items: flex-end;
         gap: 4px;
-        padding-bottom: 8px;
         font-size: var(--glass-text-body);
       }
       .label {
         font-size: var(--glass-text-caption);
         color: var(--glass-text-muted);
-      }
-      .avg .label {
-        font-size: var(--glass-text-chip);
       }
       .grid {
         display: grid;

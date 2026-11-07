@@ -111,6 +111,7 @@ const NAMES = [
   ['on-chart-dot', 'on-chart-dot'],
   ['gas-ink', 'gas-ink'],
   ['energy-bar', 'energy-bar'],
+  ['gas-bar', 'gas-bar'],
   ['kelvin-scale', 'kelvin-scale'],
   ['hue-scale', 'hue-scale'],
   ['dial-cool', 'dial-cool'],

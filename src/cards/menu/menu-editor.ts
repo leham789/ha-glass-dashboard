@@ -4,6 +4,8 @@ import type { MenuConfig } from './menu.js';
 
 @customElement('glass-menu-editor')
 export class GlassMenuEditor extends GlassFormEditor<MenuConfig> {
+  protected popupGroup = false;
+
   protected fields() {
     return [
       { name: 'home_path', label: 'Home view', selector: { navigation: {} } },

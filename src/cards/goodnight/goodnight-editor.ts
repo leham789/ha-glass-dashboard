@@ -4,6 +4,8 @@ import type { GoodnightConfig } from './goodnight.js';
 
 @customElement('glass-goodnight-editor')
 export class GlassGoodnightEditor extends GlassFormEditor<GoodnightConfig> {
+  protected popupGroup = false;
+
   protected fields() {
     return [
       { name: 'areas', label: 'Rooms whose lights it turns off (default: your lowest floor)', selector: { area: { multiple: true } } },

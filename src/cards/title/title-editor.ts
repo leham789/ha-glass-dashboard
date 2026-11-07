@@ -4,6 +4,8 @@ import type { TitleConfig } from './title.js';
 
 @customElement('glass-title-editor')
 export class GlassTitleEditor extends GlassFormEditor<TitleConfig> {
+  protected popupGroup = false;
+
   protected fields() {
     return [
       { name: 'title', label: 'Title', required: true, selector: { text: {} } },

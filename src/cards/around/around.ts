@@ -163,7 +163,7 @@ export class GlassAround extends GlassElement {
   /** The printer pop-up: progress, camera, temperatures and Pause / Resume / Stop. */
   private openPrinter(statusId: string) {
     const c = this.config!;
-    const sheet = GlassSheet.open<GlassPrinterSheet>('glass-printer-sheet', this.hass!);
+    const sheet = GlassSheet.open<GlassPrinterSheet>('glass-printer-sheet', this.hass!, this);
     sheet.printer = c;
     sheet.entityId = statusId;
   }

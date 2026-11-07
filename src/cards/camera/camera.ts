@@ -142,7 +142,7 @@ export class GlassCamera extends GlassElement {
     if (this.sheet?.isConnected) return;
     const cards = allCameraCards();
     const cameras = cards.map((card) => card.config!).filter(Boolean);
-    const sheet = GlassSheet.open<GlassCamerasSheet>('glass-cameras-sheet', this.hass!);
+    const sheet = GlassSheet.open<GlassCamerasSheet>('glass-cameras-sheet', this.hass!, this);
     sheet.cameras = cameras.length ? cameras : [this.config!];
     sheet.index = Math.max(0, cards.indexOf(this));
     this.sheet = sheet;

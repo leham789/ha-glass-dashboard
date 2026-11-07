@@ -12,6 +12,9 @@ export interface DailyUsage {
   today: number;
   /** Use yesterday up to this time of day, for a fair comparison. */
   yesterdaySoFar: number;
+  /** Use in each hour of yesterday, and all of yesterday. */
+  yesterdayHours: number[];
+  yesterday: number;
 }
 
 /**
@@ -38,10 +41,16 @@ export async function dailyUsage(hass: HomeAssistant, entityId: string, now = ne
     const from = midnight.getTime() + h * 3_600_000;
     return from > now.getTime() ? 0 : usageBetween(points, from, Math.min(from + 3_600_000, now.getTime()));
   });
+  const yesterdayHours = Array.from({ length: 24 }, (_, h) => {
+    const from = yesterday.getTime() + h * 3_600_000;
+    return usageBetween(points, from, from + 3_600_000);
+  });
   return {
     hours,
+    yesterdayHours,
     today: usageBetween(points, midnight.getTime(), now.getTime()),
     yesterdaySoFar: usageBetween(points, yesterday.getTime(), now.getTime() - 86_400_000),
+    yesterday: usageBetween(points, yesterday.getTime(), midnight.getTime()),
   };
 }
 

@@ -180,7 +180,7 @@ export class GlassRoomHeader extends GlassElement {
 
   private openOptions() {
     if (this.sheet?.isConnected) return;
-    const sheet = GlassSheet.open<GlassRoomOptionsSheet>('glass-room-options-sheet', this.hass!);
+    const sheet = GlassSheet.open<GlassRoomOptionsSheet>('glass-room-options-sheet', this.hass!, this);
     sheet.area = this.config!.area;
     this.sheet = sheet;
   }

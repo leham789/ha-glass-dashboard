@@ -1,4 +1,4 @@
-import '../elements/glass-number.js';
+import '../elements/glass-popup-summary.js';
 import { css, html, nothing, type CSSResultGroup } from 'lit';
 import '../elements/glass-rows.js';
 import { customElement } from 'lit/decorators.js';
@@ -66,10 +66,7 @@ export class GlassQuietSheet extends GlassSheet {
   protected renderBody() {
     const { quiet, watched } = quietSensors(this.hass!);
     return html`
-      <div class="summary">
-        <glass-number size="display" value="${quiet.length}" unit="quiet"></glass-number>
-        <span class="counts">of ${watched} sensors${quiet.length < watched ? html`<br />the rest are fine` : nothing}</span>
-      </div>
+      <glass-popup-summary value="${quiet.length}" unit="quiet" note=${`of ${watched} sensors${quiet.length < watched ? '\nthe rest are fine' : ''}`}></glass-popup-summary>
       ${quiet.length
         ? html`<div class="rows">
             ${quiet.map(
@@ -95,18 +92,6 @@ export class GlassQuietSheet extends GlassSheet {
   static styles: CSSResultGroup = [
     GlassSheet.styles,
     css`
-      .summary {
-        display: flex;
-        align-items: flex-end;
-        justify-content: space-between;
-        gap: 12px;
-      }
-      .counts {
-        padding-bottom: 8px;
-        text-align: right;
-        font-size: var(--glass-text-caption);
-        color: var(--glass-text-muted);
-      }
       .rows {
         display: flex;
         flex-direction: column;

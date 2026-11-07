@@ -1,3 +1,6 @@
+import { GlassSheet } from '../../elements/glass-sheet.js';
+import '../../sheets/energy-sheet.js';
+import type { GlassEnergySheet } from '../../sheets/energy-sheet.js';
 import '../../elements/glass-meters.js';
 import '../../elements/glass-number.js';
 import { css, html, nothing, type PropertyValues } from 'lit';
@@ -5,9 +8,9 @@ import { GlassElement } from '../../glass-element.js';
 import { customElement, property, state } from 'lit/decorators.js';
 import { tokens } from '../../tokens.js';
 import { ensureFonts } from '../../fonts.js';
-import { type HomeAssistant, type LovelaceCardConfig, isUnavailable, openMoreInfo, registerCard } from '../../ha.js';
+import { type HomeAssistant, type LovelaceCardConfig, isUnavailable, registerCard } from '../../ha.js';
 import { type DailyUsage, dailyUsage } from '../../history.js';
-import { formatValue } from '../../format.js';
+import { comparison, formatValue } from '../../format.js';
 import '../../elements/glass-icon.js';
 import './electricity-editor.js';
 
@@ -34,6 +37,7 @@ export class GlassElectricity extends GlassElement {
   @property({ attribute: false }) hass?: HomeAssistant;
   @state() private config?: ElectricityConfig;
   @state() private usage?: DailyUsage;
+  private sheet?: GlassEnergySheet;
   @state() private loading = true;
   private timer?: number;
 
@@ -80,6 +84,8 @@ export class GlassElectricity extends GlassElement {
 
   protected shouldUpdate(changed: PropertyValues): boolean {
     if (this.needs) return true;
+    // Keep an open Energy pop-up current.
+    if (this.sheet?.isConnected && this.hass) this.sheet.hass = this.hass;
     if (!changed.has('hass') || changed.size > 1 || !this.config) return true;
     const old = changed.get('hass') as HomeAssistant | undefined;
     const ids = [this.config.energy, this.config.cost].filter(Boolean) as string[];
@@ -112,7 +118,7 @@ export class GlassElectricity extends GlassElement {
     const fuel = gas ? 'Gas' : 'Electricity';
 
     return html`<section aria-labelledby="h" class=${gas ? 'gas' : ''}>
-      <button type="button" class="open" aria-label="${fuel} details" @click=${() => openMoreInfo(this, this.config!.energy)}></button>
+      <button type="button" class="open" aria-label="${fuel} details" @click=${this.openEnergy}></button>
       <span class="top">
         <span class="head">
           <h2 id="h">${this.config.title ?? `${fuel} today`}</h2>
@@ -134,6 +140,17 @@ export class GlassElectricity extends GlassElement {
       <span class="axis"><span>00:00</span><span>06:00</span><span>12:00</span><span>18:00</span><span>24:00</span></span>
     </section>`;
   }
+
+  /** Our Energy pop-up, with today's use already loaded. */
+  private openEnergy = () => {
+    const c = this.config!;
+    if (this.sheet?.isConnected) return;
+    const sheet = (this.sheet = GlassSheet.open<GlassEnergySheet>('glass-energy-sheet', this.hass!, this));
+    sheet.energy = c.energy;
+    sheet.cost = c.cost ?? '';
+    sheet.fuel = c.fuel ?? 'electricity';
+    sheet.usage = this.usage;
+  };
 
   static styles = [
     tokens,
@@ -224,12 +241,6 @@ export class GlassElectricity extends GlassElement {
 }
 
 /** "11% more than yesterday", "3% less than yesterday", "same as yesterday". */
-function comparison(today: number, yesterday: number): string {
-  const pct = Math.round(((today - yesterday) / yesterday) * 100);
-  if (pct === 0) return 'same as yesterday';
-  return `${Math.abs(pct)}% ${pct > 0 ? 'more' : 'less'} than yesterday`;
-}
-
 registerCard({
   type: 'glass-electricity',
   name: 'Glass · Energy today',

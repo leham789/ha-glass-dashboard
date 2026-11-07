@@ -6,6 +6,37 @@ import { tokens } from '../tokens.js';
 import { haptic } from '../motion.js';
 import type { HomeAssistant } from '../ha.js';
 import type { IconName } from '../icons.js';
+
+/** The icon circle's colours (Library: Sheet), for popup_icon_colour. */
+export const POPUP_COLOURS = {
+  lime: 'var(--glass-accent)',
+  peach: 'var(--glass-peach)',
+  lilac: 'var(--glass-lilac)',
+  blue: 'var(--glass-blue)',
+  amber: 'var(--glass-amber)',
+  grey: 'var(--glass-neutral-tint)',
+} as const;
+
+/** A card's own name, icon and icon colour for the pop-ups it opens. Empty: the pop-up picks its own. */
+export interface PopupOptions {
+  popup_name?: string;
+  popup_icon?: IconName;
+  popup_icon_colour?: keyof typeof POPUP_COLOURS;
+}
+
+/** The pop-up options of the card `node` sits in: the nearest element up the page (through shadow roots) with a config. */
+export function popupOptionsOf(node?: Node | null): PopupOptions {
+  let el: Node | null | undefined = node;
+  while (el) {
+    const config = (el as { config?: Record<string, unknown> }).config;
+    if (config && typeof config === 'object') {
+      const { popup_name, popup_icon, popup_icon_colour } = config as PopupOptions;
+      return { popup_name, popup_icon, popup_icon_colour };
+    }
+    el = el.parentNode instanceof ShadowRoot ? el.parentNode.host : el.parentNode;
+  }
+  return {};
+}
 import './glass-icon.js';
 import './glass-button.js';
 
@@ -25,6 +56,8 @@ import './glass-button.js';
  */
 export abstract class GlassSheet extends GlassElement {
   @property({ attribute: false }) hass?: HomeAssistant;
+  /** The opening card's popup_name, popup_icon and popup_icon_colour, over the sheet's own. */
+  @property({ attribute: false }) popup: PopupOptions = {};
   @state() private shown = false;
   /** A drag in progress: where it started, and recent finger positions for the flick speed. */
   private drag?: { from: number; at: { y: number; t: number }[] };
@@ -47,9 +80,11 @@ export abstract class GlassSheet extends GlassElement {
     </span>`;
   }
 
-  static open<T extends GlassSheet>(tag: string, hass: HomeAssistant): T {
+  /** `from`: the card (or anything in it) that opened the sheet, for its pop-up options. */
+  static open<T extends GlassSheet>(tag: string, hass: HomeAssistant, from?: Node): T {
     const sheet = document.createElement(tag) as T;
     sheet.hass = hass;
+    sheet.popup = popupOptionsOf(from);
     document.body.appendChild(sheet);
     haptic('light');
     return sheet;
@@ -217,9 +252,13 @@ export abstract class GlassSheet extends GlassElement {
           <span class="handle" aria-hidden="true"></span>
           <header>
             <span class="title">
-              ${this.renderIcon()}
+              ${this.popup.popup_icon || this.popup.popup_icon_colour
+                ? html`<span class="icon" style="background: ${POPUP_COLOURS[this.popup.popup_icon_colour!] ?? this.sheetIconBg}">
+                    <glass-icon name=${this.popup.popup_icon ?? this.sheetIcon} size="20" stroke="1.7"></glass-icon>
+                  </span>`
+                : this.renderIcon()}
               <span class="names">
-                <h1 id="title">${this.sheetTitle}</h1>
+                <h1 id="title">${this.popup.popup_name || this.sheetTitle}</h1>
                 ${this.sheetSubtitle ? html`<span class="subtitle">${this.sheetSubtitle}</span>` : ''}
               </span>
             </span>
@@ -369,6 +408,22 @@ export abstract class GlassSheet extends GlassElement {
       .subtitle {
         font-size: var(--glass-text-small);
         color: var(--glass-text-muted);
+      }
+      /* Group label (Library: Sheet): names a group of rows or tiles inside a pop-up,
+         Body 14 in grey, a count on the right if it helps, 8 above what it names. */
+      .group-label {
+        margin: 0;
+        font-size: var(--glass-text-chip);
+        font-weight: 400;
+        color: var(--glass-text-muted);
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+      }
+      .group {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
       }
     `,
   ];

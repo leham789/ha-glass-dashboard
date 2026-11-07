@@ -1,4 +1,4 @@
-import '../elements/glass-number.js';
+import '../elements/glass-popup-summary.js';
 import { css, html, nothing, type CSSResultGroup } from 'lit';
 import '../elements/glass-button.js';
 import type { GlassSegmented } from '../elements/glass-button.js';
@@ -42,12 +42,11 @@ export class GlassLightsSheet extends GlassSheet {
       (this.filter === 'Offline' && isUnavailable(hass.states[l.id]));
 
     return html`
-      <div class="summary">
-        <glass-number size="display" value="${onIds.length}" unit="on of ${reachable.length}"></glass-number>
+      <glass-popup-summary value="${onIds.length}" unit="on of ${reachable.length}">
         ${onIds.length || showUndo
           ? html`<glass-button icon="power" @click=${() => (showUndo ? this.undo() : this.allOff(onIds))}>${showUndo ? 'Undo' : 'All off'}</glass-button>`
           : nothing}
-      </div>
+      </glass-popup-summary>
       <glass-segmented
         class="filters"
         label="Filter"
@@ -60,7 +59,7 @@ export class GlassLightsSheet extends GlassSheet {
         if (!shown.length) return nothing;
         const on = g.lights.filter((l) => l.on).length;
         return html`<div class="group">
-          <h2><span>${g.name}</span><span>${on ? `${on} on` : 'All off'}</span></h2>
+          <h2 class="group-label"><span>${g.name}</span><span>${on ? `${on} on` : 'All off'}</span></h2>
           ${shown.map((l) => this.renderRow(l))}
         </div>`;
       })}
@@ -90,25 +89,6 @@ export class GlassLightsSheet extends GlassSheet {
     GlassSheet.styles,
     lightRowStyles,
     css`
-      .summary {
-        display: flex;
-        align-items: flex-end;
-        justify-content: space-between;
-        gap: 12px;
-      }
-      .group {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-      }
-      h2 {
-        margin: 4px 0 0;
-        font-size: var(--glass-text-chip);
-        font-weight: 400;
-        color: var(--glass-text-muted);
-        display: flex;
-        justify-content: space-between;
-      }
       .empty {
         margin: 0;
         font-size: var(--glass-text-body);
