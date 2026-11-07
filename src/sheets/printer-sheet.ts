@@ -4,6 +4,7 @@ import { customElement, property, state } from 'lit/decorators.js';
 import { GlassEntitySheet, type Fact, type Tone } from './entity-sheet.js';
 import { GlassCameraFull } from '../elements/glass-camera-full.js';
 import '../elements/glass-chip.js';
+import '../elements/glass-meters.js';
 import { cameraBadge } from '../elements/glass-camera-controls.js';
 import { type HassEntity, isUnavailable } from '../ha.js';
 import type { IconName } from '../icons.js';
@@ -96,7 +97,8 @@ export class GlassPrinterSheet extends GlassEntitySheet {
     const resume = this.onDevice('button', '_resume');
     const stop = this.onDevice('button', '_stop');
 
-    const big = off ? undefined : active || p.phase === 'done' ? `${Math.round(p.phase === 'done' ? 100 : (p.progress ?? 0))}` : p.phase === 'failed' ? 'Failed' : 'Idle';
+    // No progress yet reads as the grey dash, never 0%.
+    const big = off || (active && !p.progress) ? undefined : active || p.phase === 'done' ? `${Math.round(p.phase === 'done' ? 100 : (p.progress ?? 0))}` : p.phase === 'failed' ? 'Failed' : 'Idle';
     const caption = off
       ? this.sinceLine('Offline')
       : p.phase === 'printing'
@@ -124,7 +126,7 @@ export class GlassPrinterSheet extends GlassEntitySheet {
       ${this.renderReading(big, big && !Number.isNaN(Number(big)) ? '%' : '', caption, pill)}
       ${active || p.phase === 'done'
         ? html`<div class="job">
-            <span class="bar"><span class="fill ${p.phase}" style="width: ${pct}%"></span></span>
+            <glass-bar .value=${pct} tone=${p.phase === 'done' ? 'go' : p.phase === 'paused' ? 'attention' : 'info'}></glass-bar>
             <span class="meta"><span>${p.task}</span><span>${layers > 0 ? (p.phase === 'done' ? `${layers} layers` : `Layer ${layer || 0} of ${layers}`) : ''}</span></span>
           </div>`
         : nothing}
@@ -183,26 +185,6 @@ export class GlassPrinterSheet extends GlassEntitySheet {
         flex-direction: column;
         gap: 8px;
         margin-top: -8px;
-      }
-      .bar {
-        position: relative;
-        height: 8px;
-        border-radius: 4px;
-        background: rgba(var(--glass-line-rgb), 0.08);
-      }
-      .fill {
-        position: absolute;
-        left: 0;
-        top: 0;
-        bottom: 0;
-        border-radius: 4px;
-        background: var(--glass-info);
-      }
-      .fill.paused {
-        background: var(--glass-attention);
-      }
-      .fill.done {
-        background: var(--glass-go);
       }
       .meta {
         display: flex;

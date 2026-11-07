@@ -1,3 +1,4 @@
+import '../elements/glass-number.js';
 import { css, html, nothing, type CSSResultGroup } from 'lit';
 import '../elements/glass-button.js';
 import type { GlassSegmented } from '../elements/glass-button.js';
@@ -42,7 +43,7 @@ export class GlassLightsSheet extends GlassSheet {
 
     return html`
       <div class="summary">
-        <span class="big"><span class="n">${onIds.length}</span><span class="unit">on of ${reachable.length}</span></span>
+        <glass-number size="display" value="${onIds.length}" unit="on of ${reachable.length}"></glass-number>
         ${onIds.length || showUndo
           ? html`<glass-button icon="power" @click=${() => (showUndo ? this.undo() : this.allOff(onIds))}>${showUndo ? 'Undo' : 'All off'}</glass-button>`
           : nothing}
@@ -94,22 +95,6 @@ export class GlassLightsSheet extends GlassSheet {
         align-items: flex-end;
         justify-content: space-between;
         gap: 12px;
-      }
-      .big {
-        display: flex;
-        align-items: baseline;
-        line-height: 0.9;
-      }
-      .n {
-        font-size: 88px;
-        font-weight: 200;
-        letter-spacing: -3px;
-      }
-      .unit {
-        margin-left: 8px;
-        font-size: 22px;
-        font-weight: 300;
-        color: var(--glass-text-muted);
       }
       .group {
         display: flex;

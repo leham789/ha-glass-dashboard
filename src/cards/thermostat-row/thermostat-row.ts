@@ -1,6 +1,6 @@
+import '../../elements/glass-number.js';
 import { css, html, nothing, type PropertyValues } from 'lit';
 import '../../elements/glass-button.js';
-import { nil } from '../../elements/nil.js';
 import { GlassElement } from '../../glass-element.js';
 import { customElement, property, state } from 'lit/decorators.js';
 import { cardSurface } from '../../elements/surfaces.js';
@@ -79,8 +79,8 @@ export class GlassThermostatRow extends GlassElement {
     return html`<section aria-label="Room heating">
       <button type="button" class="info" @click=${() => openMoreInfo(this, this.config!.entity)}>
         <span class="label">${label}</span>
-        <span class="value"
-          >${off ? 'Off' : typeof target === 'number' ? html`<glass-roll .value=${target} text="${fmt(target)}°"></glass-roll>` : nil}</span
+        <glass-number size="stat-s" .value=${off ? 'Off' : ''} ?nil=${!off && typeof target !== 'number'}
+          >${!off && typeof target === 'number' ? html`<glass-roll .value=${target} text="${fmt(target)}°"></glass-roll>` : nothing}</glass-number
         >
       </button>
       <span class="buttons">
@@ -130,10 +130,6 @@ export class GlassThermostatRow extends GlassElement {
       .label {
         font-size: var(--glass-text-caption);
         color: var(--glass-text-muted);
-      }
-      .value {
-        font-size: 32px;
-        font-weight: 300;
       }
       .buttons {
         display: flex;

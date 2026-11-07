@@ -64,10 +64,7 @@ export class GlassLightSheet extends GlassEntitySheet {
     return html`
       <div class="reading">
         <span class="left">
-          <span class="value ${on ? '' : 'none'}">
-            <span class="big">${off ? html`<i class="nil"></i>` : on ? (dims ? bri : 'On') : 'Off'}</span>
-            ${on && dims ? html`<span class="unit">%</span>` : nothing}
-          </span>
+          <glass-number size="display" .value=${off ? '' : on ? (dims ? String(bri) : 'On') : 'Off'} unit=${on && dims ? '%' : ''} ?grey=${!on}></glass-number>
           <span class="caption">${caption}</span>
         </span>
         <span class="right">

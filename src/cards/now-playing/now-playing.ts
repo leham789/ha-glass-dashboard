@@ -1,3 +1,4 @@
+import '../../elements/glass-meters.js';
 import { css, html, nothing, type PropertyValues } from 'lit';
 import '../../elements/glass-button.js';
 import { GlassElement } from '../../glass-element.js';
@@ -130,7 +131,7 @@ export class GlassNowPlaying extends GlassElement {
           <span class="title">${title}${artist ? html`<span class="artist"> · ${artist}</span>` : nothing}</span>
           ${progress === undefined
             ? nothing
-            : html`<span class="bar" aria-hidden="true"><span style="width: ${progress * 100}%"></span></span>`}
+            : html`<glass-bar class="bar" thin .value=${progress * 100} aria-hidden="true"></glass-bar>`}
         </span>
         <glass-icon-button class="play" look="dark" icon=${playing ? 'pause' : 'play'} icon-size="18" solid label=${playing ? 'Pause' : 'Play'} @click=${() => (haptic('light'), this.hass!.callService('media_player', 'media_play_pause', { entity_id: p.entity_id }))}></glass-icon-button>
       </section>
@@ -210,19 +211,7 @@ export class GlassNowPlaying extends GlassElement {
         color: var(--glass-text-muted);
       }
       .bar {
-        position: relative;
-        height: 3px;
         margin-top: 4px;
-        border-radius: 2px;
-        background: rgba(var(--glass-line-rgb), 0.12);
-      }
-      .bar > span {
-        position: absolute;
-        left: 0;
-        top: 0;
-        bottom: 0;
-        border-radius: 2px;
-        background: var(--glass-ink);
       }
       .play {
         position: relative; /* above the tap-anywhere overlay */

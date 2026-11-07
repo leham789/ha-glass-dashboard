@@ -1,3 +1,4 @@
+import '../../elements/glass-number.js';
 import { css, html, nothing, type PropertyValues } from 'lit';
 import { tileSurface } from '../../elements/surfaces.js';
 import { GlassElement } from '../../glass-element.js';
@@ -148,7 +149,7 @@ export class GlassAround extends GlassElement {
         </span>
       </span>
       <span class="body">
-        <span class="big">${when}</span>
+        <glass-number size="stat-s" .value=${when}></glass-number>
         <span class="small">${sentence(listText(next.bins))}${laterText}</span>
       </span>
     </div>`;
@@ -187,7 +188,7 @@ export class GlassAround extends GlassElement {
         <span class="dot" style="background: ${dot}"></span>
       </span>
       <span class="body">
-        <span class="big">${big}</span>
+        <glass-number size="stat-s" .value=${big}></glass-number>
         <span class="small">${small}</span>
       </span>
     </button>`;
@@ -262,10 +263,6 @@ export class GlassAround extends GlassElement {
         display: flex;
         flex-direction: column;
         min-width: 0;
-      }
-      .big {
-        font-size: 32px;
-        font-weight: 300;
       }
       .small {
         font-size: var(--glass-text-small);

@@ -97,6 +97,12 @@ export const tokens = css`
     --glass-energy: linear-gradient(160deg, #7e9a2c 0%, #a6c23a 55%, #d2ee6a 100%); /* electricity cards and tiles */
     --glass-gas: linear-gradient(160deg, #c98579 0%, #b0675e 55%, #c59a72 100%); /* gas and heating */
     --glass-temp-scale: linear-gradient(90deg, #cfe3f7 0%, #e9f3d2 40%, #e9f3d2 60%, #f7c2a4 100%); /* cold, a flat comfort band, warm */
+    --glass-humidity-scale: linear-gradient(90deg, #f3e2be 0%, #e9f3d2 40%, #e9f3d2 60%, #cfe3f7 100%); /* sandy Dry, green Comfy (40–60), blue Damp */
+    --glass-chart-dot: #121316; /* a filled dot on a coloured card (energy, gas), both themes */
+    --glass-chart-dot-empty: rgba(255, 255, 255, 0.35); /* an empty one */
+    --glass-on-chart-dot: #fff; /* the icon on Energy today's dark disc */
+    --glass-gas-ink: #fff; /* words on the gas card, both themes */
+    --glass-energy-bar: #a6c23a; /* electricity's bars in the history chart (the Energy pop-up) */
     --glass-kelvin-scale: linear-gradient(90deg, #ffb46b 0%, #ffd9a8 30%, #fff1de 55%, #f2f4ff 80%, #d9e5ff 100%);
     --glass-hue-scale: linear-gradient(90deg, hsl(0, 80%, 62%), hsl(60, 80%, 62%), hsl(120, 80%, 62%), hsl(180, 80%, 62%), hsl(240, 80%, 62%), hsl(300, 80%, 62%), hsl(360, 80%, 62%));
     --glass-dial-cool: #9cc3f2;
@@ -152,6 +158,19 @@ export const tokens = css`
     --glass-text-caption: 13px;
     --glass-text-small: 12px;
     --glass-text-tiny: 11px;
+
+    /* Numbers (Library: Numbers and meters): nine sizes, and the units after the big ones */
+    --glass-number-hero: 104px;
+    --glass-number-display: 88px;
+    --glass-number-display-s: 72px;
+    --glass-number-dial: 64px;
+    --glass-number-dial-s: 56px;
+    --glass-number-stat-l: 44px;
+    --glass-number-stat-m: 40px;
+    --glass-number-stat-s: 32px;
+    --glass-number-small: 22px;
+    --glass-number-unit-hero: 32px;
+    --glass-number-unit: 22px; /* after a display or dial number; a stat's unit is Body 15 */
 
     font-family: var(--glass-font);
     color: var(--glass-ink);

@@ -1,3 +1,4 @@
+import '../../elements/glass-number.js';
 import { css, html, nothing, type PropertyValues } from 'lit';
 import '../../elements/glass-chip.js';
 import { GlassElement } from '../../glass-element.js';
@@ -131,7 +132,7 @@ export class GlassHomeHeader extends GlassElement {
       </header>
       ${whole !== undefined
         ? html`<section aria-label="${v.room} temperature">
-            <span class="hero ${v.quiet ? 'quiet' : ''}"><span>${whole}</span><span class="decimal">.${decimal}°</span></span>
+            <glass-number size="hero" value=${whole} dec=".${decimal}°" ?grey=${!!v.quiet}></glass-number>
             <span class="chips">
               <glass-info-chip subject>${v.room}</glass-info-chip>
               ${v.outside !== undefined
@@ -215,27 +216,12 @@ export class GlassHomeHeader extends GlassElement {
         flex-direction: column;
         gap: 12px;
       }
-      .hero {
-        display: flex;
-        align-items: flex-start;
-        line-height: 0.9;
-        font-size: 104px;
-        font-weight: 200;
-        letter-spacing: -5px;
-      }
       .chips {
         display: flex;
         gap: 8px;
         white-space: nowrap;
         overflow-x: auto;
         scrollbar-width: none;
-      }
-      .decimal {
-        color: var(--glass-grey);
-      }
-      /* the room's sensor has gone quiet: the whole number greys too */
-      .hero.quiet {
-        color: var(--glass-grey);
       }
     `,
   ];

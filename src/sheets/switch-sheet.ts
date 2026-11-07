@@ -3,9 +3,9 @@ import '../elements/glass-button.js';
 import { nil } from '../elements/nil.js';
 import { customElement, state } from 'lit/decorators.js';
 import { GlassEntitySheet, type Fact } from './entity-sheet.js';
-import type { ChartBand } from '../elements/glass-history-chart.js';
+import type { ChartBand, ChartKey } from '../elements/glass-history-chart.js';
 import '../elements/glass-history-chart.js';
-import type { HassEntity } from '../ha.js';
+import { type HassEntity, isUnavailable } from '../ha.js';
 import { dailyUsage, spans, stateHistory } from '../history.js';
 import type { IconName } from '../icons.js';
 import { clock, duration, hoursMinutes, todayLabels } from '../time.js';
@@ -96,7 +96,7 @@ export class GlassSwitchSheet extends GlassEntitySheet {
     return html`
       <div class="reading">
         <span class="left">
-          <span class="value ${off || !on ? 'none' : ''}"><span class="big">${off ? html`<i class="nil"></i>` : on ? 'On' : 'Off'}</span></span>
+          <glass-number size="display" .value=${off ? '' : on ? 'On' : 'Off'} ?grey=${!on}></glass-number>
           <span class="caption">${off ? this.sinceLine() : `Since ${clock(e.last_changed)}`}</span>
         </span>
         <span class="right">
@@ -107,8 +107,13 @@ export class GlassSwitchSheet extends GlassEntitySheet {
       </div>
       ${power || energy
         ? html`<div class="pair">
-            <span class="tile"><span class="label">Using now</span><span class="fv">${power ? `${round(Number(power.state))} W` : nil}</span></span>
-            <span class="tile"><span class="label">Used today</span><span class="fv">${energy && this.usedToday !== undefined ? `${this.usedToday.toFixed(2)} ${energy.attributes.unit_of_measurement ?? 'kWh'}` : this.loaded ? nil : html`<span class="skel" style="width: 64px; height: 0.8em; margin: 0.1em 0;"></span>`}</span></span>
+            <span class="tile"><span class="label">Using now</span><glass-number size="small" .value=${power && !isUnavailable(power) ? `${round(Number(power.state))}` : ''} unit="W"></glass-number></span>
+            <span class="tile"><span class="label">Used today</span><glass-number
+                size="small"
+                .value=${energy && this.usedToday !== undefined ? this.usedToday.toFixed(2) : ''}
+                unit=${energy?.attributes.unit_of_measurement ?? 'kWh'}
+                .loading=${energy && this.usedToday === undefined && !this.loaded ? 64 : undefined}
+              ></glass-number></span>
           </div>`
         : nothing}
       <div class="card">
@@ -116,11 +121,17 @@ export class GlassSwitchSheet extends GlassEntitySheet {
           <h2>Today</h2>
           <span class="note">On ${hoursMinutes(this.onToday)}</span>
         </div>
-        <glass-history-chart kind="timeline" .bands=${this.bands} .xLabels=${todayLabels()} label="When ${this.sheetTitle} was on today"></glass-history-chart>
-        <div class="legend">
-          <span><i style="background: var(--glass-go); opacity: 0.6"></i>On</span>
-          <span><i style="background: rgba(var(--glass-line-rgb), 0.06)"></i>Off</span>
-        </div>
+        <glass-history-chart
+          kind="timeline"
+          ?loading=${!this.loaded}
+          .bands=${this.bands}
+          .xLabels=${todayLabels()}
+          .key=${[
+            { label: 'On', look: 'box', colour: 'var(--glass-go)', opacity: 0.6 },
+            { label: 'Off', look: 'box', colour: 'rgba(var(--glass-line-rgb), 0.06)' },
+          ] as ChartKey[]}
+          label="When ${this.sheetTitle} was on today"
+        ></glass-history-chart>
       </div>
       ${this.facts.length ? this.renderFacts(this.facts) : this.loaded ? nothing : this.renderFacts(['Switched on', this.sibling('power') ? 'Peak' : 'Longest', this.sibling('power') ? 'Lowest' : 'Last off'].map((label) => ({ label, value: html`<span class="skel" style="width: 48px; height: 0.8em; margin: 0.1em 0;"></span>` })))}
     `;

@@ -1,3 +1,4 @@
+import '../elements/glass-number.js';
 import { css, html, nothing, type CSSResultGroup } from 'lit';
 import { tileSurface } from '../elements/surfaces.js';
 import { customElement } from 'lit/decorators.js';
@@ -32,7 +33,7 @@ export class GlassBatteriesSheet extends GlassSheet {
 
     return html`
       <div class="summary">
-        <span class="big"><span class="n">${low}</span><span class="unit">below ${LOW_BATTERY}%</span></span>
+        <glass-number size="display" value="${low}" unit="below ${LOW_BATTERY}%"></glass-number>
         <span class="counts">
           ${plural(sensors.length, 'sensor', 'sensors')}${phones.length
             ? html`<br />${plural(phones.length, 'phone', 'phones')}`
@@ -58,7 +59,7 @@ export class GlassBatteriesSheet extends GlassSheet {
           >
             <glass-icon name=${batteryIcon(b.level)} size="24"></glass-icon>
             <span class="info">
-              <span class="level" style=${this.quiet(b.id) ? 'opacity: 0.45' : ''}>${b.level}%</span>
+              <glass-number size="small" value="${b.level}%" style=${this.quiet(b.id) ? 'opacity: 0.45' : ''}></glass-number>
               <span class="sub">${b.room}</span>
               ${this.quiet(b.id)
                 ? html`<span class="sub">${lastHeard(this.hass!.states[b.id])}</span>`
@@ -80,22 +81,6 @@ export class GlassBatteriesSheet extends GlassSheet {
         align-items: flex-end;
         justify-content: space-between;
         gap: 12px;
-      }
-      .big {
-        display: flex;
-        align-items: baseline;
-        line-height: 0.9;
-      }
-      .n {
-        font-size: 88px;
-        font-weight: 200;
-        letter-spacing: -3px;
-      }
-      .unit {
-        margin-left: 8px;
-        font-size: 22px;
-        font-weight: 300;
-        color: var(--glass-text-muted);
       }
       .counts {
         padding-bottom: 8px;
@@ -146,10 +131,6 @@ export class GlassBatteriesSheet extends GlassSheet {
         flex-direction: column;
         line-height: 1.2;
         min-width: 0;
-      }
-      .level {
-        font-size: 22px;
-        font-weight: 300;
       }
       .sub {
         font-size: var(--glass-text-small);

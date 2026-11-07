@@ -1,3 +1,4 @@
+import '../../elements/glass-meters.js';
 import { css, html, nothing, type PropertyValues } from 'lit';
 import { heading } from '../../elements/type.js';
 import { GlassElement } from '../../glass-element.js';
@@ -101,7 +102,7 @@ export class GlassRoomLights extends GlassElement {
       ${reachable.length
         ? html`<div class="grid">${repeat(reachable, (l) => l.id, (l) => html`<glass-tile .hass=${this.hass} entity=${l.id}></glass-tile>`)}</div>`
         : nothing}
-      ${offline.length ? html`<span class="offline"><i></i>${offlineLine(offline.map((l) => l.name))}</span>` : nothing}
+      ${offline.length ? html`<glass-status-note>${offlineLine(offline.map((l) => l.name))}</glass-status-note>` : nothing}
     </section>`;
   }
 
@@ -131,19 +132,6 @@ export class GlassRoomLights extends GlassElement {
         padding: var(--glass-space-edge);
         border-radius: var(--glass-radius-card);
         gap: 12px;
-      }
-      .offline {
-        font-size: var(--glass-text-caption);
-        color: var(--glass-text-muted);
-        display: flex;
-        align-items: center;
-        gap: 8px;
-      }
-      .offline i {
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
-        background: var(--glass-grey); /* a light dropping out isn't something to act on */
       }
     `,
   ];

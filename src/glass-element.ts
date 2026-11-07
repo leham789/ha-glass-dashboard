@@ -109,7 +109,7 @@ const sharedStates = css`
   .skel {
     display: block;
     border-radius: 8px;
-    background: rgba(var(--glass-line-rgb), 0.08);
+    background: var(--glass-skel, rgba(var(--glass-line-rgb), 0.08)); /* a coloured card sets --glass-skel */
   }
 `;
 

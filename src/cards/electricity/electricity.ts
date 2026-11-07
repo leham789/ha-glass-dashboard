@@ -1,14 +1,15 @@
+import '../../elements/glass-meters.js';
+import '../../elements/glass-number.js';
 import { css, html, nothing, type PropertyValues } from 'lit';
 import { GlassElement } from '../../glass-element.js';
 import { customElement, property, state } from 'lit/decorators.js';
 import { tokens } from '../../tokens.js';
 import { ensureFonts } from '../../fonts.js';
-import { type HomeAssistant, type LovelaceCardConfig, openMoreInfo, registerCard } from '../../ha.js';
+import { type HomeAssistant, type LovelaceCardConfig, isUnavailable, openMoreInfo, registerCard } from '../../ha.js';
 import { type DailyUsage, dailyUsage } from '../../history.js';
 import { formatValue } from '../../format.js';
 import '../../elements/glass-icon.js';
 import './electricity-editor.js';
-import { nil } from '../../elements/nil.js';
 
 export interface ElectricityConfig extends LovelaceCardConfig {
   /** Energy that counts up: kWh today, or the meter's total. */
@@ -103,11 +104,10 @@ export class GlassElectricity extends GlassElement {
     const u = this.usage;
     // While today's history loads: soft bars where the number and line go (Shared states). No history at all: the grey dash.
     const wait = this.loading && !u;
-    const big = cost ? formatValue(cost).value : u ? `${u.today.toFixed(1)} kWh` : wait ? html`<span class="skel" style="width: 3em; height: 0.75em; margin: 0.12em 0;"></span>` : nil;
+    const big = cost && !isUnavailable(cost) ? formatValue(cost).value : u ? `${u.today.toFixed(1)} kWh` : '';
     const compare = u && u.yesterdaySoFar > 0 ? comparison(u.today, u.yesterdaySoFar) : '';
     const line = [cost && u ? `${u.today.toFixed(1)} kWh` : '', compare].filter(Boolean).join(' · ');
     const nowHour = new Date().getHours();
-    const max = Math.max(...(u?.hours ?? [0]), 0.001);
     const gas = this.config.fuel === 'gas';
     const fuel = gas ? 'Gas' : 'Electricity';
 
@@ -116,17 +116,21 @@ export class GlassElectricity extends GlassElement {
       <span class="top">
         <span class="head">
           <h2 id="h">${this.config.title ?? `${fuel} today`}</h2>
-          <span class="big">${big}</span>
+          <glass-number size="dial-s" .value=${big} .loading=${wait && !big ? 132 : undefined}></glass-number>
           ${line ? html`<span class="line">${line}</span>` : wait ? html`<span class="skel" style="width: 160px; height: 12px; margin: 4px 0;"></span>` : nothing}
         </span>
         <span class="icon" aria-hidden="true"><glass-icon name=${gas ? 'flame' : 'zap'} size="18" stroke="1.7"></glass-icon></span>
       </span>
-      <span class="chart" role="img" aria-label="${fuel} use each hour today">
-        ${Array.from({ length: 24 }, (_, h) => {
-          const level = u && h <= nowHour ? Math.round(((u.hours[h] ?? 0) / max) * DOTS) : 0;
-          return html`<span class="col">${Array.from({ length: DOTS }, (_, k) => html`<span class="d ${k < level ? 'on' : ''}"></span>`)}</span>`;
-        })}
-      </span>
+      <glass-dot-chart
+        class="chart"
+        role="img"
+        aria-label="${fuel} use each hour today"
+        .values=${Array.from({ length: 24 }, (_, h) => u?.hours[h] ?? 0)}
+        levels=${DOTS}
+        dot="6"
+        .now=${nowHour}
+        ?loading=${!u}
+      ></glass-dot-chart>
       <span class="axis"><span>00:00</span><span>06:00</span><span>12:00</span><span>18:00</span><span>24:00</span></span>
     </section>`;
   }
@@ -156,6 +160,7 @@ export class GlassElectricity extends GlassElement {
         outline-offset: 2px;
       }
       section {
+        --glass-skel: var(--glass-chart-dot-empty); /* loading bars on the coloured card */
         position: relative;
         box-sizing: border-box;
         padding: var(--glass-space-edge);
@@ -171,7 +176,7 @@ export class GlassElectricity extends GlassElement {
         box-shadow: var(--glass-tile-shadow);
       }
       .gas .axis {
-        color: #fff;
+        color: var(--glass-gas-ink);
       }
       .top {
         display: flex;
@@ -188,12 +193,6 @@ export class GlassElectricity extends GlassElement {
         font-size: var(--glass-text-body);
         font-weight: 400;
       }
-      .big {
-        font-size: 56px;
-        font-weight: 200;
-        letter-spacing: -2px;
-        line-height: 1.05;
-      }
       .line {
         font-size: var(--glass-text-caption);
       }
@@ -202,37 +201,23 @@ export class GlassElectricity extends GlassElement {
         height: 44px;
         flex: none;
         border-radius: 50%;
-        background: var(--glass-ink);
-        color: var(--glass-on-ink);
+        background: var(--glass-chart-dot);
+        color: var(--glass-on-chart-dot);
         display: flex;
         align-items: center;
         justify-content: center;
       }
       .chart {
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
         height: 104px;
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-end;
-      }
-      .col {
-        display: flex;
-        flex-direction: column-reverse;
-        gap: 4px;
-      }
-      .d {
-        width: 6px;
-        height: 6px;
-        border-radius: 50%;
-        background: rgba(255, 255, 255, 0.35);
-      }
-      .d.on {
-        background: var(--glass-ink);
       }
       .axis {
         display: flex;
         justify-content: space-between;
         font-size: var(--glass-text-small);
-        color: var(--glass-ink);
+        color: var(--glass-chart-dot);
       }
     `,
   ];

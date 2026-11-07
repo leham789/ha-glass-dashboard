@@ -1,3 +1,5 @@
+import '../../elements/glass-number.js';
+import '../../elements/glass-meters.js';
 import { css, html, nothing, type PropertyValues } from 'lit';
 import '../../elements/glass-chip.js';
 import { tileSurface } from '../../elements/surfaces.js';
@@ -107,15 +109,15 @@ export class GlassRoomClimate extends GlassElement {
               ><span class="label">Temperature</span
               >${band ? html`<glass-tag bg=${look!.pillBg} fg=${look!.pillFg}>${band}</glass-tag>` : nothing}</span
             >
-            <span class="bottom"><span class="value">${t.toFixed(1)}°</span>${note ? html`<span class="note">${note}</span>` : nothing}</span>
+            <span class="bottom"><glass-number size="stat-m" value="${t.toFixed(1)}°" ?grey=${!!quiet}></glass-number>${note ? html`<span class="note">${note}</span>` : nothing}</span>
           </button>`
         : nothing}
       ${room.humidity !== undefined
         ? html`<button type="button" class="tile" @click=${() => humId && openMoreInfo(this, humId)}>
             <span class="label">Humidity</span>
             <span class="bottom">
-              <span class="value">${Math.round(room.humidity)}%</span>
-              <span class="scale" aria-hidden="true"><span class="marker" style="left: ${Math.min(100, Math.max(0, room.humidity))}%"></span></span>
+              <glass-number size="stat-m" value="${Math.round(room.humidity)}%" ?grey=${!!quiet}></glass-number>
+              <glass-scale kind="humidity" .value=${room.humidity} ?quiet=${!!quiet} aria-hidden="true"></glass-scale>
               ${quiet
                 ? html`<span class="note">Not reporting</span>`
                 : Number.isFinite(pressure)
@@ -174,33 +176,6 @@ export class GlassRoomClimate extends GlassElement {
         display: flex;
         flex-direction: column;
         gap: 8px;
-      }
-      .value {
-        font-size: 40px;
-        font-weight: 300;
-        letter-spacing: -1px;
-        line-height: 1;
-      }
-      .quiet .value {
-        color: var(--glass-text-muted);
-      }
-      .quiet .scale {
-        opacity: 0.35;
-      }
-      .scale {
-        position: relative;
-        height: 6px;
-        border-radius: 3px;
-        background: var(--glass-temp-scale);
-      }
-      .marker {
-        position: absolute;
-        top: -4px;
-        width: 2px;
-        height: 14px;
-        margin-left: -1px;
-        border-radius: 1px;
-        background: var(--glass-ink);
       }
     `,
   ];

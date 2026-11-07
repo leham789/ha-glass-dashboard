@@ -1,3 +1,5 @@
+import '../../elements/glass-meters.js';
+import '../../elements/glass-number.js';
 import { css, html, nothing, svg, type PropertyValues } from 'lit';
 import '../../elements/glass-chip.js';
 import '../../elements/glass-button.js';
@@ -123,7 +125,7 @@ export class GlassThermostatDial extends GlassElement {
     return html`<section aria-label="Thermostat">
       <span class="head">
         <span class="name">${this.config.name ?? a.friendly_name}</span>
-        <span class="status ${heating && !off ? 'heating' : ''}"><span class="dot"></span>${status}</span>
+        <glass-status-note tone=${heating && !off ? 'attention' : 'grey'}>${status}</glass-status-note>
       </span>
       <div class="dial">
         <svg
@@ -155,7 +157,7 @@ export class GlassThermostatDial extends GlassElement {
                   <circle cx=${kx.toFixed(1)} cy=${ky.toFixed(1)} r="11" fill="var(--glass-ink)" stroke="var(--glass-ink)" stroke-width="2"></circle>`}
         </svg>
         <span class="centre">
-          <span class="target">${off ? 'Off' : html`<glass-roll .value=${target} text="${fmt(target)}°"></glass-roll>`}</span>
+          <glass-number class="target" size="dial" .value=${off ? 'Off' : ''}>${off ? nothing : html`<glass-roll .value=${target} text="${fmt(target)}°"></glass-roll>`}</glass-number>
           <span class="now">${nowLine}</span>
         </span>
       </div>
@@ -265,24 +267,6 @@ export class GlassThermostatDial extends GlassElement {
       .name {
         color: var(--glass-text-secondary);
       }
-      .status {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        color: var(--glass-text-secondary);
-      }
-      .status .dot {
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
-        background: var(--glass-grey);
-      }
-      .status.heating {
-        color: var(--glass-attention-text);
-      }
-      .status.heating .dot {
-        background: var(--glass-attention);
-      }
       .dial {
         position: relative;
         width: 100%;
@@ -310,12 +294,6 @@ export class GlassThermostatDial extends GlassElement {
         flex-direction: column;
         align-items: center;
         pointer-events: none;
-      }
-      .target {
-        font-size: 64px;
-        font-weight: 200;
-        letter-spacing: -2px;
-        line-height: 1;
       }
       .now {
         font-size: var(--glass-text-caption);

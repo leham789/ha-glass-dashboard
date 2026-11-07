@@ -1,3 +1,4 @@
+import '../../elements/glass-meters.js';
 import { css, html, nothing, type PropertyValues } from 'lit';
 import '../../elements/glass-button.js';
 import { GlassElement } from '../../glass-element.js';
@@ -110,10 +111,7 @@ export function renderRoomTile(
         <span class="title"><span class="name">${name}</span><span class="count">${onText}</span></span>
         <span class="meta">${room.meta}</span>
       </span>
-      <span class="dots" aria-hidden="true">
-        ${room.lights.map((l) => html`<span class="dot ${l.on ? 'on' : ''}"></span>`)}
-        <span class="rule"></span>
-      </span>
+      <glass-light-dots class="dots" .lights=${room.lights.map((l) => l.on)} aria-hidden="true"></glass-light-dots>
       <span class="foot">
         <glass-light-toggle
           class="bulb"
@@ -212,27 +210,6 @@ export function roomTileStyles() {
     }
     .alert .meta {
       color: var(--glass-attention-text);
-    }
-    .dots {
-      display: flex;
-      gap: 8px;
-      align-items: center;
-      min-height: 8px;
-    }
-    .dot {
-      width: 8px;
-      height: 8px;
-      flex: none;
-      border-radius: 50%;
-      background: rgba(var(--glass-line-rgb), 0.15);
-    }
-    .dot.on {
-      background: var(--glass-ink);
-    }
-    .rule {
-      flex: 1;
-      border-top: 1px dashed rgba(var(--glass-line-rgb), 0.18);
-      margin-left: 4px;
     }
     .foot {
       display: flex;

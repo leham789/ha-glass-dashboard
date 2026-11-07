@@ -1,3 +1,4 @@
+import '../../elements/glass-number.js';
 import { css, html, nothing, type PropertyValues } from 'lit';
 import { GlassElement } from '../../glass-element.js';
 import { customElement, property, state } from 'lit/decorators.js';
@@ -127,8 +128,8 @@ export class GlassRoomHeader extends GlassElement {
             ${room.name}<glass-icon name="chevron-down" size="14" stroke="1.8"></glass-icon>
           </button>
           ${room.lights.length
-            ? html`<span class="big"><span class="n">${room.onCount}</span><span class="of">/${room.lights.length} on</span></span>`
-            : html`<span class="big"><span class="n none">No lights</span></span>`}
+            ? html`<glass-number size="hero" value=${room.onCount} unit="/${room.lights.length} on"></glass-number>`
+            : html`<span class="none">No lights</span>`}
         </span>
         <span class="right">
           ${climate ? html`<span class="climate ${room.quiet ? 'quiet' : ''}">${climate}</span>` : nothing}
@@ -225,24 +226,9 @@ export class GlassRoomHeader extends GlassElement {
         outline-offset: 2px;
         border-radius: 4px;
       }
-      .big {
-        display: flex;
-        align-items: baseline;
-        line-height: 0.9;
-      }
-      .n {
-        font-size: 104px;
+      .none {
+        font-size: var(--glass-number-unit-hero);
         font-weight: 200;
-        letter-spacing: -4px;
-      }
-      .n.none {
-        font-size: 32px;
-        letter-spacing: 0;
-      }
-      .of {
-        font-size: 32px;
-        font-weight: 200;
-        color: var(--glass-text-muted);
       }
       .climate {
         font-size: var(--glass-text-body);

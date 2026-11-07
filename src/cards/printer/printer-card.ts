@@ -1,7 +1,8 @@
-import { css, html, nothing, svg, type PropertyValues } from 'lit';
+import { css, html, nothing, type PropertyValues } from 'lit';
 import '../../elements/glass-rows.js';
 import '../../elements/glass-chip.js';
 import '../../elements/glass-camera-controls.js';
+import '../../elements/glass-meters.js';
 import { cameraBadge } from '../../elements/glass-camera-controls.js';
 import type { Tone } from '../../elements/glass-chip.js';
 import { heading } from '../../elements/type.js';
@@ -136,8 +137,6 @@ export class GlassPrinter extends GlassElement {
     const pic = cam?.attributes.entity_picture as string | undefined;
     const src = pic && !pic.startsWith('data:') ? `${pic}${pic.includes('?') ? '&' : '?'}t=${this.tick}` : pic;
     const light = c.chamber_light ? hass.states[c.chamber_light] : undefined;
-    const pct = p.phase === 'done' ? 100 : Math.round(p.progress ?? 0);
-    const circumference = 2 * Math.PI * 32;
     const rem = hass.states[c.printer_remaining ?? ''];
     const ends = rem && p.left && p.phase === 'printing' ? new Date(Date.now() + minutesOf(rem) * 60_000) : undefined;
     const line1 =
@@ -147,7 +146,7 @@ export class GlassPrinter extends GlassElement {
             .join(' · ')
         : p.phase === 'paused'
           ? 'Paused'
-          : `Finished ${ago(p.status.last_changed)}`;
+          : `${p.phase === 'failed' ? 'Failed' : 'Finished'} ${ago(p.status.last_changed)}`;
     const reading = (id?: string, unit = '') => {
       const e = id ? hass.states[id] : undefined;
       return e && !isUnavailable(e) ? `${Math.round(Number(e.state))}${unit}` : nil;
@@ -174,12 +173,10 @@ export class GlassPrinter extends GlassElement {
           </div>`
         : nothing}
       <div class="progress">
-        <svg width="76" height="76" viewBox="0 0 76 76" role="img" aria-label="Print ${pct}% complete">
-          <circle cx="38" cy="38" r="32" stroke="currentColor" stroke-opacity="0.08" stroke-width="8" fill="none"></circle>
-          ${svg`<circle cx="38" cy="38" r="32" style=${`stroke: ${p.phase === 'done' ? 'var(--glass-go)' : 'var(--glass-info)'}`} stroke-width="8" fill="none"
-            stroke-linecap="round" stroke-dasharray="${(pct / 100) * circumference} ${circumference}" transform="rotate(-90 38 38)"></circle>`}
-          <text x="38" y="43" text-anchor="middle" font-family="Outfit, sans-serif" font-size="16" fill="currentColor">${pct}%</text>
-        </svg>
+        <glass-ring
+          .value=${p.phase === 'done' ? 100 : p.progress || undefined}
+          tone=${p.phase === 'done' ? 'go' : p.phase === 'printing' ? 'info' : 'attention'}
+        ></glass-ring>
         <span class="lines">
           <span class="l1">${line1}</span>
           <span class="l2">${p.task || 'No print name'}</span>

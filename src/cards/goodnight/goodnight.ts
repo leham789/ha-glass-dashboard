@@ -8,6 +8,7 @@ import { type HomeAssistant, type LovelaceCardConfig, isUnavailable, registerCar
 import { haptic } from '../../motion.js';
 import { roomSummary, shortName } from '../../rooms.js';
 import '../../elements/glass-slide-confirm.js';
+import '../../elements/glass-number.js';
 import './goodnight-editor.js';
 import { isQuiet } from '../../stale.js';
 
@@ -164,7 +165,7 @@ export class GlassGoodnight extends GlassElement {
             <span class="rule"></span>
           </div>
           <div class="count">
-            <span class="n">${s.onIds.length}</span>
+            <glass-number size="dial-s" value=${s.onIds.length}></glass-number>
             <span class="label">${s.onIds.length === 1 ? 'light on' : 'lights on'}</span>
           </div>
         </div>
@@ -247,12 +248,6 @@ export class GlassGoodnight extends GlassElement {
         display: flex;
         flex-direction: column;
         align-items: center;
-      }
-      .n {
-        font-size: 56px;
-        font-weight: 200;
-        letter-spacing: -2px;
-        line-height: 1;
       }
       .label {
         font-size: var(--glass-text-caption);

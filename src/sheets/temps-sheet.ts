@@ -1,8 +1,9 @@
+import '../elements/glass-meters.js';
+import '../elements/glass-number.js';
 import { css, html, nothing, type CSSResultGroup } from 'lit';
 import '../elements/glass-chip.js';
 import '../elements/glass-button.js';
 import type { GlassSegmented } from '../elements/glass-button.js';
-import { nil } from '../elements/nil.js';
 import { customElement, property, state } from 'lit/decorators.js';
 import { styleMap } from 'lit/directives/style-map.js';
 import { GlassSheet } from '../elements/glass-sheet.js';
@@ -46,7 +47,7 @@ export class GlassTempsSheet extends GlassSheet {
       <div class="summary">
         <span class="avg">
           <span class="label">${live.length < rooms.length ? `Average of ${live.length} rooms` : 'House average'}</span>
-          <span class="n">${average === undefined ? nil : `${average.toFixed(1)}°`}</span>
+          <glass-number size="display-s" .value=${average === undefined ? '' : `${average.toFixed(1)}°`}></glass-number>
         </span>
         ${weather && typeof outside === 'number'
           ? html`<span class="outside">
@@ -80,15 +81,13 @@ export class GlassTempsSheet extends GlassSheet {
               <span class="name">${r.name}</span>
               <glass-tag bg=${look.pillBg} fg=${look.pillFg}>${band}</glass-tag>
             </span>
-            <span class="temp">${r.temperature!.toFixed(1)}°</span>
+            <glass-number class="temp" size="stat-l" value="${r.temperature!.toFixed(1)}°" ?grey=${!!r.quiet}></glass-number>
             ${r.humidity !== undefined || r.quiet
               ? html`<span class="hum">
                   <span class="row"
                     ><span class="muted">${r.quiet ?? 'Humidity'}</span><span>${r.quiet || r.humidity === undefined ? '' : `${Math.round(r.humidity)}%`}</span></span
                   >
-                  <span class="scale" aria-hidden="true"
-                    ><span class="marker" style="left: ${Math.min(100, Math.max(0, r.humidity ?? 0))}%"></span
-                  ></span>
+                  <glass-scale kind="humidity" .value=${r.humidity ?? 0} ?quiet=${!!r.quiet} aria-hidden="true"></glass-scale>
                 </span>`
               : html`<span></span>`}
           </button>`;
@@ -136,12 +135,6 @@ export class GlassTempsSheet extends GlassSheet {
       .avg .label {
         font-size: var(--glass-text-chip);
       }
-      .n {
-        font-size: 72px;
-        font-weight: 200;
-        letter-spacing: -3px;
-        line-height: 0.9;
-      }
       .grid {
         display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -176,12 +169,6 @@ export class GlassTempsSheet extends GlassSheet {
         overflow: hidden;
         text-overflow: ellipsis;
       }
-      .temp {
-        font-size: 44px;
-        font-weight: 300;
-        letter-spacing: -1.5px;
-        line-height: 1;
-      }
       .hum {
         display: flex;
         flex-direction: column;
@@ -196,28 +183,6 @@ export class GlassTempsSheet extends GlassSheet {
         color: var(--glass-text-secondary);
       }
       /* a sensor that's gone quiet: its last reading stays, greyed */
-      .quiet .temp,
-      .quiet .value {
-        color: var(--glass-text-muted);
-      }
-      .quiet .scale {
-        opacity: 0.35;
-      }
-      .scale {
-        position: relative;
-        height: 6px;
-        border-radius: 3px;
-        background: var(--glass-temp-scale);
-      }
-      .marker {
-        position: absolute;
-        top: -4px;
-        width: 2px;
-        height: 14px;
-        margin-left: -1px;
-        border-radius: 1px;
-        background: var(--glass-ink);
-      }
       .empty {
         margin: 0;
         font-size: var(--glass-text-body);

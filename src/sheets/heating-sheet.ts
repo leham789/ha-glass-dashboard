@@ -2,6 +2,7 @@ import { css, html, nothing, type CSSResultGroup, type PropertyValues } from 'li
 import { customElement, state } from 'lit/decorators.js';
 import { GlassEntitySheet } from './entity-sheet.js';
 import '../elements/glass-history-chart.js';
+import type { ChartKey } from '../elements/glass-history-chart.js';
 import '../cards/thermostat-dial/thermostat-dial.js';
 import type { GlassThermostatDial } from '../cards/thermostat-dial/thermostat-dial.js';
 import type { IconName } from '../icons.js';
@@ -97,49 +98,36 @@ export class GlassHeatingSheet extends GlassEntitySheet {
     const now = new Date();
     return html`
       ${this.dial}
-      ${d
-        ? html`<div class="card">
-            <div class="card-head">
-              <h2>Last 24 hours</h2>
-              <span class="note">Heating ran ${h} h${m ? ` ${m} m` : ''}</span>
-            </div>
-            <glass-history-chart
-              kind="line"
-              .values=${d.temps.map((v) => v || lo)}
-              .target=${d.targets.map((v) => v || lo)}
-              .runs=${d.runs}
-              .min=${lo}
-              .max=${hi}
-              .hiLabel=${`${hi}°`}
-              .loLabel=${`${lo}°`}
-              .xLabels=${[hhmm(new Date(now.getTime() - 86_400_000)), hhmm(new Date(now.getTime() - 43_200_000))] as [string, string]}
-              label="Room temperature and target over the last 24 hours"
-            ></glass-history-chart>
-            <div class="legend">
-              <span><i class="room"></i>Room</span>
-              <span><i class="target"></i>Target</span>
-              <span><i style="background: var(--glass-attention); opacity: 0.12"></i>Heating on</span>
-            </div>
-          </div>`
-        : nothing}
+      <div class="card">
+        <div class="card-head">
+          <h2>Last 24 hours</h2>
+          ${d ? html`<span class="note">Heating ran ${h} h${m ? ` ${m} m` : ''}</span>` : nothing}
+        </div>
+        <glass-history-chart
+          kind="line"
+          ?loading=${!d}
+          .values=${d && d.temps.some((v) => v > 0) ? d.temps.map((v) => v || lo) : []}
+          .target=${d?.targets.map((v) => v || lo)}
+          .runs=${d?.runs ?? []}
+          .min=${lo}
+          .max=${hi}
+          .hiLabel=${`${hi}°`}
+          .loLabel=${`${lo}°`}
+          .xLabels=${[hhmm(new Date(now.getTime() - 86_400_000)), hhmm(new Date(now.getTime() - 43_200_000))]}
+          .key=${[
+            { label: 'Room', look: 'line', colour: 'var(--glass-ink)' },
+            { label: 'Target', look: 'dashed', colour: 'var(--glass-attention)' },
+            { label: 'Heating on', look: 'box', colour: 'var(--glass-attention)', opacity: 0.25 },
+          ] as ChartKey[]}
+          label="Room temperature and target over the last 24 hours"
+        ></glass-history-chart>
+      </div>
     `;
   }
 
   static styles: CSSResultGroup = [
     GlassEntitySheet.styles,
     css`
-      .legend i.room {
-        width: 14px;
-        height: 2px;
-        border-radius: 1px;
-        background: var(--glass-ink);
-      }
-      .legend i.target {
-        width: 14px;
-        height: 0;
-        border-radius: 0;
-        border-top: 2px dashed var(--glass-attention);
-      }
     `,
   ];
 }

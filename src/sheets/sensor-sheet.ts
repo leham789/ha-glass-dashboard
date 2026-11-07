@@ -76,7 +76,8 @@ export class GlassSensorSheet extends GlassEntitySheet {
     const key = `${this.entityId}|${this.range}`;
     if (this.hass && this.entity && key !== this.loadedFor) {
       this.loadedFor = key;
-      this.load().catch(() => (this.chart = undefined));
+      // History couldn't load: the chart says "No data" rather than waiting for ever.
+      this.load().catch(() => (this.chart = { ...this.placeholder(this.entity!, this.shape(this.entity!)), facts: [] }));
     }
   }
 
@@ -96,6 +97,7 @@ export class GlassSensorSheet extends GlassEntitySheet {
     const x: [string, string] = week ? [weekday(start), weekday(new Date(Date.now() - 3.5 * 86_400_000))] : [hhmm(start), hhmm(new Date(Date.now() - 12 * 3_600_000))];
     const unit = String(e.attributes.unit_of_measurement ?? '');
     const base: Chart = { shape, values: [], bands: [], fadedFrom: Infinity, min: 0, max: 1, hi: '', lo: '', x, facts: [] };
+    this.chart = undefined; // loading: a placeholder until history arrives
     if (shape === 'none') {
       this.chart = base;
     } else if (shape === 'bars') {
@@ -143,8 +145,9 @@ export class GlassSensorSheet extends GlassEntitySheet {
           ],
         };
       } else {
-        const values = resample(points, start, week ? 84 : 48);
         const nums = points.map((p) => Number(p.s)).filter(Number.isFinite);
+        // No history: no line at all (the chart says "No data"), never a flat line at zero.
+        const values = nums.length ? resample(points, start, week ? 84 : 48) : [];
         const lo = nums.length ? Math.min(...nums) : 0;
         const hi = nums.length ? Math.max(...nums) : 1;
         const battery = e.attributes.device_class === 'battery';
@@ -169,6 +172,26 @@ export class GlassSensorSheet extends GlassEntitySheet {
         };
       }
     }
+  }
+
+  /** While history loads: the chart's times and its fact labels are known; the rest are soft bars. */
+  private placeholder(e: HassEntity, shape: Shape): Chart {
+    const week = this.range === '7 days';
+    const start = new Date(Date.now() - (week ? 7 : 1) * 86_400_000);
+    const x: [string, string] =
+      shape === 'bars' && !week ? ['00:00', '12:00'] : week ? [weekday(start), weekday(new Date(Date.now() - 3.5 * 86_400_000))] : [hhmm(start), hhmm(new Date(Date.now() - 12 * 3_600_000))];
+    const labels =
+      shape === 'bars'
+        ? week
+          ? ['Daily average', 'Busiest day', 'This week']
+          : ['By now yesterday', 'Busiest hour', 'Today']
+        : shape === 'timeline'
+          ? [OPENINGS.has(e.attributes.device_class) ? 'Opened' : 'On', 'Longest', week ? 'Per day' : 'First']
+          : e.attributes.device_class === 'battery'
+            ? [week ? '7 days ago' : '24 h ago', week ? 'Per week' : 'Per day', 'Lowest']
+            : ['Lowest', 'Highest', 'Average'];
+    const skel = html`<span class="skel" style="width: 48px; height: 0.8em; margin: 0.1em 0;"></span>`;
+    return { shape, values: [], bands: [], fadedFrom: Infinity, min: 0, max: 1, hi: '', lo: '', x, facts: labels.map((label) => ({ label, value: skel })) };
   }
 
   protected renderBody() {
@@ -215,7 +238,9 @@ export class GlassSensorSheet extends GlassEntitySheet {
       pill = { text: 'Not reporting', tone: 'neutral' };
     }
 
-    const c = this.chart;
+    const shape = this.shape(e);
+    const c = this.chart ?? (shape === 'none' ? undefined : this.placeholder(e, shape));
+    const loading = !this.chart;
     return html`
       ${this.renderReading(value, unit, caption, pill, quiet)}
       ${c && c.shape !== 'none'
@@ -232,6 +257,7 @@ export class GlassSensorSheet extends GlassEntitySheet {
               </div>
               <glass-history-chart
                 .kind=${c.shape as 'line' | 'bars' | 'timeline'}
+                ?loading=${loading}
                 .values=${c.values}
                 .bands=${c.bands}
                 .fadedFrom=${c.fadedFrom}

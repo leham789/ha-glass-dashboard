@@ -1,5 +1,7 @@
 import { css, html, nothing, type CSSResultGroup, type PropertyValues, type TemplateResult } from 'lit';
 import '../elements/glass-chip.js';
+import '../elements/glass-number.js';
+import { nil } from '../elements/nil.js';
 import { heading } from '../elements/type.js';
 import { cardSurface, tileSurface } from '../elements/surfaces.js';
 import { property } from 'lit/decorators.js';
@@ -72,9 +74,7 @@ export abstract class GlassEntitySheet extends GlassSheet {
   protected renderReading(value: string | undefined, unit = '', caption = '', pill?: { text: string; tone: Tone }, dim = false): TemplateResult {
     return html`<div class="reading">
       <span class="left">
-        <span class="value ${value && !dim ? '' : 'none'}">
-          ${value ? html`<span class="big">${value}</span>${unit ? html`<span class="unit">${unit}</span>` : nothing}` : html`<span class="big"><i class="nil"></i></span>`}
-        </span>
+        <glass-number size="display" .value=${value ?? ''} unit=${unit} ?grey=${dim}></glass-number>
         ${caption ? html`<span class="caption">${caption}</span>` : nothing}
       </span>
       ${pill ? this.renderPill(pill.text, pill.tone) : nothing}
@@ -87,8 +87,13 @@ export abstract class GlassEntitySheet extends GlassSheet {
 
   protected renderFacts(facts: Fact[]): TemplateResult {
     return html`<div class="facts">
-      ${facts.map((f) => html`<span class="fact"><span class="label">${f.label}</span><span class="fv">${f.value}</span></span>`)}
+      ${facts.map((f) => html`<span class="fact"><span class="label">${f.label}</span>${this.factValue(f.value)}</span>`)}
     </div>`;
+  }
+
+  /** A fact's value as a Small tile number (the grey dash when there's none); anything else as it is. */
+  protected factValue(v: string | TemplateResult): TemplateResult {
+    return typeof v === 'string' ? html`<glass-number size="small" .value=${v}></glass-number>` : v === nil ? html`<glass-number size="small" nil></glass-number>` : html`${v}`;
   }
 
   /** A row of option chips (presets, effects, speakers), the current one in ink. */
@@ -114,25 +119,6 @@ export abstract class GlassEntitySheet extends GlassSheet {
         flex-direction: column;
         gap: 8px;
         min-width: 0;
-      }
-      .value {
-        display: flex;
-        align-items: baseline;
-        line-height: 0.9;
-      }
-      .big {
-        font-size: 88px;
-        font-weight: 200;
-        letter-spacing: -3px;
-      }
-      .value.none {
-        color: var(--glass-text-muted);
-      }
-      .unit {
-        font-size: 22px;
-        font-weight: 300;
-        color: var(--glass-text-muted);
-        margin-left: 8px;
       }
       .caption {
         font-size: var(--glass-text-caption);
@@ -160,22 +146,6 @@ export abstract class GlassEntitySheet extends GlassSheet {
         font-size: var(--glass-text-caption);
         color: var(--glass-text-muted);
       }
-      .legend {
-        display: flex;
-        gap: 16px;
-        font-size: var(--glass-text-small);
-        color: var(--glass-text-muted);
-      }
-      .legend span {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-      }
-      .legend i {
-        width: 12px;
-        height: 12px;
-        border-radius: 3px;
-      }
       .facts {
         display: grid;
         grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -196,11 +166,6 @@ export abstract class GlassEntitySheet extends GlassSheet {
       .tile .label {
         font-size: var(--glass-text-small);
         color: var(--glass-text-muted);
-      }
-      .fv {
-        font-size: 22px;
-        font-weight: 300;
-        line-height: 1.1;
       }
       .chips {
         display: flex;

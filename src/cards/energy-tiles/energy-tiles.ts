@@ -1,5 +1,6 @@
+import '../../elements/glass-meters.js';
+import '../../elements/glass-number.js';
 import { css, html, nothing, type PropertyValues } from 'lit';
-import { nil } from '../../elements/nil.js';
 import { GlassElement } from '../../glass-element.js';
 import { customElement, property, state } from 'lit/decorators.js';
 import { tokens } from '../../tokens.js';
@@ -112,7 +113,7 @@ export class GlassEnergyTiles extends GlassElement {
     if (!e) return nothing;
     const a = e.attributes;
     const off = e.state === 'off' || isUnavailable(e);
-    const target = typeof a.temperature === 'number' ? `${Math.round(a.temperature * 2) / 2}°` : nil;
+    const target = typeof a.temperature === 'number' ? `${Math.round(a.temperature * 2) / 2}°` : '';
     const room = typeof a.current_temperature === 'number' ? `Room is ${a.current_temperature.toFixed(1)}°` : '';
     // Only what it's actually doing (heating, idle); the mode alone ("heat") doesn't say.
     const action = a.hvac_action ? String(a.hvac_action).replace('_', ' ') : '';
@@ -123,7 +124,7 @@ export class GlassEnergyTiles extends GlassElement {
       </span>
       <span class="bottom">
         <span class="label">${off ? 'Heating' : 'Heating · set to'}</span>
-        <span class="stat">${off ? 'Off' : target}</span>
+        <glass-number size="stat-m" .value=${off ? 'Off' : target}></glass-number>
         <span class="small">${[room, action].filter(Boolean).join(' · ')}</span>
       </span>
     </button>`;
@@ -139,28 +140,19 @@ export class GlassEnergyTiles extends GlassElement {
       ? watts >= 1000
         ? { n: (watts / 1000).toFixed(1), u: 'kW' }
         : { n: String(Math.round(watts)), u: 'W' }
-      : { n: nil, u: '' };
+      : { n: '', u: '' };
 
-    const max = Math.max(...this.hours, 1);
     const cost = this.cost();
 
     return html`<button type="button" class="tile energy" @click=${() => this.open(id)}>
       <span class="top">
         <span class="now">
           <span class="label">Using now</span>
-          <span class="stat">${now.n}${now.u ? html`<span class="unit"> ${now.u}</span>` : nothing}</span>
+          <glass-number size="stat-m" .value=${now.n} unit=${now.u}></glass-number>
         </span>
         <span class="go" aria-hidden="true"><glass-icon name="arrow-up-right" size="16" stroke="1.8"></glass-icon></span>
       </span>
-      <span class="chart" aria-hidden="true">
-        ${this.historyLoaded ? nothing : html`<span class="skel" style="width: 100%; height: 100%;"></span>`}
-        ${this.hours.map((h) => {
-          const level = Math.round((h / max) * CHART_DOTS);
-          return html`<span class="col">
-            ${Array.from({ length: CHART_DOTS }, (_, i) => html`<span class="d ${i < level ? 'on' : ''}"></span>`)}
-          </span>`;
-        })}
-      </span>
+      <glass-dot-chart class="chart" .values=${this.hours} levels=${CHART_DOTS} dot="5" gap="4" ?loading=${!this.historyLoaded} aria-hidden="true"></glass-dot-chart>
       <span class="small dark">${cost}</span>
     </button>`;
   }
@@ -259,37 +251,8 @@ export class GlassEnergyTiles extends GlassElement {
       .label {
         font-size: var(--glass-text-caption);
       }
-      .stat {
-        font-size: 40px;
-        font-weight: 300;
-        letter-spacing: -1px;
-      }
-      .unit {
-        font-size: var(--glass-text-body);
-        letter-spacing: 0;
-      }
       .small {
         font-size: var(--glass-text-small);
-      }
-      .chart {
-        display: flex;
-        gap: 4px;
-        align-items: flex-end;
-        height: 48px;
-      }
-      .col {
-        display: flex;
-        flex-direction: column-reverse;
-        gap: 4px;
-      }
-      .d {
-        width: 5px;
-        height: 5px;
-        border-radius: 50%;
-        background: rgba(255, 255, 255, 0.45);
-      }
-      .d.on {
-        background: var(--glass-ink);
       }
     `,
   ];

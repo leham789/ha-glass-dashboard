@@ -7,6 +7,7 @@ import { keyed } from 'lit/directives/keyed.js';
 import { GlassSheet } from '../elements/glass-sheet.js';
 import '../elements/glass-camera-live.js';
 import '../elements/glass-chip.js';
+import '../elements/glass-meters.js';
 import { cameraBadge } from '../elements/glass-camera-controls.js';
 import { GlassCameraFull } from '../elements/glass-camera-full.js';
 import { type HassEntity, isUnavailable, openMoreInfo } from '../ha.js';
@@ -146,9 +147,7 @@ export class GlassCamerasSheet extends GlassSheet {
         ${many
           ? html`<div class="pager">
               <glass-page-dots .names=${this.cameras.map((cc) => cc.name ?? shortName(hass.states[cc.entity], ''))} .index=${this.index} @pick=${(e: CustomEvent<number>) => this.go(e.detail)}></glass-page-dots>
-              <span class="progress" aria-hidden="true">
-                ${this.cycling ? keyed(this.cycleStart, html`<span class="bar"></span>`) : nothing}
-              </span>
+              ${keyed(this.cycling ? this.cycleStart : 0, html`<glass-bar class="progress" thin .value=${0} .run=${this.cycling ? CYCLE_MS : undefined} aria-hidden="true"></glass-bar>`)}
               <span class="count">${this.cycling ? 'Cycling' : `${this.index + 1} of ${this.cameras.length}`}</span>
             </div>`
           : nothing}
@@ -312,27 +311,7 @@ export class GlassCamerasSheet extends GlassSheet {
         padding: 0 4px;
       }
       .progress {
-        position: relative;
         flex: 1;
-        height: 3px;
-        overflow: hidden;
-        border-radius: 2px;
-        background: rgba(var(--glass-line-rgb), 0.1);
-      }
-      .bar {
-        position: absolute;
-        left: 0;
-        top: 0;
-        bottom: 0;
-        width: 0;
-        border-radius: 2px;
-        background: var(--glass-ink);
-        animation: fill ${CYCLE_MS / 1000}s linear forwards;
-      }
-      @keyframes fill {
-        to {
-          width: 100%;
-        }
       }
       .count {
         font-size: var(--glass-text-small);
@@ -390,8 +369,7 @@ export class GlassCamerasSheet extends GlassSheet {
         }
       }
       @media (prefers-reduced-motion: reduce) {
-        .pan,
-        .bar {
+        .pan {
           animation: none;
         }
       }

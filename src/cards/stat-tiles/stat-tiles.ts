@@ -1,3 +1,4 @@
+import '../../elements/glass-number.js';
 import { css, html, nothing, type PropertyValues } from 'lit';
 import { tileSurface } from '../../elements/surfaces.js';
 import { GlassElement } from '../../glass-element.js';
@@ -86,7 +87,7 @@ export class GlassStatTiles extends GlassElement {
         return html`<button type="button" class=${t.dark ? 'dark' : ''} @click=${() => openMoreInfo(this, t.entity)}>
           ${t.icon ? html`<glass-icon name=${t.icon} size="20"></glass-icon>` : html`<span></span>`}
           <span class="info">
-            <span class="value">${value}</span>
+            <glass-number size="small" .value=${value}></glass-number>
             <span class="label">${label}</span>
           </span>
         </button>`;
@@ -132,12 +133,9 @@ export class GlassStatTiles extends GlassElement {
         flex-direction: column;
         min-width: 0;
       }
-      .value {
-        font-size: 22px;
-        font-weight: 300;
-        white-space: nowrap;
+      glass-number {
+        max-width: 100%;
         overflow: hidden;
-        text-overflow: ellipsis;
       }
       .label {
         font-size: var(--glass-text-small);

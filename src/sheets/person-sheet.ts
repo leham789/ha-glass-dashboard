@@ -2,7 +2,7 @@ import { css, html, type CSSResultGroup, type PropertyValues, type TemplateResul
 import { nil } from '../elements/nil.js';
 import { customElement, state } from 'lit/decorators.js';
 import { GlassEntitySheet, type Tone } from './entity-sheet.js';
-import type { ChartBand } from '../elements/glass-history-chart.js';
+import type { ChartBand, ChartKey } from '../elements/glass-history-chart.js';
 import '../elements/glass-history-chart.js';
 import { spans, stateHistory } from '../history.js';
 import { clock, hoursMinutes as hm, todayLabels } from '../time.js';
@@ -31,6 +31,7 @@ interface Today {
 @customElement('glass-person-sheet')
 export class GlassPersonSheet extends GlassEntitySheet {
   @state() private bands: ChartBand[] = [];
+  @state() private loaded = false;
   @state() private today: Today = { inState: 0, zones: [] };
   private loadedFor = '';
 
@@ -68,6 +69,7 @@ export class GlassPersonSheet extends GlassEntitySheet {
     midnight.setHours(0, 0, 0, 0);
     const points = await stateHistory(this.hass!, this.entityId, midnight);
     const s = spans(points, midnight);
+    this.loaded = true;
     this.bands = s.map((sp) => ({
       from: sp.from,
       to: sp.to,
@@ -158,12 +160,18 @@ export class GlassPersonSheet extends GlassEntitySheet {
           <h2>Today</h2>
           <span class="note">${note}</span>
         </div>
-        <glass-history-chart kind="timeline" .bands=${this.bands} .xLabels=${todayLabels()} label="Where ${this.sheetTitle} was today"></glass-history-chart>
-        <div class="legend">
-          <span><i style="background: var(--glass-go); opacity: 0.6"></i>Home</span>
-          ${legendZones.map((z) => html`<span><i style="background: var(--glass-info); opacity: 0.55"></i>${z}</span>`)}
-          <span><i style="background: var(--glass-grey); opacity: 0.35"></i>Away</span>
-        </div>
+        <glass-history-chart
+          kind="timeline"
+          ?loading=${!this.loaded}
+          .bands=${this.bands}
+          .xLabels=${todayLabels()}
+          .key=${[
+            { label: 'Home', look: 'box', colour: 'var(--glass-go)', opacity: 0.6 },
+            ...legendZones.map((z) => ({ label: z, look: 'box', colour: 'var(--glass-info)', opacity: 0.55 })),
+            { label: 'Away', look: 'box', colour: 'var(--glass-grey)', opacity: 0.35 },
+          ] as ChartKey[]}
+          label="Where ${this.sheetTitle} was today"
+        ></glass-history-chart>
       </div>
       ${this.renderFacts([...facts, { label: 'Phone', value: this.phoneBattery() }])}
     `;

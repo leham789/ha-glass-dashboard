@@ -1,3 +1,4 @@
+import '../../elements/glass-meters.js';
 import { css, html, nothing, type PropertyValues } from 'lit';
 import { heading } from '../../elements/type.js';
 import { GlassElement, openOverlays } from '../../glass-element.js';
@@ -91,7 +92,6 @@ export class GlassRoomTemps extends GlassElement {
         <span class="legend">${LOW}° · comfort · ${HIGH}°</span>
       </span>
       ${rooms.map((r) => {
-        const pos = Math.min(100, Math.max(0, ((r.temperature! - LOW) / (HIGH - LOW)) * 100));
         // A row opens that room's temperature sensor; anywhere else on the card opens Room temperatures.
         return html`<button
           type="button"
@@ -108,7 +108,7 @@ export class GlassRoomTemps extends GlassElement {
                 ? html`<span class="hum">${Math.round(r.humidity)}% humidity</span>`
                 : nothing}
           </span>
-          <span class="scale" aria-hidden="true"><span class="marker" style="left: ${pos}%"></span></span>
+          <glass-scale class="scale" kind="temperature" .value=${r.temperature!} .min=${LOW} .max=${HIGH} aria-hidden="true"></glass-scale>
           <span class="temp">${r.temperature!.toFixed(1)}°</span>
         </button>`;
       })}
@@ -200,20 +200,7 @@ export class GlassRoomTemps extends GlassElement {
         color: var(--glass-text-muted);
       }
       .scale {
-        position: relative;
         flex: 1;
-        height: 8px;
-        border-radius: 4px;
-        background: var(--glass-temp-scale);
-      }
-      .marker {
-        position: absolute;
-        top: -4px;
-        width: 2px;
-        height: 16px;
-        margin-left: -1px;
-        border-radius: 1px;
-        background: var(--glass-ink);
       }
       .temp {
         width: 48px;
