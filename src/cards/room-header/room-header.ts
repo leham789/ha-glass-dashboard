@@ -11,11 +11,8 @@ import { GlassSheet } from '../../elements/glass-sheet.js';
 import type { GlassRoomOptionsSheet } from '../../sheets/room-options-sheet.js';
 import '../../sheets/room-options-sheet.js';
 import '../../elements/glass-icon.js';
+import '../../elements/glass-room-switcher.js';
 import './room-header-editor.js';
-import { EASE, haptic, reducedMotion } from '../../motion.js';
-
-/** Where the highlight was in the switcher as you left a room, so the next room's switcher slides it on. */
-let leaving: { left: number; width: number; at: number } | undefined;
 
 export interface RoomHeaderConfig extends LovelaceCardConfig {
   /** Hours before a sensor counts as not reporting, by type or entity, e.g. { door: 24 }. Applies to the whole dashboard. */
@@ -72,13 +69,9 @@ export class GlassRoomHeader extends GlassElement {
     super.connectedCallback();
     ensureFonts();
     this.stopPrefs = onPrefsChange(() => this.requestUpdate());
-    // HA keeps views it has shown: coming back to one puts this card back without re-rendering it.
-    if (this.hasUpdated) this.updateComplete.then(() => this.placePill());
   }
 
   disconnectedCallback(): void {
-    this.fit.disconnect();
-    this.fitted = undefined;
     this.stopPrefs?.();
     this.sheet?.close();
     super.disconnectedCallback();
@@ -93,54 +86,6 @@ export class GlassRoomHeader extends GlassElement {
     const old = changed.get('hass') as HomeAssistant | undefined;
     if (!old || old.areas !== this.hass!.areas) return true;
     return this.watched.some((id) => old.states[id] !== this.hass!.states[id]);
-  }
-
-  protected updated(changed: PropertyValues): void {
-    if (this.needs) return;
-    // Bring the current room into view in the switcher.
-    // (Scrolls only the switcher, never the page.)
-    if (changed.has('config')) {
-      const nav = this.renderRoot.querySelector<HTMLElement>('nav');
-      const current = this.renderRoot.querySelector<HTMLElement>('[aria-current="page"]');
-      if (nav && current) nav.scrollLeft = current.offsetLeft - nav.clientWidth / 2 + current.offsetWidth / 2;
-    }
-    this.placePill();
-  }
-
-  /** Re-fits the highlight if the current room's tab changes size (e.g. once the font loads). */
-  private fit = new ResizeObserver(() => this.placePill());
-  private fitted?: HTMLElement;
-
-  /** Puts the highlight under the current room, sliding it over from the last room if you just switched. */
-  private placePill() {
-    const pill = this.renderRoot.querySelector<HTMLElement>('.pill');
-    const current = this.renderRoot.querySelector<HTMLElement>('[aria-current="page"]');
-    if (!pill) return;
-    pill.hidden = !current;
-    if (current !== this.fitted) {
-      this.fit.disconnect();
-      if (current) this.fit.observe(current);
-      this.fitted = current ?? undefined;
-    }
-    if (!current) return;
-    const to = { left: current.offsetLeft, width: current.offsetWidth };
-    pill.style.transform = `translateX(${to.left}px)`;
-    pill.style.width = `${to.width}px`;
-    const from = leaving;
-    if (!from || performance.now() - from.at > 1500 || reducedMotion()) return;
-    leaving = undefined;
-    // Transform only (slide, and stretch to the new width), never width itself: HA
-    // builds the new room's page in one long busy spell right after the tap, and only
-    // transform and opacity keep animating through that.
-    pill.animate(
-      [
-        { transform: `translateX(${from.left}px) scaleX(${from.width / to.width})` },
-        { transform: `translateX(${to.left}px) scaleX(1)` },
-      ],
-      { duration: 250, easing: EASE },
-    );
-    // Its name turns from dark to white as the highlight passes under it.
-    current.animate([{ color: 'var(--glass-ink)' }, { color: 'var(--glass-on-ink)' }], { duration: 120, delay: 100, easing: 'ease', fill: 'backwards' });
   }
 
   private rooms() {
@@ -171,19 +116,11 @@ export class GlassRoomHeader extends GlassElement {
       .join(' · ');
 
     return html`
-      <nav aria-label="Rooms">
-        <span class="pill" aria-hidden="true"></span>
-        ${this.rooms().map((a) => {
-          const current = a.area_id === this.config!.area;
-          return html`<a
-            href=${this.config!.room_path.replace('{area}', a.area_id)}
-            aria-current=${current ? 'page' : 'false'}
-            @click=${(e: Event) => this.go(e, a.area_id)}
-          >
-            ${a.name}
-          </a>`;
-        })}
-      </nav>
+      <glass-room-switcher
+        .rooms=${this.rooms().map((a) => ({ id: a.area_id, name: a.name, href: this.config!.room_path.replace('{area}', a.area_id) }))}
+        current=${this.config.area}
+        @pick=${(e: CustomEvent<string>) => navigate(this.config!.room_path.replace('{area}', e.detail))}
+      ></glass-room-switcher>
       <section aria-label="Room summary">
         <span class="left">
           <button type="button" class="name" aria-label="${room.name} options" @click=${() => this.openOptions()}>
@@ -247,15 +184,6 @@ export class GlassRoomHeader extends GlassElement {
     this.sheet = sheet;
   }
 
-  private go(e: Event, areaId: string) {
-    e.preventDefault();
-    if (areaId === this.config!.area) return;
-    const current = this.renderRoot.querySelector<HTMLElement>('[aria-current="page"]');
-    if (current) leaving = { left: current.offsetLeft, width: current.offsetWidth, at: performance.now() };
-    haptic('selection');
-    navigate(this.config!.room_path.replace('{area}', areaId));
-  }
-
   static styles = [
     tokens,
     css`
@@ -263,52 +191,6 @@ export class GlassRoomHeader extends GlassElement {
         display: flex;
         flex-direction: column;
         gap: 24px;
-      }
-      nav {
-        position: relative;
-        display: flex;
-        gap: 4px;
-        padding: 4px;
-        border-radius: 24px;
-        border: 1px solid var(--glass-surface-border);
-        background: rgba(var(--glass-surface-rgb), 0.6);
-        overflow-x: auto;
-        scrollbar-width: none;
-        -webkit-mask-image: linear-gradient(90deg, #000 80%, transparent 100%);
-        mask-image: linear-gradient(90deg, #000 80%, transparent 100%);
-      }
-      nav::-webkit-scrollbar {
-        display: none;
-      }
-      .pill {
-        position: absolute;
-        top: 4px;
-        left: 0;
-        transform-origin: left center;
-        height: 38px;
-        border-radius: 19px;
-        background: var(--glass-ink);
-      }
-      a {
-        position: relative; /* above the highlight */
-        flex: none;
-        height: 38px;
-        padding: 0 16px;
-        border-radius: 19px;
-        display: flex;
-        align-items: center;
-        white-space: nowrap;
-        font-size: var(--glass-text-chip);
-        color: var(--glass-ink);
-        text-decoration: none;
-        -webkit-tap-highlight-color: transparent;
-      }
-      a[aria-current='page'] {
-        color: var(--glass-on-ink);
-      }
-      a:focus-visible {
-        outline: 2px solid var(--glass-ink);
-        outline-offset: -2px;
       }
       section {
         display: flex;

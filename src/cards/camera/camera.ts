@@ -1,5 +1,6 @@
 import { css, html, nothing, type PropertyValues } from 'lit';
 import '../../elements/glass-chip.js';
+import { cameraBadge } from '../../elements/glass-camera-controls.js';
 import { heading } from '../../elements/type.js';
 import { GlassElement } from '../../glass-element.js';
 import { customElement, property, state } from 'lit/decorators.js';
@@ -97,7 +98,6 @@ export class GlassCamera extends GlassElement {
     const motion = c.motion_entity ? this.hass.states[c.motion_entity] : undefined;
     const ding = c.ding_entity ? this.hass.states[c.ding_entity] : undefined;
     const offline = isUnavailable(cam);
-    const recording = cam.state === 'recording';
     // "Motion" while there's motion and for a few minutes after it stops.
     const moving = !!motion && (motion.state === 'on' || Date.now() - Date.parse(motion.last_changed) < RECENT_MOTION_MS);
     // An event entity's state is the time of the last press; a binary sensor's is on/off.
@@ -118,16 +118,20 @@ export class GlassCamera extends GlassElement {
       <section aria-label=${c.name ?? shortName(cam, '')}>
         <button type="button" class="open" aria-label="Open cameras, ${c.name ?? shortName(cam, '')}" @click=${() => this.openCameras()}></button>
         <div class="view">
-          ${src && !offline ? html`<img src=${src} alt="" loading="lazy" />` : html`<span class="none">${offline ? 'Camera offline' : 'No picture'}</span>`}
-          <span class="badge"><span class="dot ${recording ? 'rec' : offline ? 'off' : 'live'}"></span>${offline ? 'Offline' : recording ? 'Recording' : 'Live'}</span>
-          <span class="expand" aria-hidden="true"><glass-icon name="maximize-2" size="16" stroke="1.8"></glass-icon></span>
+          ${src && !offline ? html`<img src=${src} alt="" loading="lazy" />` : offline ? nothing : html`<span class="none">No picture</span>`}
+          <glass-live-badge class="badge" state=${cameraBadge(cam)}></glass-live-badge>
+          <glass-camera-button class="expand" icon="maximize-2" inert></glass-camera-button>
         </div>
         <div class="foot">
           <span class="info">
             <span class="name">${c.name ?? shortName(cam, '')}</span>
             ${last ? html`<span class="last">${last}</span>` : nothing}
           </span>
-          ${motion ? html`<glass-pill class=${moving ? 'ringing' : ''} tone=${moving ? 'attention' : 'success'}>${moving ? 'Motion' : 'Clear'}</glass-pill>` : nothing}
+          ${motion
+            ? offline || isUnavailable(motion)
+              ? html`<glass-pill tone="neutral">Motion unknown</glass-pill>`
+              : html`<glass-pill class=${moving ? 'ringing' : ''} tone=${moving ? 'attention' : 'success'}>${moving ? 'Motion' : 'Clear'}</glass-pill>`
+            : nothing}
         </div>
       </section>
     `;
@@ -189,31 +193,29 @@ export class GlassCamera extends GlassElement {
         position: absolute;
         top: 12px;
         left: 12px;
-        height: 24px;
-        padding: 0 12px;
-        border-radius: 12px;
-        background: var(--glass-scrim);
-        color: #fff;
-        font-size: var(--glass-text-small);
-        display: flex;
-        align-items: center;
-        gap: 8px;
-      }
-      .dot {
-        width: 6px;
-        height: 6px;
-        border-radius: 50%;
-      }
-      .dot.rec {
-        background: var(--glass-live);
-      }
-      .dot.live {
-        background: var(--glass-go);
-      }
-      .dot.off {
-        background: var(--glass-grey);
       }
       .view,
+      .foot {
+        pointer-events: none;
+      }
+      /* the whole card is the button; what's drawn on it lets taps through */
+      .open {
+        all: unset;
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+        cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
+      }
+      .open:focus-visible {
+        outline: 2px solid var(--glass-ink);
+        outline-offset: 2px;
+      }
+      .expand {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+      }
       .foot {
         pointer-events: none;
       }

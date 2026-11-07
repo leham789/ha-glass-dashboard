@@ -1,6 +1,8 @@
 import { css, html, nothing, type PropertyValues } from 'lit';
 import '../../elements/glass-tile.js';
 import '../../elements/glass-chip.js';
+import '../../elements/glass-slider.js';
+import type { GlassSlider } from '../../elements/glass-slider.js';
 import { GlassElement } from '../../glass-element.js';
 import { customElement, property, state } from 'lit/decorators.js';
 import { cardSurface } from '../../elements/surfaces.js';
@@ -109,28 +111,23 @@ export class GlassBrightness extends GlassElement {
     const canTemp = modes.includes('color_temp');
     const canColour = modes.some((m) => COLOUR_MODES.has(m));
     const current = on ? currentTone(e.attributes) : undefined;
+    const inColour = on && COLOUR_MODES.has(e.attributes.color_mode) && Array.isArray(e.attributes.rgb_color);
     const tones = TONES.filter((t) => (t.kelvin ? canTemp : canColour));
 
     return html`<section aria-label="Brightness">
-      <label for="slider">
+      <div class="label">
         <span>${this.config.name ?? e.attributes.friendly_name}</span>
         <span class="pct">${offline ? 'Offline' : on || this.dragging ? `${pct}%` : 'Off'}</span>
-      </label>
-      <div class="track">
-        <span class="fill" style="width: ${pct}%"></span>
-        <glass-icon class="sun" name="sun" size="22"></glass-icon>
-        <input
-          id="slider"
-          type="range"
-          min="0"
-          max="100"
-          step="1"
-          .value=${String(pct)}
-          ?disabled=${offline}
-          @input=${(ev: Event) => (this.dragging = Number((ev.target as HTMLInputElement).value))}
-          @change=${(ev: Event) => this.setBrightness(Number((ev.target as HTMLInputElement).value))}
-        />
       </div>
+      <glass-slider
+        label="Brightness"
+        .value=${pct}
+        fill=${inColour ? 'colour' : 'light'}
+        .rgb=${inColour ? e.attributes.rgb_color : undefined}
+        ?disabled=${offline}
+        @input=${(ev: Event) => (this.dragging = (ev.target as GlassSlider).value)}
+        @change=${(ev: Event) => this.setBrightness((ev.target as GlassSlider).value)}
+      ></glass-slider>
       ${tones.length
         ? html`<div class="tones">
             ${tones.map(
@@ -171,48 +168,13 @@ export class GlassBrightness extends GlassElement {
         flex-direction: column;
         gap: 16px;
       }
-      label {
+      .label {
         display: flex;
         justify-content: space-between;
         font-size: var(--glass-text-body);
       }
       .pct {
         color: var(--glass-text-secondary);
-      }
-      .track {
-        position: relative;
-        height: 72px;
-        border-radius: 36px;
-        background: rgba(var(--glass-line-rgb), 0.06);
-        overflow: hidden;
-      }
-      .fill {
-        position: absolute;
-        left: 0;
-        top: 0;
-        bottom: 0;
-        border-radius: 36px;
-        background: var(--glass-light-fill);
-      }
-      .sun {
-        position: absolute;
-        left: 22px;
-        top: 25px;
-        pointer-events: none;
-      }
-      input {
-        position: absolute;
-        inset: 0;
-        width: 100%;
-        height: 100%;
-        margin: 0;
-        opacity: 0;
-        cursor: ew-resize;
-        touch-action: pan-y;
-      }
-      .track:has(input:focus-visible) {
-        outline: 2px solid var(--glass-ink);
-        outline-offset: 2px;
       }
       .lamps {
         display: grid;

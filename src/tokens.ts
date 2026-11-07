@@ -51,6 +51,8 @@ export const tokens = css`
     --glass-light-cool-glow: 170, 190, 220;
     --glass-light-off: rgba(255, 255, 255, 0.5);
     --glass-light-fill: linear-gradient(90deg, #f6e3b0 0%, #f7c66b 100%); /* brightness fills */
+    --glass-colour-fill-from: 1; /* a slider in a bulb's colour: its soft tint's alpha… */
+    --glass-colour-fill-to: 1; /* …and the colour's */
 
     /* Room tiles */
     --glass-room-lit: rgba(255, 255, 255, 0.88);
@@ -60,7 +62,8 @@ export const tokens = css`
     --glass-tile-shadow: 0 10px 30px rgba(30, 20, 60, 0.06);
     --glass-float-shadow: 0 16px 40px rgba(20, 20, 40, 0.16); /* things floating over the page: the connection banner */
     --glass-sheet-shadow: 0 -20px 60px rgba(20, 20, 40, 0.15);
-    --glass-raised-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* the chosen segment, a seek knob */
+    --glass-raised-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* the chosen segment */
+    --glass-seek-shadow: 0 2px 8px rgba(0, 0, 0, 0.12); /* the seek bar's knob */
     --glass-knob: #fff; /* switch knobs and slider markers, in both themes */
     --glass-knob-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
     --glass-marker-shadow: 0 0 0 1px rgba(18, 19, 22, 0.25), 0 2px 8px rgba(0, 0, 0, 0.15);
@@ -78,6 +81,13 @@ export const tokens = css`
     --glass-scrim: rgba(0, 0, 0, 0.45); /* controls on a camera picture */
     --glass-on-picture: #fff;
     --glass-on-picture-muted: rgba(255, 255, 255, 0.65);
+    --glass-on-picture-soft: rgba(255, 255, 255, 0.85); /* words on a picture (the last motion) */
+    --glass-on-picture-hint: rgba(255, 255, 255, 0.45); /* the hint under a full-screen picture */
+    --glass-on-picture-dot: rgba(255, 255, 255, 0.35); /* full screen's other page dots */
+    --glass-on-picture-glass: rgba(255, 255, 255, 0.14); /* full screen's buttons and pills, with a blur */
+    --glass-on-picture-button: rgba(255, 255, 255, 0.9); /* the light button on a picture */
+    --glass-on-light: #121316; /* words on the light-on colour, in both themes */
+    --glass-full-screen: #000; /* behind a full-screen camera */
     --glass-on-go: #fff; /* the icon on a go-green knob */
     --glass-go-shadow: 0 8px 20px rgba(47, 180, 87, 0.35);
     --glass-hot-tint: #fde7e7;
@@ -178,6 +188,8 @@ export const tokens = css`
 
     --glass-light-off: rgba(40, 42, 48, 0.5);
     --glass-light-fill: linear-gradient(90deg, rgba(246, 227, 176, 0.22) 0%, rgba(247, 198, 107, 0.42) 100%);
+    --glass-colour-fill-from: 0.22; /* see-through, like the light fill */
+    --glass-colour-fill-to: 0.42;
     --glass-room-lit: rgba(40, 42, 48, 0.88);
     --glass-room-off: rgba(40, 42, 48, 0.4);
     --glass-room-alert: rgba(224, 104, 58, 0.2);

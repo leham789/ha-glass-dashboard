@@ -6,12 +6,13 @@ import { customElement, property, state } from 'lit/decorators.js';
 import { keyed } from 'lit/directives/keyed.js';
 import { GlassSheet } from '../elements/glass-sheet.js';
 import '../elements/glass-camera-live.js';
+import '../elements/glass-chip.js';
+import { cameraBadge } from '../elements/glass-camera-controls.js';
 import { GlassCameraFull } from '../elements/glass-camera-full.js';
 import { type HassEntity, isUnavailable, openMoreInfo } from '../ha.js';
 import { shortName } from '../rooms.js';
 import { eventSnapshot } from '../snapshots.js';
 import { ago, clock } from '../time.js';
-import { haptic } from '../motion.js';
 
 /** What the sheet needs to know about each camera (a camera card's settings). */
 export interface SheetCamera {
@@ -104,12 +105,10 @@ export class GlassCamerasSheet extends GlassSheet {
     if (!c) return html`<p class="empty">No cameras.</p>`;
     const cam = hass.states[c.entity];
     const offline = isUnavailable(cam);
-    const recording = cam?.state === 'recording';
     const pic = cam?.attributes.entity_picture as string | undefined;
     const src = pic && !pic.startsWith('data:') ? `${pic}${pic.includes('?') ? '&' : '?'}t=${this.stillAt}` : pic;
     const many = this.cameras.length > 1;
     const light = c.light ? hass.states[c.light] : undefined;
-    const lightOn = light?.state === 'on';
     const events = this.events(c.entity).slice(0, 3);
     for (const e of events) this.fetchSnap(e.entity, e.key);
 
@@ -121,7 +120,7 @@ export class GlassCamerasSheet extends GlassSheet {
           @pointerup=${(e: PointerEvent) => this.endSwipe(e)}
           @pointercancel=${() => (this.swipeX = undefined)}
         >
-          ${src && !offline ? html`<img src=${src} alt="" draggable="false" />` : html`<span class="none">${offline ? 'Camera offline' : 'No picture'}</span>`}
+          ${src && !offline ? html`<img src=${src} alt="" draggable="false" />` : offline ? nothing : html`<span class="none">No picture</span>`}
           ${offline
             ? nothing
             : html`<glass-camera-live
@@ -133,37 +132,20 @@ export class GlassCamerasSheet extends GlassSheet {
                   if (!e.detail) this.stillAt = Date.now();
                 }}
               ></glass-camera-live>`}
-          <span class="badge tl"><span class="dot ${offline ? 'off' : recording ? 'rec' : 'live'}"></span>${offline ? 'Offline' : recording ? 'Recording' : 'Live'}</span>
-          <span class="badge tr">${new Date(this.tick).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}</span>
+          <glass-live-badge class="badge tl" state=${cameraBadge(cam)}></glass-live-badge>
+          <glass-live-badge class="badge tr" plain>${new Date(this.tick).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}</glass-live-badge>
           ${many
-            ? html`<button type="button" class="arrow left" aria-label="Previous camera" @click=${() => this.go(this.index - 1)}>
-                  <glass-icon name="chevron-left" size="18" stroke="1.8"></glass-icon>
-                </button>
-                <button type="button" class="arrow right" aria-label="Next camera" @click=${() => this.go(this.index + 1)}>
-                  <glass-icon name="chevron-right" size="18" stroke="1.8"></glass-icon>
-                </button>`
+            ? html`<glass-camera-button class="arrow left" size="44" icon="chevron-left" label="Previous camera" @click=${() => this.go(this.index - 1)}></glass-camera-button>
+                <glass-camera-button class="arrow right" size="44" icon="chevron-right" label="Next camera" @click=${() => this.go(this.index + 1)}></glass-camera-button>`
             : nothing}
           <span class="foot">
             <span class="last">${this.lastLine(c)}</span>
-            <button type="button" class="full" aria-label="Full screen" @click=${() => GlassCameraFull.open(hass, this.cameras, this.index)}>
-              <glass-icon name="maximize-2" size="16" stroke="1.8"></glass-icon>
-            </button>
+            <glass-camera-button icon="maximize-2" label="Full screen" @click=${() => GlassCameraFull.open(hass, this.cameras, this.index)}></glass-camera-button>
           </span>
         </div>
         ${many
           ? html`<div class="pager">
-              <span class="dots" role="tablist" aria-label="Cameras">
-                ${this.cameras.map(
-                  (cc, i) => html`<button
-                    type="button"
-                    role="tab"
-                    class=${i === this.index ? 'current' : ''}
-                    aria-selected=${i === this.index ? 'true' : 'false'}
-                    aria-label=${cc.name ?? shortName(hass.states[cc.entity], '')}
-                    @click=${() => this.go(i)}
-                  ></button>`,
-                )}
-              </span>
+              <glass-page-dots .names=${this.cameras.map((cc) => cc.name ?? shortName(hass.states[cc.entity], ''))} .index=${this.index} @pick=${(e: CustomEvent<number>) => this.go(e.detail)}></glass-page-dots>
               <span class="progress" aria-hidden="true">
                 ${this.cycling ? keyed(this.cycleStart, html`<span class="bar"></span>`) : nothing}
               </span>
@@ -202,15 +184,7 @@ export class GlassCamerasSheet extends GlassSheet {
         : nothing}
 
       ${light
-        ? html`<div class="actions"><button
-              type="button"
-              class="light ${lightOn ? 'on' : ''}"
-              aria-pressed=${lightOn ? 'true' : 'false'}
-              ?disabled=${isUnavailable(light)}
-              @click=${() => (haptic('light'), hass.callService('homeassistant', lightOn ? 'turn_off' : 'turn_on', { entity_id: c.light }))}
-            >
-              <glass-icon name="lightbulb" size="18" stroke="1.7"></glass-icon>${shortName(light, '')} · ${lightOn ? 'On' : 'Off'}
-            </button></div>`
+        ? html`<glass-camera-light look="sheet" name=${shortName(light, '')} .entity=${light} .hass=${hass}></glass-camera-light>`
         : nothing}
     `;
   }
@@ -274,8 +248,7 @@ export class GlassCamerasSheet extends GlassSheet {
         height: 262px;
         overflow: hidden;
         border-radius: var(--glass-radius-tile);
-        background: linear-gradient(160deg, #3a4452 0%, #23282f 60%, #3c4436 100%);
-        color: #fff;
+        background: var(--glass-dark-surface);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -300,14 +273,6 @@ export class GlassCamerasSheet extends GlassSheet {
       .badge {
         position: absolute;
         top: 12px;
-        height: 24px;
-        padding: 0 12px;
-        border-radius: 12px;
-        background: var(--glass-scrim);
-        font-size: var(--glass-text-small);
-        display: flex;
-        align-items: center;
-        gap: 8px;
       }
       .tl {
         left: 12px;
@@ -315,33 +280,10 @@ export class GlassCamerasSheet extends GlassSheet {
       .tr {
         right: 12px;
       }
-      .dot {
-        width: 6px;
-        height: 6px;
-        border-radius: 50%;
-      }
-      .dot.rec {
-        background: var(--glass-live);
-      }
-      .dot.live {
-        background: var(--glass-go);
-      }
-      .dot.off {
-        background: var(--glass-grey);
-      }
       .arrow {
-        all: unset;
         position: absolute;
         top: 50%;
         margin-top: -22px;
-        width: 44px;
-        height: 44px;
-        border-radius: 50%;
-        background: var(--glass-scrim);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
       }
       .arrow.left {
         left: 12px;
@@ -351,9 +293,9 @@ export class GlassCamerasSheet extends GlassSheet {
       }
       .foot {
         position: absolute;
-        left: 14px;
-        right: 14px;
-        bottom: 14px;
+        left: 12px;
+        right: 12px;
+        bottom: 12px;
         display: flex;
         justify-content: space-between;
         align-items: center;
@@ -361,43 +303,13 @@ export class GlassCamerasSheet extends GlassSheet {
       }
       .last {
         font-size: var(--glass-text-caption);
-        color: rgba(255, 255, 255, 0.85);
-        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
-      }
-      .full {
-        all: unset;
-        width: 36px;
-        height: 36px;
-        flex: none;
-        border-radius: 50%;
-        background: var(--glass-scrim);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
+        color: var(--glass-on-picture-soft);
       }
       .pager {
         display: flex;
         align-items: center;
         gap: 12px;
         padding: 0 4px;
-      }
-      .dots {
-        display: flex;
-        gap: 8px;
-      }
-      .dots button {
-        all: unset;
-        width: 8px;
-        height: 8px;
-        border-radius: 4px;
-        background: rgba(var(--glass-line-rgb), 0.2);
-        cursor: pointer;
-        transition: width 0.25s ease;
-      }
-      .dots button.current {
-        width: 24px;
-        background: var(--glass-ink);
       }
       .progress {
         position: relative;
@@ -469,7 +381,7 @@ export class GlassCamerasSheet extends GlassSheet {
         width: calc(100% + 40px);
         height: calc(100% + 20px);
         object-fit: cover;
-        background: linear-gradient(120deg, #4a5563, #2a2f36);
+        background: linear-gradient(120deg, var(--glass-dark-2), var(--glass-dark));
         animation: drift 6s ease-in-out infinite;
       }
       @keyframes drift {
@@ -490,8 +402,8 @@ export class GlassCamerasSheet extends GlassSheet {
         height: 20px;
         padding: 0 8px;
         border-radius: 10px;
-        background: rgba(0, 0, 0, 0.5);
-        color: #fff;
+        background: var(--glass-scrim);
+        color: var(--glass-on-picture);
         font-size: var(--glass-text-tiny);
         display: flex;
         align-items: center;
@@ -500,32 +412,6 @@ export class GlassCamerasSheet extends GlassSheet {
         padding: 0 4px;
         font-size: var(--glass-text-small);
         color: var(--glass-text-secondary);
-      }
-      .actions {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
-        gap: 12px;
-      }
-      .actions button {
-        all: unset;
-        box-sizing: border-box;
-        height: 56px;
-        border-radius: 28px;
-        font-size: var(--glass-text-body);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-        cursor: pointer;
-      }
-      .light {
-        background: var(--glass-solid);
-        border: 1px solid var(--glass-hairline);
-      }
-      .light.on {
-        color: #121316;
-        background: linear-gradient(150deg, #fefaf0 0%, #f8ebcb 100%);
-        border-color: #f2dfb4;
       }
       button:focus-visible {
         outline: 2px solid var(--glass-ink);

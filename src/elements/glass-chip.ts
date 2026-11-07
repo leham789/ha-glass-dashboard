@@ -264,10 +264,12 @@ export class GlassPill extends LitElement {
   }
 }
 
-/** Live badge: on a camera picture, always dark. `state`: live (red dot), recording, offline (grey dot), connecting. */
+/** Live badge: on a camera picture, always dark. `state`: live (green dot), recording (red), offline and connecting (grey). */
 @customElement('glass-live-badge')
 export class GlassLiveBadge extends LitElement {
   @property({ reflect: true }) state: 'live' | 'recording' | 'offline' | 'connecting' = 'live';
+  /** No dot: just the words (the clock in the Cameras pop-up). */
+  @property({ type: Boolean, reflect: true }) plain = false;
 
   static styles = [
     css`
@@ -290,6 +292,9 @@ export class GlassLiveBadge extends LitElement {
         width: 6px;
         height: 6px;
         border-radius: 50%;
+        background: var(--glass-go);
+      }
+      :host([state='recording']) i {
         background: var(--glass-live);
       }
       :host([state='offline']) i,
@@ -300,7 +305,7 @@ export class GlassLiveBadge extends LitElement {
   ];
 
   render() {
-    return html`<i></i><slot>${{ live: 'Live', recording: 'Recording', offline: 'Offline', connecting: 'Connecting' }[this.state]}</slot>`;
+    return html`${this.plain ? nothing : html`<i></i>`}<slot>${{ live: 'Live', recording: 'Recording', offline: 'Offline', connecting: 'Connecting' }[this.state]}</slot>`;
   }
 }
 

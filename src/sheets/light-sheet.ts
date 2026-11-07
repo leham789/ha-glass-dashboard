@@ -1,7 +1,9 @@
 import { css, html, nothing, type CSSResultGroup } from 'lit';
 import '../elements/glass-chip.js';
 import '../elements/glass-button.js';
-import type { GlassSegmented } from '../elements/glass-button.js';
+import '../elements/glass-slider.js';
+import type { GlassSlider } from '../elements/glass-slider.js';
+import { hueName } from '../elements/glass-colour-controls.js';
 import { customElement, state } from 'lit/decorators.js';
 import { GlassEntitySheet } from './entity-sheet.js';
 import type { HassEntity } from '../ha.js';
@@ -12,10 +14,6 @@ import { clock } from '../time.js';
 import { haptic } from '../motion.js';
 
 const COLOUR_MODES = ['hs', 'rgb', 'rgbw', 'rgbww', 'xy'];
-const WHITES: [string, number][] = [['Warm', 2700], ['Neutral', 4000], ['Cool', 5500]];
-const QUICK: [string, number][] = [['Red', 0], ['Orange', 30], ['Yellow', 50], ['Green', 130], ['Cyan', 185], ['Blue', 220], ['Purple', 275]];
-/** Hue colours as the slider and quick colours draw them: 80% saturation, 62% lightness. */
-const hueCss = (h: number) => `hsl(${h}, 80%, 62%)`;
 
 /**
  * Replaces HA's light pop-up: brightness as the big number and slider, White
@@ -24,9 +22,8 @@ const hueCss = (h: number) => `hsl(${h}, 80%, 62%)`;
  */
 @customElement('glass-light-sheet')
 export class GlassLightSheet extends GlassEntitySheet {
-  @state() private tab?: 'White' | 'Colour';
   /** What the sliders show while dragging, before HA reports back. */
-  @state() private draft: { bri?: number; kelvin?: number; hue?: number } = {};
+  @state() private draft: { bri?: number } = {};
 
   protected iconFor(): IconName {
     return 'lightbulb';
@@ -48,16 +45,10 @@ export class GlassLightSheet extends GlassEntitySheet {
     const on = isLightOn(e, this.hass!.states);
     const modes: string[] = a.supported_color_modes ?? [];
     const dims = modes.some((m) => m !== 'onoff') || typeof a.brightness === 'number';
-    const hasWhite = modes.includes('color_temp');
-    const hasColour = modes.some((m) => COLOUR_MODES.includes(m));
-    const tab = this.tab ?? (COLOUR_MODES.includes(a.color_mode) ? 'Colour' : hasWhite ? 'White' : 'Colour');
     const bri = this.draft.bri ?? brightnessPct(e) ?? 0;
-    const kMin: number = a.min_color_temp_kelvin ?? 2000;
-    const kMax: number = a.max_color_temp_kelvin ?? 6500;
-    const kelvin = this.draft.kelvin ?? a.color_temp_kelvin ?? 2700;
-    const hue = this.draft.hue ?? (Array.isArray(a.hs_color) ? Math.round(a.hs_color[0]) : 30);
+    const kelvin: number = a.color_temp_kelvin ?? 2700;
+    const hue = Array.isArray(a.hs_color) ? Math.round(a.hs_color[0]) : 30;
     const look = lightLook(e, on);
-    const fill = look.tone === 'colour' ? `linear-gradient(90deg, ${look.background} 0%, rgb(${(a.rgb_color ?? [255, 200, 120]).join(', ')}) 100%)` : 'var(--glass-light-fill)';
     const caption = off
       ? this.sinceLine()
       : !on
@@ -87,83 +78,23 @@ export class GlassLightSheet extends GlassEntitySheet {
       </div>
 
       ${dims
-        ? html`<div class="slider ${off ? 'faded' : ''}">
-            <span class="fill" style="width: ${on ? bri : 0}%; background: ${fill}"></span>
-            <glass-icon name="sun" size="22"></glass-icon>
-            <input
-              type="range"
-              min="1"
-              max="100"
-              .value=${String(bri)}
-              aria-label="Brightness"
-              @input=${(ev: Event) => (this.draft = { ...this.draft, bri: Number((ev.target as HTMLInputElement).value) })}
-              @change=${(ev: Event) => {
-                this.turnOn({ brightness_pct: Number((ev.target as HTMLInputElement).value) });
-                this.draft = { ...this.draft, bri: undefined };
-              }}
-            />
-          </div>`
+        ? html`<glass-slider
+            label="Brightness"
+            min="1"
+            .value=${on ? bri : 1}
+            fill=${look.tone === 'colour' ? 'colour' : 'light'}
+            .rgb=${look.tone === 'colour' ? a.rgb_color : undefined}
+            ?disabled=${off}
+            @input=${(ev: Event) => (this.draft = { bri: (ev.target as GlassSlider).value })}
+            @change=${(ev: Event) => {
+              this.turnOn({ brightness_pct: (ev.target as GlassSlider).value });
+              this.draft = {};
+            }}
+          ></glass-slider>`
         : nothing}
 
-      ${hasWhite || hasColour
-        ? html`<div class="colour ${off ? 'faded' : ''}">
-            ${hasWhite && hasColour
-              ? html`<glass-segmented
-                  class="tabs"
-                  label="Colour mode"
-                  .options=${(['White', 'Colour'] as const).map((t) => ({ value: t, label: t }))}
-                  .value=${tab}
-                  @change=${(ev: Event) => (this.tab = (ev.target as GlassSegmented).value as 'White' | 'Colour')}
-                ></glass-segmented>`
-              : nothing}
-            ${hasWhite && (tab === 'White' || !hasColour)
-              ? html`<label class="row-label"><span>Colour temperature</span><span class="dim">${kelvin} K</span></label>
-                  <div class="bar temp">
-                    <span class="marker" style="left: ${((kelvin - kMin) / (kMax - kMin)) * 100}%"></span>
-                    <input
-                      type="range"
-                      min=${kMin}
-                      max=${kMax}
-                      step="50"
-                      .value=${String(kelvin)}
-                      aria-label="Colour temperature"
-                      @input=${(ev: Event) => (this.draft = { ...this.draft, kelvin: Number((ev.target as HTMLInputElement).value) })}
-                      @change=${(ev: Event) => {
-                        this.turnOn({ color_temp_kelvin: Number((ev.target as HTMLInputElement).value) });
-                        this.draft = { ...this.draft, kelvin: undefined };
-                      }}
-                    />
-                  </div>
-                  <div class="whites">
-                    ${WHITES.map(([n, k]) => {
-                      const kk = Math.min(kMax, Math.max(kMin, k));
-                      const picked = on && a.color_mode === 'color_temp' && Math.abs(kelvin - kk) < 100;
-                      return html`<glass-colour-preset swatch="var(--glass-swatch-${n.toLowerCase()})" ?selected=${picked} @click=${() => this.turnOn({ color_temp_kelvin: kk })}>${n}</glass-colour-preset>`;
-                    })}
-                  </div>`
-              : html`<label class="row-label"><span>Colour</span><span class="dim"><span class="dot" style="background: ${hueCss(hue)}"></span>${hueName(hue)}</span></label>
-                  <div class="bar hue">
-                    <span class="marker" style="left: ${(hue / 360) * 100}%"></span>
-                    <input
-                      type="range"
-                      min="0"
-                      max="359"
-                      .value=${String(hue)}
-                      aria-label="Colour"
-                      @input=${(ev: Event) => (this.draft = { ...this.draft, hue: Number((ev.target as HTMLInputElement).value) })}
-                      @change=${(ev: Event) => {
-                        this.turnOn({ hs_color: [Number((ev.target as HTMLInputElement).value), 100] });
-                        this.draft = { ...this.draft, hue: undefined };
-                      }}
-                    />
-                  </div>
-                  <div class="quick">
-                    ${QUICK.map(([n, h]) => {
-                      const picked = on && COLOUR_MODES.includes(a.color_mode) && Math.abs(hue - h) < 8;
-                      return html`<glass-colour-preset swatch-only swatch=${hueCss(h)} label=${n} ?selected=${picked} @click=${() => this.turnOn({ hs_color: [h, 100] })}></glass-colour-preset>`;
-                    })}
-                  </div>`}
-          </div>`
+      ${modes.some((m) => m === 'color_temp' || COLOUR_MODES.includes(m))
+        ? html`<glass-colour-controls .entity=${e} ?disabled=${off} @turn-on=${(ev: CustomEvent) => this.turnOn(ev.detail)}></glass-colour-controls>`
         : nothing}
 
       ${effects.length && !members
@@ -205,96 +136,10 @@ export class GlassLightSheet extends GlassEntitySheet {
       .right .pill {
         margin: 0;
       }
-      .slider,
-      .bar {
-        position: relative;
-        height: 72px;
-        border-radius: 36px;
-        overflow: hidden;
-      }
-      .slider {
-        background: rgba(var(--glass-line-rgb), 0.06);
-        display: flex;
-        align-items: center;
-        padding-left: 20px;
-      }
-      .slider .fill {
-        position: absolute;
-        left: 0;
-        top: 0;
-        bottom: 0;
-        border-radius: 36px;
-      }
-      .slider glass-icon {
-        position: relative;
-      }
-      input[type='range'] {
-        -webkit-appearance: none;
-        appearance: none;
-        position: absolute;
-        inset: 0;
-        width: 100%;
-        height: 100%;
-        margin: 0;
-        background: transparent;
-        cursor: ew-resize;
-      }
-      input[type='range']::-webkit-slider-thumb {
-        -webkit-appearance: none;
-        width: 24px;
-        height: 64px;
-        background: transparent;
-      }
-      .colour,
       .section {
         display: flex;
         flex-direction: column;
         gap: 16px;
-      }
-      .row-label {
-        display: flex;
-        justify-content: space-between;
-        font-size: var(--glass-text-body);
-      }
-      .dim {
-        color: var(--glass-text-secondary);
-        display: flex;
-        align-items: center;
-        gap: 8px;
-      }
-      .dim .dot {
-        width: 12px;
-        height: 12px;
-        border-radius: 50%;
-      }
-      .bar.temp {
-        box-sizing: border-box;
-        border: 1px solid rgba(var(--glass-line-rgb), 0.06);
-        background: var(--glass-kelvin-scale);
-      }
-      .bar.hue {
-        background: var(--glass-hue-scale);
-      }
-      .marker {
-        position: absolute;
-        top: 10px;
-        bottom: 10px;
-        width: 6px;
-        margin-left: -3px;
-        border-radius: 3px;
-        background: var(--glass-knob);
-        box-shadow: var(--glass-marker-shadow);
-        pointer-events: none;
-      }
-      .whites {
-        display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 8px;
-      }
-      .quick {
-        display: grid;
-        grid-template-columns: repeat(7, minmax(0, 1fr));
-        gap: 8px;
       }
       .member {
         all: unset;
@@ -347,11 +192,6 @@ export class GlassLightSheet extends GlassEntitySheet {
       }
     `,
   ];
-}
-
-function hueName(h: number): string {
-  const names: [number, string][] = [[15, 'Red'], [40, 'Orange'], [65, 'Yellow'], [160, 'Green'], [200, 'Cyan'], [255, 'Blue'], [290, 'Purple'], [345, 'Pink'], [360, 'Red']];
-  return names.find(([max]) => h <= max)![1];
 }
 
 declare global {

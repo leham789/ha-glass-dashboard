@@ -1,19 +1,13 @@
 import { css, html, nothing, type CSSResultGroup } from 'lit';
-import '../elements/glass-button.js';
+import '../elements/glass-slider.js';
+import type { GlassSlider } from '../elements/glass-slider.js';
+import { MEDIA } from '../elements/glass-media-controls.js';
 import { customElement, state } from 'lit/decorators.js';
 import { GlassEntitySheet } from './entity-sheet.js';
 import type { HassEntity } from '../ha.js';
 import type { IconName } from '../icons.js';
 
-// media_player supported_features bits
-const SEEK = 2;
-const VOLUME_SET = 4;
-const VOLUME_MUTE = 8;
-const PREVIOUS = 16;
-const NEXT = 32;
-const SELECT_SOURCE = 2048;
-const SHUFFLE = 32768;
-const REPEAT = 262144;
+const { VOLUME_SET, VOLUME_MUTE, SELECT_SOURCE } = MEDIA;
 
 /**
  * Replaces HA's media player pop-up: artwork, what's playing, a seek bar, the
@@ -23,20 +17,7 @@ const REPEAT = 262144;
  */
 @customElement('glass-media-sheet')
 export class GlassMediaSheet extends GlassEntitySheet {
-  @state() private draft: { pos?: number; vol?: number } = {};
-  @state() private tick = 0;
-  private timer?: number;
-
-  connectedCallback(): void {
-    super.connectedCallback();
-    // The seek bar moves on its own while playing.
-    this.timer = window.setInterval(() => this.entity?.state === 'playing' && this.tick++, 1000);
-  }
-
-  disconnectedCallback(): void {
-    window.clearInterval(this.timer);
-    super.disconnectedCallback();
-  }
+  @state() private draft: { vol?: number } = {};
 
   protected iconFor(): IconName {
     return 'music';
@@ -51,29 +32,19 @@ export class GlassMediaSheet extends GlassEntitySheet {
     return [a?.app_name, a?.source].filter(Boolean).join(' · ') || super.sheetSubtitle;
   }
 
+  private onCall = (ev: CustomEvent<{ service: string; data: Record<string, unknown> }>) => this.call(ev.detail.service, ev.detail.data);
+
   private call(service: string, data: Record<string, unknown> = {}) {
     this.hass!.callService('media_player', service, { entity_id: this.entityId, ...data });
   }
 
-  /** Where playback is now, in seconds, counting on from HA's last report. */
-  private position(e: HassEntity): number {
-    const a = e.attributes;
-    const pos = Number(a.media_position) || 0;
-    if (e.state !== 'playing' || !a.media_position_updated_at) return pos;
-    return Math.min(Number(a.media_duration) || Infinity, pos + (Date.now() - Date.parse(a.media_position_updated_at)) / 1000);
-  }
-
   protected renderBody() {
-    void this.tick;
     const e = this.entity;
     if (!e) return html``;
     const a = e.attributes;
     const f: number = a.supported_features ?? 0;
     const off = this.unavailable;
     const idle = !off && !['playing', 'paused', 'buffering'].includes(e.state);
-    const playing = e.state === 'playing';
-    const dur = Number(a.media_duration) || 0;
-    const pos = this.draft.pos ?? this.position(e);
     const vol = this.draft.vol ?? Math.round((Number(a.volume_level) || 0) * 100);
     const muted = !!a.is_volume_muted;
     const sources: string[] = f & SELECT_SOURCE && Array.isArray(a.source_list) ? a.source_list : [];
@@ -94,75 +65,28 @@ export class GlassMediaSheet extends GlassEntitySheet {
         ${off || idle ? this.renderPill(off ? 'Unavailable' : 'Idle', 'neutral') : nothing}
       </div>
 
-      ${f & SEEK && dur && !off && !idle
-        ? html`<div class="seek">
-            <span class="track">
-              <span class="done" style="width: ${(pos / dur) * 100}%"></span>
-              <span class="knob" style="left: ${(pos / dur) * 100}%"></span>
-              <input
-                type="range"
-                min="0"
-                max=${dur}
-                .value=${String(Math.round(pos))}
-                aria-label="Position"
-                @input=${(ev: Event) => (this.draft = { ...this.draft, pos: Number((ev.target as HTMLInputElement).value) })}
-                @change=${(ev: Event) => {
-                  this.call('media_seek', { seek_position: Number((ev.target as HTMLInputElement).value) });
-                  this.draft = { ...this.draft, pos: undefined };
-                }}
-              />
-            </span>
-            <span class="times"><span>${mmss(pos)}</span><span>${mmss(dur)}</span></span>
-          </div>`
-        : nothing}
+      ${!off && !idle ? html`<glass-seek .entity=${e} @media-call=${this.onCall}></glass-seek>` : nothing}
 
-      <div class="transport ${f & (SHUFFLE | REPEAT) ? 'full' : ''} ${off ? 'off' : ''}">
-        ${f & SHUFFLE
-          ? html`<glass-icon-button look="bare" size="44" icon="shuffle" toggle ?on=${!!a.shuffle} label="Shuffle" @click=${() => this.call('shuffle_set', { shuffle: !a.shuffle })}></glass-icon-button>`
-          : nothing}
-        ${f & PREVIOUS
-          ? html`<glass-icon-button look="white" icon="skip-back" icon-size="18" solid label="Previous" @click=${() => this.call('media_previous_track')}></glass-icon-button>`
-          : nothing}
-        <glass-icon-button class="play" look="dark" size="64" icon=${playing ? 'pause' : 'play'} icon-size="22" solid label=${playing ? 'Pause' : 'Play'} @click=${() => this.call('media_play_pause')}></glass-icon-button>
-        ${f & NEXT
-          ? html`<glass-icon-button look="white" icon="skip-forward" icon-size="18" solid label="Next" @click=${() => this.call('media_next_track')}></glass-icon-button>`
-          : nothing}
-        ${f & REPEAT
-          ? html`<glass-icon-button
-              look="bare"
-              size="44"
-              icon=${a.repeat === 'one' ? 'repeat-1' : 'repeat'}
-              toggle
-              ?on=${!!a.repeat && a.repeat !== 'off'}
-              label="Repeat ${a.repeat ?? 'off'}"
-              @click=${() => this.call('repeat_set', { repeat: a.repeat === 'off' || !a.repeat ? 'all' : a.repeat === 'all' ? 'one' : 'off' })}
-            ></glass-icon-button>`
-          : nothing}
-      </div>
+      <glass-transport .entity=${e} ?disabled=${off} @media-call=${this.onCall}></glass-transport>
 
       ${f & VOLUME_SET
-        ? html`<div class="volume ${off ? 'off' : ''}">
-            <label class="row-label"><span>Volume</span><span class="dim">${muted ? 'Muted' : `${vol}%`}</span></label>
-            <span class="vbar">
-              <span class="vfill" style="width: ${muted ? 0 : vol}%"></span>
-              <input
-                type="range"
-                min="0"
-                max="100"
-                .value=${String(vol)}
-                aria-label="Volume"
-                @input=${(ev: Event) => (this.draft = { ...this.draft, vol: Number((ev.target as HTMLInputElement).value) })}
-                @change=${(ev: Event) => {
-                  this.call('volume_set', { volume_level: Number((ev.target as HTMLInputElement).value) / 100 });
-                  this.draft = { ...this.draft, vol: undefined };
-                }}
-              />
-              ${f & VOLUME_MUTE
-                ? html`<button type="button" class="mute" aria-label=${muted ? 'Unmute' : 'Mute'} @click=${() => this.call('volume_mute', { is_volume_muted: !muted })}>
-                    <glass-icon name=${muted ? 'volume-x' : 'volume-2'} size="22"></glass-icon>
-                  </button>`
-                : html`<span class="mute"><glass-icon name="volume-2" size="22"></glass-icon></span>`}
-            </span>
+        ? html`<div class="volume">
+            <div class="row-label"><span>Volume</span><span class="dim">${muted ? 'Muted' : `${vol}%`}</span></div>
+            <glass-slider
+              label="Volume"
+              fill="neutral"
+              icon="volume-2"
+              ?mute=${!!(f & VOLUME_MUTE)}
+              ?muted=${muted}
+              .value=${vol}
+              ?disabled=${off}
+              @input=${(ev: Event) => (this.draft = { vol: (ev.target as GlassSlider).value })}
+              @change=${(ev: Event) => {
+                this.call('volume_set', { volume_level: (ev.target as GlassSlider).value / 100 });
+                this.draft = {};
+              }}
+              @mute=${() => this.call('volume_mute', { is_volume_muted: !muted })}
+            ></glass-slider>
           </div>`
         : nothing}
 
@@ -216,78 +140,8 @@ export class GlassMediaSheet extends GlassEntitySheet {
       .now .pill {
         margin: 4px 0 0;
       }
-      .seek {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
+      glass-seek {
         margin-top: -8px;
-      }
-      .track {
-        position: relative;
-        height: 24px;
-      }
-      .track::before,
-      .done {
-        content: '';
-        position: absolute;
-        left: 0;
-        top: 10px;
-        height: 4px;
-        border-radius: 2px;
-      }
-      .track::before {
-        right: 0;
-        background: rgba(var(--glass-line-rgb), 0.12);
-      }
-      .done {
-        background: var(--glass-ink);
-      }
-      .knob {
-        position: absolute;
-        top: 4px;
-        width: 16px;
-        height: 16px;
-        margin-left: -8px;
-        border-radius: 50%;
-        background: var(--glass-ink);
-        box-shadow: var(--glass-raised-shadow);
-      }
-      .times {
-        display: flex;
-        justify-content: space-between;
-        font-size: var(--glass-text-small);
-        color: var(--glass-text-muted);
-      }
-      input[type='range'] {
-        -webkit-appearance: none;
-        appearance: none;
-        position: absolute;
-        inset: 0;
-        width: 100%;
-        height: 100%;
-        margin: 0;
-        background: transparent;
-        cursor: ew-resize;
-      }
-      input[type='range']::-webkit-slider-thumb {
-        -webkit-appearance: none;
-        width: 24px;
-        height: 64px;
-        background: transparent;
-      }
-      .transport {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 16px;
-      }
-      .transport.full {
-        justify-content: space-between;
-      }
-      .transport.off,
-      .volume.off {
-        opacity: 0.4;
-        pointer-events: none;
       }
       .volume,
       .section {
@@ -303,39 +157,9 @@ export class GlassMediaSheet extends GlassEntitySheet {
       .dim {
         color: var(--glass-text-secondary);
       }
-      .vbar {
-        position: relative;
-        height: 72px;
-        border-radius: 36px;
-        overflow: hidden;
-        background: rgba(var(--glass-line-rgb), 0.06);
-      }
-      .vfill {
-        position: absolute;
-        left: 0;
-        top: 0;
-        bottom: 0;
-        border-radius: 36px;
-        background: rgba(var(--glass-line-rgb), 0.14);
-      }
-      .mute {
-        all: unset;
-        position: absolute;
-        left: 10px;
-        top: 14px;
-        width: 44px;
-        height: 44px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-      }
     `,
   ];
 }
-
-const mmss = (s: number) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
 
 declare global {
   interface HTMLElementTagNameMap {

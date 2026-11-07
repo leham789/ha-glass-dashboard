@@ -3,6 +3,8 @@ import { nil } from '../elements/nil.js';
 import { customElement, property, state } from 'lit/decorators.js';
 import { GlassEntitySheet, type Fact, type Tone } from './entity-sheet.js';
 import { GlassCameraFull } from '../elements/glass-camera-full.js';
+import '../elements/glass-chip.js';
+import { cameraBadge } from '../elements/glass-camera-controls.js';
 import { type HassEntity, isUnavailable } from '../ha.js';
 import type { IconName } from '../icons.js';
 import { type PrinterEntities, minutesOf, printerState } from '../printer.js';
@@ -85,7 +87,6 @@ export class GlassPrinterSheet extends GlassEntitySheet {
     const layers = Number(this.onDevice('sensor', '_total_layer_count')?.state);
     const camera = this.given(this.printer.camera) ?? this.onDevice('camera');
     const light = this.given(this.printer.chamber_light) ?? this.onDevice('light');
-    const lightOn = light?.state === 'on';
     const nozzle = this.given(this.printer.nozzle_temp) ?? this.onDevice('sensor', '_nozzle_temperature');
     const bed = this.given(this.printer.bed_temp) ?? this.onDevice('sensor', '_bed_temperature');
     const ams = this.given(this.printer.ams_humidity) ?? this.onDevice('sensor', '_humidity');
@@ -131,22 +132,17 @@ export class GlassPrinterSheet extends GlassEntitySheet {
         ? html`<div class="cam ${off ? 'faded' : ''}">
             ${camera.attributes.entity_picture && !isUnavailable(camera)
               ? html`<img src=${camera.attributes.entity_picture} alt="" draggable="false" />`
-              : html`<span class="none">Camera offline</span>`}
-            ${light
-              ? html`<button type="button" class="light ${lightOn ? 'on' : ''}" aria-pressed=${lightOn ? 'true' : 'false'} @click=${() => (haptic('light'), hass.callService('homeassistant', lightOn ? 'turn_off' : 'turn_on', { entity_id: light.entity_id }))}>
-                  <glass-icon name="lightbulb" size="16" stroke="1.7"></glass-icon>Light · ${lightOn ? 'On' : 'Off'}
-                </button>`
               : nothing}
-            <button type="button" class="expand" aria-label="Full screen" @click=${() => GlassCameraFull.open(hass, [
+            <glass-live-badge class="badge" state=${cameraBadge(camera)}></glass-live-badge>
+            ${light && !isUnavailable(camera) ? html`<glass-camera-light class="light" look="picture" name="Light" .entity=${light} .hass=${hass}></glass-camera-light>` : nothing}
+            <glass-camera-button class="expand" icon="maximize-2" label="Full screen" @click=${() => GlassCameraFull.open(hass, [
                   {
                     entity: camera.entity_id,
                     name: `${this.sheetTitle} chamber`,
                     light: light?.entity_id,
                     caption: active ? [PILL[p.phase].text, `${Math.round(pct)}%`, layers > 0 ? `layer ${layer || 0} of ${layers}` : ''].filter(Boolean).join(' · ') : '',
                   },
-                ])}>
-              <glass-icon name="maximize-2" size="16" stroke="1.8"></glass-icon>
-            </button>
+                ])}></glass-camera-button>
           </div>`
         : nothing}
       ${this.renderFacts(facts)}
@@ -220,48 +216,27 @@ export class GlassPrinterSheet extends GlassEntitySheet {
         border-radius: var(--glass-radius-small-tile);
         overflow: hidden;
         background: var(--glass-dark-surface);
-        color: #fff;
       }
       .cam img {
         width: 100%;
         height: 100%;
         object-fit: cover;
       }
-      .cam .none {
+      .cam .badge {
         position: absolute;
-        inset: 0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: var(--glass-text-caption);
-        color: rgba(255, 255, 255, 0.6);
+        top: 12px;
+        left: 12px;
       }
-      .cam button {
-        all: unset;
+      .cam .light,
+      .cam .expand {
         position: absolute;
         bottom: 12px;
-        height: 36px;
-        border-radius: 18px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-        font-size: var(--glass-text-caption);
-        background: var(--glass-scrim);
-        color: #fff;
-        cursor: pointer;
       }
       .cam .light {
         left: 12px;
-        padding: 0 12px;
-      }
-      .cam .light.on {
-        background: var(--glass-light-default);
-        color: #121316;
       }
       .cam .expand {
         right: 12px;
-        width: 36px;
       }
       .controls {
         display: grid;

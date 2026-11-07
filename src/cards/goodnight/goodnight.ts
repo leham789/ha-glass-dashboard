@@ -1,13 +1,13 @@
 import { css, html, nothing, type PropertyValues } from 'lit';
 import { GlassElement } from '../../glass-element.js';
-import { customElement, property, query, state } from 'lit/decorators.js';
+import { customElement, property, state } from 'lit/decorators.js';
 import { cardSurface } from '../../elements/surfaces.js';
 import { tokens } from '../../tokens.js';
 import { ensureFonts } from '../../fonts.js';
 import { type HomeAssistant, type LovelaceCardConfig, isUnavailable, registerCard, reportVisibility } from '../../ha.js';
 import { haptic } from '../../motion.js';
 import { roomSummary, shortName } from '../../rooms.js';
-import '../../elements/glass-icon.js';
+import '../../elements/glass-slide-confirm.js';
 import './goodnight-editor.js';
 import { isQuiet } from '../../stale.js';
 
@@ -25,7 +25,6 @@ export interface GoodnightConfig extends LovelaceCardConfig {
 }
 
 const OPENINGS = new Set(['door', 'window', 'garage_door', 'opening']);
-const CONFIRM_AT = 0.85;
 
 /**
  * Goodnight: shows late in the evening while lights are still on in the
@@ -38,13 +37,9 @@ export class GlassGoodnight extends GlassElement {
   @state() private config?: GoodnightConfig;
   /** Lights Goodnight switched off, for Undo. Set means "done". */
   @state() private saved?: string[];
-  @state() private drag = 0;
-  @state() private dragging = false;
   @state() private now = new Date();
-  @query('.track') private track?: HTMLElement;
 
   private timer?: number;
-  private startX = 0;
   private lastKey = '';
 
   static getConfigElement() {
@@ -160,9 +155,6 @@ export class GlassGoodnight extends GlassElement {
         : 'Tap the tick to undo'
       : `Turns off ${s.place} lights${s.open.length ? ' and reminds you about open doors' : ''}.`;
 
-    const travel = this.track ? this.track.clientWidth - 68 : 0;
-    const x = done ? travel : this.drag * travel;
-
     return html`
       <section class="card" aria-label="Goodnight">
         <div class="top">
@@ -176,61 +168,20 @@ export class GlassGoodnight extends GlassElement {
             <span class="label">${s.onIds.length === 1 ? 'light on' : 'lights on'}</span>
           </div>
         </div>
-        <div class="track ${done ? 'done' : ''}">
-          <span class="slide-text" style="opacity: ${done ? 1 : 1 - this.drag * 1.4}">
-            ${done ? 'Goodnight done' : 'Slide for Goodnight'}
-          </span>
-          ${done ? nothing : html`<span class="dot" aria-hidden="true"></span>`}
-          <button
-            type="button"
-            class="knob ${this.dragging ? 'dragging' : ''}"
-            data-no-press
-            style="transform: translateX(${x}px)"
-            aria-label=${done ? 'Undo Goodnight' : 'Goodnight: turn off the lights'}
-            @pointerdown=${this.onDown}
-            @pointermove=${this.onMove}
-            @pointerup=${this.onUp}
-            @pointercancel=${this.onUp}
-            @click=${this.onClick}
-          >
-            <glass-icon name=${done ? 'check' : 'arrow-right'} size="22" stroke="1.8"></glass-icon>
-          </button>
-        </div>
+        <glass-slide-confirm
+          prompt="Slide for Goodnight"
+          done-text="Goodnight done"
+          label="Goodnight: turn off the lights"
+          undo-label="Undo Goodnight"
+          ?done=${done}
+          @confirm=${this.goodnight}
+          @undo=${this.undo}
+        ></glass-slide-confirm>
       </section>
     `;
   }
 
-  private onDown(e: PointerEvent) {
-    if (this.saved) return;
-    this.dragging = true;
-    this.startX = e.clientX;
-    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
-  }
-
-  private onMove(e: PointerEvent) {
-    if (!this.dragging || !this.track) return;
-    const travel = this.track.clientWidth - 68;
-    const drag = Math.min(1, Math.max(0, (e.clientX - this.startX) / travel));
-    // A bump as the knob reaches the point where letting go confirms.
-    if (drag >= CONFIRM_AT && this.drag < CONFIRM_AT) haptic('medium');
-    this.drag = drag;
-  }
-
-  private onUp() {
-    if (!this.dragging) return;
-    this.dragging = false;
-    if (this.drag >= CONFIRM_AT) this.goodnight();
-    this.drag = 0;
-  }
-
-  // Pointer users must slide; a keyboard press (Enter/Space, detail 0) confirms directly.
-  // Once done, a tap or key press undoes.
-  private onClick(e: MouseEvent) {
-    if (this.saved) this.undo();
-    else if (e.detail === 0) this.goodnight();
-  }
-
-  private goodnight() {
+  private goodnight = () => {
     const hass = this.hass!;
     const ids = this.summary().onIds.filter((id) => !isUnavailable(hass.states[id]));
     this.saved = ids;
@@ -240,13 +191,13 @@ export class GlassGoodnight extends GlassElement {
     } else if (ids.length) {
       hass.callService('light', 'turn_off', { entity_id: ids });
     }
-  }
+  };
 
-  private undo() {
+  private undo = () => {
     haptic('light');
     if (this.saved?.length) this.hass!.callService('light', 'turn_on', { entity_id: this.saved });
     this.saved = undefined;
-  }
+  };
 
   static styles = [
     tokens,
@@ -307,70 +258,6 @@ export class GlassGoodnight extends GlassElement {
         font-size: var(--glass-text-caption);
         color: var(--glass-text-muted);
         white-space: nowrap;
-      }
-      .track {
-        position: relative;
-        box-sizing: border-box;
-        height: 68px;
-        padding: 8px;
-        border-radius: 34px;
-        background: rgba(var(--glass-line-rgb), 0.06);
-        display: flex;
-        align-items: center;
-        user-select: none;
-        -webkit-user-select: none;
-      }
-      .slide-text {
-        flex: 1;
-        padding-left: 68px;
-        font-size: var(--glass-text-body);
-        color: var(--glass-text-secondary);
-      }
-      .done .slide-text {
-        padding-left: 20px;
-      }
-      .dot {
-        width: 8px;
-        height: 8px;
-        margin-right: 20px;
-        border-radius: 50%;
-        background: var(--glass-go);
-      }
-      .knob {
-        all: unset;
-        position: absolute;
-        left: 6px;
-        top: 6px;
-        width: 56px;
-        height: 56px;
-        border-radius: 50%;
-        background: var(--glass-go);
-        color: var(--glass-on-go);
-        box-shadow: var(--glass-go-shadow);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: grab;
-        touch-action: none;
-        -webkit-tap-highlight-color: transparent;
-        transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
-      }
-      .knob.dragging {
-        cursor: grabbing;
-        transition: none;
-      }
-      .done .knob {
-        cursor: pointer;
-        box-shadow: none;
-      }
-      .knob:focus-visible {
-        outline: 2px solid var(--glass-ink);
-        outline-offset: 3px;
-      }
-      @media (prefers-reduced-motion: reduce) {
-        .knob {
-          transition: none;
-        }
       }
     `,
   ];

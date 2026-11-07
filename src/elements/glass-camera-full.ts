@@ -5,8 +5,8 @@ import { tokens } from '../tokens.js';
 import { type HomeAssistant, isUnavailable } from '../ha.js';
 import { shortName } from '../rooms.js';
 import { ago, clock } from '../time.js';
-import { haptic } from '../motion.js';
 import './glass-camera-live.js';
+import { cameraBadge } from './glass-camera-controls.js';
 import './glass-icon.js';
 
 export interface FullCamera {
@@ -185,20 +185,18 @@ export class GlassCameraFull extends GlassElement {
     const cam = c && hass?.states[c.entity];
     if (!hass || !c) return nothing;
     const offline = isUnavailable(cam);
-    const recording = cam?.state === 'recording';
     const pic = cam?.attributes.entity_picture as string | undefined;
     const light = c.light ? hass.states[c.light] : undefined;
-    const lightOn = light?.state === 'on';
     const many = this.cameras.length > 1;
     const name = c.name ?? shortName(cam, '');
     return html`<div class="view" role="dialog" aria-modal="true" aria-label="${name} full screen">
       <div class="feed" @pointerdown=${this.onDown} @pointermove=${this.onMove} @pointerup=${this.onUp} @pointercancel=${this.onUp}>
         <div class="zoom" style="transform: translate(${this.zoom.x}px, ${this.zoom.y}px) scale(${this.zoom.scale})">
-          ${pic && !offline ? html`<img src=${pic} alt="" draggable="false" />` : html`<span class="none">${offline ? 'Camera offline' : 'No picture'}</span>`}
+          ${pic && !offline ? html`<img src=${pic} alt="" draggable="false" />` : offline ? nothing : html`<span class="none">No picture</span>`}
           ${offline ? nothing : html`<glass-camera-live class="video ${this.live ? 'on' : ''}" .hass=${hass} .entity=${c.entity} @live-changed=${(e: CustomEvent<boolean>) => (this.live = e.detail)}></glass-camera-live>`}
         </div>
         ${this.zoom.scale > 1.05
-          ? html`<button type="button" class="pill zoom-pill" aria-label="Zoom back out" @click=${() => (this.zoom = { scale: 1, x: 0, y: 0 })}>${this.zoom.scale.toFixed(1)}×</button>`
+          ? html`<glass-camera-pill class="zoom-pill" button label="Zoom back out" @click=${() => (this.zoom = { scale: 1, x: 0, y: 0 })}>${this.zoom.scale.toFixed(1)}×</glass-camera-pill>`
           : nothing}
         ${this.zoom.scale > 1.05 ? nothing : html`<span class="hint">Turn your phone for a bigger picture</span>`}
       </div>
@@ -206,29 +204,25 @@ export class GlassCameraFull extends GlassElement {
       <div class="top">
         <span class="who">
           <span class="name">${name}</span>
-          <span class="pill"><span class="dot ${offline ? 'off' : recording ? 'rec' : 'live'}"></span>${offline ? 'Offline' : recording ? 'Recording' : 'Live'}</span>
+          <glass-camera-pill state=${cameraBadge(cam)}></glass-camera-pill>
         </span>
-        <button type="button" class="round" aria-label="Close" @click=${() => this.remove()}><glass-icon name="x" size="20" stroke="1.8"></glass-icon></button>
+        <glass-camera-button look="full" size="44" icon="x" label="Close" @click=${() => this.remove()}></glass-camera-button>
       </div>
 
       ${many
-        ? html`<button type="button" class="round arrow left" aria-label="Previous camera" @click=${() => this.go(this.index - 1)}><glass-icon name="chevron-left" size="18" stroke="1.8"></glass-icon></button>
-            <button type="button" class="round arrow right" aria-label="Next camera" @click=${() => this.go(this.index + 1)}><glass-icon name="chevron-right" size="18" stroke="1.8"></glass-icon></button>`
+        ? html`<glass-camera-button class="arrow left" look="full" size="44" icon="chevron-left" label="Previous camera" @click=${() => this.go(this.index - 1)}></glass-camera-button>
+            <glass-camera-button class="arrow right" look="full" size="44" icon="chevron-right" label="Next camera" @click=${() => this.go(this.index + 1)}></glass-camera-button>`
         : nothing}
 
       <div class="foot">
         <span class="info">
           ${many
-            ? html`<span class="dots" role="tablist" aria-label="Cameras">
-                ${this.cameras.map((x, i) => html`<button type="button" role="tab" aria-selected=${i === this.index ? 'true' : 'false'} aria-label=${x.name ?? x.entity} class=${i === this.index ? 'on' : ''} @click=${() => (this.index = i)}></button>`)}
-              </span>`
+            ? html`<glass-page-dots look="full" .names=${this.cameras.map((x) => x.name ?? x.entity)} .index=${this.index} @pick=${(e: CustomEvent<number>) => (this.index = e.detail)}></glass-page-dots>`
             : nothing}
           <span class="last">${this.lastLine(c) || (cam ? `Updated ${ago(cam.last_changed)}` : '')}</span>
         </span>
         ${light
-          ? html`<button type="button" class="light ${lightOn ? 'on' : ''}" aria-pressed=${lightOn ? 'true' : 'false'} ?disabled=${isUnavailable(light)} @click=${() => (haptic('light'), hass.callService('homeassistant', lightOn ? 'turn_off' : 'turn_on', { entity_id: c.light }))}>
-              <glass-icon name="lightbulb" size="18" stroke="1.7"></glass-icon>${shortName(light, '')} · ${lightOn ? 'On' : 'Off'}
-            </button>`
+          ? html`<glass-camera-light look="full" name=${shortName(light, '')} .entity=${light} .hass=${hass}></glass-camera-light>`
           : nothing}
       </div>
     </div>`;
@@ -245,8 +239,8 @@ export class GlassCameraFull extends GlassElement {
       .view {
         position: absolute;
         inset: 0;
-        background: #000;
-        color: #fff;
+        background: var(--glass-full-screen);
+        color: var(--glass-on-picture);
         font-family: var(--glass-font);
       }
       /* the picture: 16:9, full width upright, full height sideways */
@@ -257,7 +251,7 @@ export class GlassCameraFull extends GlassElement {
         top: 50%;
         transform: translateY(-60%);
         aspect-ratio: 16 / 9;
-        background: #1f2427;
+        background: var(--glass-dark-surface);
         /* zoomed, the picture spills out over the whole screen; the name, close and caption stay on top */
         overflow: visible;
         /* the view handles pinch and drag itself, so the page doesn't zoom instead */
@@ -297,31 +291,7 @@ export class GlassCameraFull extends GlassElement {
         align-items: center;
         justify-content: center;
         font-size: var(--glass-text-caption);
-        color: rgba(255, 255, 255, 0.6);
-      }
-      .round,
-      .pill,
-      .light {
-        background: rgba(255, 255, 255, 0.14);
-        backdrop-filter: blur(20px);
-        -webkit-backdrop-filter: blur(20px);
-      }
-      button {
-        all: unset;
-        cursor: pointer;
-      }
-      button:focus-visible {
-        outline: 2px solid #fff;
-        outline-offset: 2px;
-      }
-      .round {
-        width: 44px;
-        height: 44px;
-        flex: none;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
+        color: var(--glass-on-picture-muted);
       }
       .top {
         position: absolute;
@@ -342,27 +312,6 @@ export class GlassCameraFull extends GlassElement {
       .name {
         font-size: 20px;
         white-space: nowrap;
-      }
-      .pill {
-        height: 30px;
-        padding: 0 12px;
-        border-radius: 15px;
-        font-size: var(--glass-text-caption);
-        display: flex;
-        align-items: center;
-        gap: 8px;
-      }
-      .dot {
-        width: 7px;
-        height: 7px;
-        border-radius: 50%;
-        background: var(--glass-go);
-      }
-      .dot.rec {
-        background: var(--glass-live);
-      }
-      .dot.off {
-        background: var(--glass-grey);
       }
       .arrow {
         position: absolute;
@@ -391,38 +340,9 @@ export class GlassCameraFull extends GlassElement {
         align-items: center;
         gap: 12px;
       }
-      .dots {
-        display: flex;
-        gap: 8px;
-      }
-      .dots button {
-        width: 8px;
-        height: 8px;
-        border-radius: 4px;
-        background: rgba(255, 255, 255, 0.35);
-      }
-      .dots button.on {
-        width: 24px;
-        background: #fff;
-      }
       .last {
         font-size: var(--glass-text-caption);
-        color: rgba(255, 255, 255, 0.75);
-      }
-      .light {
-        box-sizing: border-box;
-        height: 52px;
-        padding: 0 20px;
-        border-radius: 26px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-        font-size: var(--glass-text-body);
-      }
-      .light.on {
-        background: var(--glass-light-default);
-        color: #121316;
+        color: var(--glass-on-picture-soft);
       }
       .hint {
         position: absolute;
@@ -431,7 +351,7 @@ export class GlassCameraFull extends GlassElement {
         top: calc(100% + 20px);
         text-align: center;
         font-size: var(--glass-text-small);
-        color: rgba(255, 255, 255, 0.45);
+        color: var(--glass-on-picture-hint);
       }
       @media (orientation: landscape) {
         .feed {

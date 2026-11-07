@@ -1,6 +1,8 @@
 import { css, html, nothing, svg, type PropertyValues } from 'lit';
 import '../../elements/glass-rows.js';
 import '../../elements/glass-chip.js';
+import '../../elements/glass-camera-controls.js';
+import { cameraBadge } from '../../elements/glass-camera-controls.js';
 import type { Tone } from '../../elements/glass-chip.js';
 import { heading } from '../../elements/type.js';
 import { nil } from '../../elements/nil.js';
@@ -12,7 +14,7 @@ import { ensureFonts } from '../../fonts.js';
 import { type HomeAssistant, type LovelaceCardConfig, isUnavailable, openMoreInfo, registerCard } from '../../ha.js';
 import { type PrinterEntities, type PrinterPhase, minutesOf, printerState } from '../../printer.js';
 import { ago } from '../../time.js';
-import { haptic, attentionStyles } from '../../motion.js';
+import { attentionStyles } from '../../motion.js';
 import '../../elements/glass-icon.js';
 import './printer-card-editor.js';
 
@@ -134,7 +136,6 @@ export class GlassPrinter extends GlassElement {
     const pic = cam?.attributes.entity_picture as string | undefined;
     const src = pic && !pic.startsWith('data:') ? `${pic}${pic.includes('?') ? '&' : '?'}t=${this.tick}` : pic;
     const light = c.chamber_light ? hass.states[c.chamber_light] : undefined;
-    const lightOn = light?.state === 'on';
     const pct = p.phase === 'done' ? 100 : Math.round(p.progress ?? 0);
     const circumference = 2 * Math.PI * 32;
     const rem = hass.states[c.printer_remaining ?? ''];
@@ -166,21 +167,10 @@ export class GlassPrinter extends GlassElement {
       </span>
       ${cam
         ? html`<div class="view">
-            ${src && !isUnavailable(cam) ? html`<img src=${src} alt="" />` : html`<span class="none">Camera offline</span>`}
-            <span class="badge"><span class="live"></span>Live</span>
-            <button type="button" class="expand" aria-label="Open live view" @click=${() => openMoreInfo(this, c.camera!)}>
-              <glass-icon name="maximize-2" size="16" stroke="1.8"></glass-icon>
-            </button>
-            ${light
-              ? html`<button
-                  type="button"
-                  class="light"
-                  aria-pressed=${lightOn ? 'true' : 'false'}
-                  @click=${() => (haptic('light'), hass.callService('light', lightOn ? 'turn_off' : 'turn_on', { entity_id: c.chamber_light }))}
-                >
-                  Chamber light · ${lightOn ? 'On' : 'Off'}
-                </button>`
-              : nothing}
+            ${src && !isUnavailable(cam) ? html`<img src=${src} alt="" />` : nothing}
+            <glass-live-badge class="badge" state=${cameraBadge(cam)}></glass-live-badge>
+            <glass-camera-button class="expand" icon="maximize-2" label="Open live view" @click=${() => openMoreInfo(this, c.camera!)}></glass-camera-button>
+            ${light && !isUnavailable(cam) ? html`<glass-camera-light class="light" look="picture" name="Chamber light" .entity=${light} .hass=${hass}></glass-camera-light>` : nothing}
           </div>`
         : nothing}
       <div class="progress">
@@ -259,59 +249,20 @@ export class GlassPrinter extends GlassElement {
         height: 100%;
         object-fit: cover;
       }
-      .none {
-        font-size: var(--glass-text-caption);
-        color: var(--glass-on-picture-muted);
-      }
       .badge {
         position: absolute;
         top: 12px;
         left: 12px;
-        height: 24px;
-        padding: 0 12px;
-        border-radius: 12px;
-        background: var(--glass-scrim);
-        color: #fff;
-        font-size: var(--glass-text-small);
-        display: flex;
-        align-items: center;
-        gap: 8px;
-      }
-      .live {
-        width: 6px;
-        height: 6px;
-        border-radius: 50%;
-        background: var(--glass-live);
       }
       .expand {
-        all: unset;
         position: absolute;
         top: 12px;
         right: 12px;
-        width: 36px;
-        height: 36px;
-        border-radius: 50%;
-        background: var(--glass-scrim);
-        color: #fff;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
       }
       .light {
-        all: unset;
         position: absolute;
         right: 12px;
         bottom: 12px;
-        height: 36px;
-        padding: 0 12px;
-        border-radius: 18px;
-        background: rgba(255, 255, 255, 0.9);
-        color: #121316; /* sits on the camera image in both themes */
-        font-size: var(--glass-text-small);
-        display: flex;
-        align-items: center;
-        cursor: pointer;
       }
       .progress {
         display: flex;
