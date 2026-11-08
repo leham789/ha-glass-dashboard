@@ -15,8 +15,7 @@ import './glass-chip.js';
  * and Scenes' glass look nest it.
  *
  * Styles: tile (132), small (92, a 32 ring) and row (56, bulb on the left).
- * A tile narrower than a quarter (about 110) takes small by itself; a row
- * needs at least half, or it's small too.
+ * Any style narrower than about 110 takes small by itself.
  *
  * Looks, from the entity: a lit light takes its bulb's colour (light-colour.ts);
  * something else that's on is ink; a scene or script stays glass; off is glass.
@@ -67,7 +66,6 @@ export class GlassTile extends LitElement {
   @property() tap: 'auto' | 'more-info' = 'auto';
 
   @state() private narrow = false;
-  @state() private tooNarrowForRow = false;
 
   private holdTimer?: number;
   private held = false;
@@ -76,7 +74,6 @@ export class GlassTile extends LitElement {
   private resize = new ResizeObserver(([e]) => {
     const w = e.contentRect.width;
     this.narrow = w > 0 && w < 110;
-    this.tooNarrowForRow = w > 0 && w < 150;
   });
 
   connectedCallback(): void {
@@ -104,7 +101,6 @@ export class GlassTile extends LitElement {
 
   private get drawnStyle(): TileStyle {
     if (this.narrow) return 'small';
-    if (this.tileStyle === 'row' && this.tooNarrowForRow) return 'small';
     return this.tileStyle;
   }
 

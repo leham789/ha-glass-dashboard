@@ -140,6 +140,10 @@ export class GlassRoomClimate extends GlassElement {
         grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: var(--glass-space-tile-gap);
       }
+      /* Half width: the tiles stack, one above the other. */
+      :host([narrow]) section {
+        grid-template-columns: minmax(0, 1fr);
+      }
       .tile {
         ${tileSurface}
         all: unset;

@@ -185,6 +185,10 @@ export class GlassEnergyTiles extends GlassElement {
         grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: var(--glass-space-tile-gap);
       }
+      /* Half width: one tile per row. */
+      :host([narrow]) section {
+        grid-template-columns: minmax(0, 1fr);
+      }
       .tile {
         all: unset;
         box-sizing: border-box;

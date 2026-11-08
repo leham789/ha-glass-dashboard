@@ -74,12 +74,14 @@ export class GlassThermostatRow extends GlassElement {
     const target = this.pending ?? a.temperature;
     const now = typeof a.current_temperature === 'number' ? `now ${a.current_temperature.toFixed(1)}°` : '';
     const action = a.hvac_action ? String(a.hvac_action).replace('_', ' ') : '';
-    const label = off ? 'Heating is off' : ['Heating set to', [now, action].filter(Boolean).join(', ')].filter(Boolean).join(' · ');
+    // Unavailable: "Offline" and the grey dash, the card at 50% (whether the heating is off isn't known).
+    const unavailable = isUnavailable(e);
+    const label = unavailable ? 'Offline' : off ? 'Heating is off' : ['Heating set to', [now, action].filter(Boolean).join(', ')].filter(Boolean).join(' · ');
 
-    return html`<section aria-label="Room heating">
+    return html`<section aria-label="Room heating" class=${unavailable ? 'offline' : ''}>
       <button type="button" class="info" @click=${() => openMoreInfo(this, this.config!.entity)}>
         <span class="label">${label}</span>
-        <glass-number size="stat-s" .value=${off ? 'Off' : ''} ?nil=${!off && typeof target !== 'number'}
+        <glass-number size="stat-s" .value=${off && !unavailable ? 'Off' : ''} ?nil=${unavailable || (!off && typeof target !== 'number')}
           >${!off && typeof target === 'number' ? html`<glass-roll .value=${target} text="${fmt(target)}°"></glass-roll>` : nothing}</glass-number
         >
       </button>
@@ -119,6 +121,14 @@ export class GlassThermostatRow extends GlassElement {
         align-items: center;
         justify-content: space-between;
         gap: 12px;
+      }
+      section.offline {
+        opacity: 0.5;
+      }
+      /* Half width: the number on top, − and + under it. */
+      :host([narrow]) section {
+        flex-direction: column;
+        align-items: stretch;
       }
       .info {
         all: unset;

@@ -119,6 +119,15 @@ export class GlassRoomAlert extends GlassElement {
         font-size: var(--glass-text-caption);
         color: var(--glass-attention-ink);
       }
+      /* Half width: the button goes under the text, full width. */
+      :host([narrow]) section {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+      }
+      :host([narrow]) glass-button {
+        display: flex;
+      }
     `,
   ];
 }

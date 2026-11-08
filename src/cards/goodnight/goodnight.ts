@@ -249,6 +249,15 @@ export class GlassGoodnight extends GlassElement {
         flex-direction: column;
         align-items: center;
       }
+      /* Half width: the count goes under the words. */
+      :host([narrow]) .top {
+        flex-direction: column;
+      }
+      :host([narrow]) .count {
+        flex-direction: row;
+        align-items: baseline;
+        gap: 8px;
+      }
       .label {
         font-size: var(--glass-text-caption);
         color: var(--glass-text-muted);

@@ -36,12 +36,32 @@ export class GlassPillRow extends LitElement {
   /** aria-pressed, for a row that switches something (the Light row). */
   @property({ type: Boolean }) pressed?: boolean;
   @property() label = '';
+  /** Under 200 wide (a half-width card): a 36 circle and the state under the name. */
+  @property({ type: Boolean, reflect: true }) compact = false;
+  private size = new ResizeObserver(([e]) => {
+    const w = e.contentRect.width;
+    if (w) this.compact = w < 200;
+  });
+
+  connectedCallback(): void {
+    super.connectedCallback();
+    this.size.observe(this);
+  }
+
+  disconnectedCallback(): void {
+    this.size.disconnect();
+    super.disconnectedCallback();
+  }
 
   static styles = css`
     :host {
       display: block;
       min-width: 0;
       font-family: var(--glass-font);
+    }
+    :host([compact]) .ic {
+      width: 36px;
+      height: 36px;
     }
     .pr {
       all: unset;
@@ -157,8 +177,12 @@ export class GlassPillRow extends LitElement {
   render() {
     const inner = html`${this.fill !== undefined ? html`<span class="fill" style="width: ${this.fill}%; background: ${this.fillBg}"></span>` : nothing}
       ${this.icon ? html`<span class="ic ${this.iconOn ? 'on' : ''}"><glass-icon name=${this.icon} size="18"></glass-icon></span>` : nothing}
-      <span class="tx"><span class="n">${this.name}</span>${this.line ? html`<span class="sub">${this.line}</span>` : nothing}</span>
-      ${this.state ? html`<span class="state">${this.state}</span>` : nothing}
+      <span class="tx"
+        ><span class="n">${this.name}</span>${this.line ? html`<span class="sub">${this.line}</span>` : nothing}${this.compact && this.state
+          ? html`<span class="sub">${this.state}</span>`
+          : nothing}</span
+      >
+      ${this.state && !this.compact ? html`<span class="state">${this.state}</span>` : nothing}
       ${this.value ? html`<span class="value">${this.value}</span>` : nothing}
       <slot></slot>`;
     return this.button

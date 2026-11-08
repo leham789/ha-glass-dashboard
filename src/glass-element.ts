@@ -129,9 +129,28 @@ const TICK_MS = 5 * 60 * 1000;
 const ticking = new Set<LitElement>();
 let tick: number | undefined;
 
+// Cards measure their own width (one observer for all of them): `narrow` below 260 (a half-width
+// card is 169), `quarter` below 130 (a quarter is 79, 4 of 12 is 110). Both are reflected, for CSS, and are state,
+// so a card can draw a different layout.
+const NARROW = 260;
+const QUARTER = 130;
+const sizes = new ResizeObserver((entries) => {
+  for (const e of entries) {
+    const el = e.target as GlassElement;
+    const w = e.contentRect.width;
+    if (!w) continue;
+    el.narrow = w < NARROW;
+    el.quarter = w < QUARTER;
+  }
+});
+
 export class GlassElement extends LitElement {
   /** Set by setConfig when a required option is missing: what to choose, in the card's own words. */
   @property({ attribute: false }) protected needs?: string;
+  /** Narrower than 260 (half width): the card's compact layout. */
+  @property({ type: Boolean, reflect: true }) narrow = false;
+  /** Narrower than 130 (a quarter, or 4 of 12). */
+  @property({ type: Boolean, reflect: true }) quarter = false;
 
   /**
    * In setConfig, in place of throwing: keep the config (so the editor still
@@ -161,11 +180,13 @@ export class GlassElement extends LitElement {
 
   connectedCallback(): void {
     super.connectedCallback();
+    sizes.observe(this);
     ticking.add(this);
     tick ??= window.setInterval(() => ticking.forEach((el) => el.requestUpdate()), TICK_MS);
   }
 
   disconnectedCallback(): void {
+    sizes.unobserve(this);
     ticking.delete(this);
     super.disconnectedCallback();
   }

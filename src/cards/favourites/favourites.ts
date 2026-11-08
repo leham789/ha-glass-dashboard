@@ -133,7 +133,7 @@ export class GlassFavourites extends GlassElement {
         ${repeat(
           this.config!.entities.filter((id) => hass.states[id]),
           (id) => id,
-          (id) => html`<glass-tile .hass=${hass} entity=${id} tile-style="small" icon-style=${this.config!.icon_style ?? 'plain'}></glass-tile>`,
+          (id) => html`<glass-tile .hass=${hass} entity=${id} tile-style=${this.narrow ? 'row' : 'small'} icon-style=${this.config!.icon_style ?? 'plain'}></glass-tile>`,
         )}
       </div>
     </section>`;
@@ -253,6 +253,21 @@ export class GlassFavourites extends GlassElement {
       }
       .tiles::-webkit-scrollbar {
         display: none;
+      }
+      /* Half width: the Tile's row style, one per line, so none hide off the side. */
+      :host([narrow]) .tiles {
+        flex-direction: column;
+        gap: 8px;
+        margin: 0;
+        padding: 0;
+        overflow: visible;
+      }
+      :host([narrow]) .tiles glass-tile {
+        width: auto;
+      }
+      :host([narrow]) nav {
+        flex-wrap: wrap;
+        overflow: visible;
       }
       /* a light that's on: the light tile's colour, dark text in both themes */
     `,

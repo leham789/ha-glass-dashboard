@@ -252,6 +252,11 @@ export class GlassCamera extends GlassElement {
         gap: 8px;
         padding: 0 8px;
       }
+      /* Half width: the pill goes under the name and line. */
+      :host([narrow]) .foot {
+        flex-direction: column;
+        align-items: flex-start;
+      }
       .info {
         display: flex;
         flex-direction: column;

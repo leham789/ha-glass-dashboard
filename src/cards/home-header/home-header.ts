@@ -115,7 +115,7 @@ export class GlassHomeHeader extends GlassElement {
       <header>
         <span class="hello">
           <span class="date">${date}</span>
-          <span class="greeting">${greeting(this.now)}${v.name ? `, ${v.name}` : ''}</span>
+          <span class="greeting">${greeting(this.now)}${v.name ? html`,${this.narrow ? html`<br />` : ' '}${v.name}` : ''}</span>
         </span>
         ${v.personId
           ? html`<button
@@ -132,7 +132,7 @@ export class GlassHomeHeader extends GlassElement {
       </header>
       ${whole !== undefined
         ? html`<section aria-label="${v.room} temperature">
-            <glass-number size="hero" value=${whole} dec=".${decimal}°" ?grey=${!!v.quiet}></glass-number>
+            <glass-number size=${this.narrow ? 'dial' : 'hero'} value=${whole} dec=".${decimal}°" ?grey=${!!v.quiet}></glass-number>
             <span class="chips">
               <glass-info-chip subject>${v.room}</glass-info-chip>
               ${v.outside !== undefined
@@ -222,6 +222,11 @@ export class GlassHomeHeader extends GlassElement {
         white-space: nowrap;
         overflow-x: auto;
         scrollbar-width: none;
+      }
+      /* Compact (half width): a smaller number, the greeting on two lines, the pills wrapping. */
+      :host([narrow]) .chips {
+        flex-wrap: wrap;
+        overflow: visible;
       }
     `,
   ];

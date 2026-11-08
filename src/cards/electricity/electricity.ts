@@ -112,7 +112,9 @@ export class GlassElectricity extends GlassElement {
     const wait = this.loading && !u;
     const big = cost && !isUnavailable(cost) ? formatValue(cost).value : u ? `${u.today.toFixed(1)} kWh` : '';
     const compare = u && u.yesterdaySoFar > 0 ? comparison(u.today, u.yesterdaySoFar) : '';
-    const line = [cost && u ? `${u.today.toFixed(1)} kWh` : '', compare].filter(Boolean).join(' · ');
+    // Compact (half width): a shorter title and comparison, smaller dots, just the day's ends on the axis.
+    const n = this.narrow;
+    const line = n ? compare.replace(' than yesterday', '') : [cost && u ? `${u.today.toFixed(1)} kWh` : '', compare].filter(Boolean).join(' · ');
     const nowHour = new Date().getHours();
     const gas = this.config.fuel === 'gas';
     const fuel = gas ? 'Gas' : 'Electricity';
@@ -121,23 +123,23 @@ export class GlassElectricity extends GlassElement {
       <button type="button" class="open" aria-label="${fuel} details" @click=${this.openEnergy}></button>
       <span class="top">
         <span class="head">
-          <h2 id="h">${this.config.title ?? `${fuel} today`}</h2>
-          <glass-number size="dial-s" .value=${big} .loading=${wait && !big ? 132 : undefined}></glass-number>
-          ${line ? html`<span class="line">${line}</span>` : wait ? html`<span class="skel" style="width: 160px; height: 12px; margin: 4px 0;"></span>` : nothing}
+          <h2 id="h">${this.config.title ?? `${n ? (gas ? 'Gas' : 'Elec') : fuel} today`}</h2>
+          <glass-number size=${n ? 'stat-m' : 'dial-s'} .value=${big} .loading=${wait && !big ? (n ? 96 : 132) : undefined}></glass-number>
+          ${line ? html`<span class="line">${line}</span>` : wait ? html`<span class="skel" style="width: ${n ? 96 : 160}px; height: 12px; margin: 4px 0;"></span>` : nothing}
         </span>
-        <span class="icon" aria-hidden="true"><glass-icon name=${gas ? 'flame' : 'zap'} size="18" stroke="1.7"></glass-icon></span>
+        <span class="icon" aria-hidden="true"><glass-icon name=${gas ? 'flame' : 'zap'} size=${n ? 16 : 18} stroke="1.7"></glass-icon></span>
       </span>
       <glass-dot-chart
         class="chart"
         role="img"
         aria-label="${fuel} use each hour today"
         .values=${Array.from({ length: 24 }, (_, h) => u?.hours[h] ?? 0)}
-        levels=${DOTS}
-        dot="6"
+        levels=${n ? 7 : DOTS}
+        dot=${n ? 4 : 6}
         .now=${nowHour}
         ?loading=${!u}
       ></glass-dot-chart>
-      <span class="axis"><span>00:00</span><span>06:00</span><span>12:00</span><span>18:00</span><span>24:00</span></span>
+      <span class="axis">${(n ? ['00:00', '24:00'] : ['00:00', '06:00', '12:00', '18:00', '24:00']).map((t) => html`<span>${t}</span>`)}</span>
     </section>`;
   }
 
@@ -229,6 +231,21 @@ export class GlassElectricity extends GlassElement {
         flex-direction: column;
         justify-content: flex-end;
         height: 104px;
+      }
+      :host([narrow]) section {
+        padding: 16px;
+        gap: 12px;
+      }
+      :host([narrow]) h2 {
+        font-size: var(--glass-text-caption);
+        white-space: nowrap;
+      }
+      :host([narrow]) .icon {
+        width: 36px;
+        height: 36px;
+      }
+      :host([narrow]) .chart {
+        height: auto;
       }
       .axis {
         display: flex;

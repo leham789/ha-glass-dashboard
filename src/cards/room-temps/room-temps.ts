@@ -207,6 +207,16 @@ export class GlassRoomTemps extends GlassElement {
         text-align: right;
         font-size: var(--glass-text-body);
       }
+      /* Half width: no scale or legend, just the room, its humidity and the temperature. */
+      :host([narrow]) .scale,
+      :host([narrow]) .legend {
+        display: none;
+      }
+      :host([narrow]) .name {
+        flex: 1;
+        width: auto;
+        min-width: 0;
+      }
     `,
   ];
 }

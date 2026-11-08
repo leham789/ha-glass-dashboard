@@ -5,7 +5,7 @@ import { GlassElement } from '../../glass-element.js';
 import { customElement, property, state } from 'lit/decorators.js';
 import { tokens } from '../../tokens.js';
 import { ensureFonts } from '../../fonts.js';
-import { type HomeAssistant, type LovelaceCardConfig, openMoreInfo, registerCard } from '../../ha.js';
+import { type HomeAssistant, type LovelaceCardConfig, isUnavailable, openMoreInfo, registerCard } from '../../ha.js';
 import type { IconName } from '../../icons.js';
 import { formatValue } from '../../format.js';
 import '../../elements/glass-icon.js';
@@ -79,12 +79,14 @@ export class GlassStatTiles extends GlassElement {
       ${this.config.tiles.map((t) => {
         const e = this.hass!.states[t.entity];
         if (!e) return nothing;
-        const { value, after } = formatValue(e);
+        // Unavailable: "Offline" on a half-strength tile, still in its place.
+        const offline = isUnavailable(e);
+        const { value, after } = offline ? { value: 'Offline', after: '' } : formatValue(e);
         const second = t.secondary ? this.hass!.states[t.secondary] : undefined;
         const label = [t.name ?? (after || e.attributes.friendly_name), second ? formatValue(second).value : '']
           .filter(Boolean)
           .join(' · ');
-        return html`<button type="button" class=${t.dark ? 'dark' : ''} @click=${() => openMoreInfo(this, t.entity)}>
+        return html`<button type="button" class="${t.dark ? 'dark' : ''} ${offline ? 'offline' : ''}" @click=${() => openMoreInfo(this, t.entity)}>
           ${t.icon ? html`<glass-icon name=${t.icon} size="20"></glass-icon>` : html`<span></span>`}
           <span class="info">
             <glass-number size="small" .value=${value}></glass-number>
@@ -119,6 +121,9 @@ export class GlassStatTiles extends GlassElement {
         min-width: 0;
         cursor: pointer;
       }
+      button.offline {
+        opacity: 0.5;
+      }
       button.dark {
         background: var(--glass-ink);
         border-color: var(--glass-ink);
@@ -146,6 +151,18 @@ export class GlassStatTiles extends GlassElement {
       }
       .dark .label {
         color: color-mix(in srgb, var(--glass-on-ink) 75%, transparent);
+      }
+      /* Half width: 64-high rows, the icon on the left. */
+      :host([narrow]) section {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 8px;
+      }
+      :host([narrow]) button {
+        height: 64px;
+        flex-direction: row;
+        justify-content: flex-start;
+        align-items: center;
+        gap: 12px;
       }
     `,
   ];

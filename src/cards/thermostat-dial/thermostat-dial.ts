@@ -104,7 +104,10 @@ export class GlassThermostatDial extends GlassElement {
     const nowText = now === undefined ? '' : `Now ${now.toFixed(1)}°`;
     const roomQuiet = this.roomQuiet();
     this.shownQuiet = roomQuiet;
-    const nowLine = roomQuiet
+    // Half width: the line keeps just the reading.
+    const nowLine = this.narrow
+      ? roomQuiet ? 'Not reporting' : nowText
+      : roomQuiet
       ? 'Room sensor not reporting'
       : off
         ? [nowText, 'heating off'].filter(Boolean).join(' · ')
@@ -122,7 +125,7 @@ export class GlassThermostatDial extends GlassElement {
       .filter((m: string) => order.includes(m))
       .sort((x: string, y: string) => order.indexOf(x) - order.indexOf(y));
 
-    return html`<section aria-label="Thermostat">
+    return html`<section aria-label="Thermostat" class=${isUnavailable(e) ? 'offline' : ''}>
       <span class="head">
         <span class="name">${this.config.name ?? a.friendly_name}</span>
         <glass-status-note tone=${heating && !off ? 'attention' : 'grey'}>${status}</glass-status-note>
@@ -157,7 +160,7 @@ export class GlassThermostatDial extends GlassElement {
                   <circle cx=${kx.toFixed(1)} cy=${ky.toFixed(1)} r="11" fill="var(--glass-ink)" stroke="var(--glass-ink)" stroke-width="2"></circle>`}
         </svg>
         <span class="centre">
-          <glass-number class="target" size="dial" .value=${off ? 'Off' : ''}>${off ? nothing : html`<glass-roll .value=${target} text="${fmt(target)}°"></glass-roll>`}</glass-number>
+          <glass-number class="target" size=${this.narrow ? 'stat-s' : 'dial'} .value=${off ? 'Off' : ''}>${off ? nothing : html`<glass-roll .value=${target} text="${fmt(target)}°"></glass-roll>`}</glass-number>
           <span class="now">${nowLine}</span>
         </span>
       </div>
@@ -309,6 +312,18 @@ export class GlassThermostatDial extends GlassElement {
       .modes {
         flex: 1;
         min-width: 0;
+      }
+      /* Offline: the whole card at 50%. */
+      section.offline {
+        opacity: 0.5;
+      }
+      /* Half width: − and + side by side, the modes under them. */
+      :host([narrow]) .controls {
+        flex-wrap: wrap;
+      }
+      :host([narrow]) .modes {
+        order: 1;
+        flex-basis: 100%;
       }
       .presets {
         width: 100%;

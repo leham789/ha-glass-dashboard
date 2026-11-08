@@ -180,6 +180,8 @@ A big slider for a light or group (drag to 0 to switch off), with Warm / Neutral
 ```yaml
 type: custom:glass-brightness
 entity: light.living_room_hue
+lamps: true         # optional: the group's own lights underneath
+lamps_style: auto   # optional: tiles, rows, or auto (tiles, rows when the card is narrow)
 ```
 
 ### Room lights · `custom:glass-room-lights`

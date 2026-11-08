@@ -176,6 +176,10 @@ export class GlassNowPlaying extends GlassElement {
       .info {
         pointer-events: none;
       }
+      /* Half width: the artwork goes, so the words keep their room. */
+      :host([narrow]) .art {
+        display: none;
+      }
       .art {
         width: 64px;
         height: 64px;

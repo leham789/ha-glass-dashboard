@@ -113,7 +113,7 @@ export class GlassScenes extends GlassElement {
       </span>
       <div class="grid">
         ${this.config.look === 'glass'
-          ? scenes.map((e) => html`<glass-tile .hass=${this.hass} entity=${e.entity_id} name=${name(e)} tile-style="small" .line=${hint(e)}></glass-tile>`)
+          ? scenes.map((e) => html`<glass-tile .hass=${this.hass} entity=${e.entity_id} name=${name(e)} tile-style=${this.narrow ? 'row' : 'small'} .line=${hint(e)}></glass-tile>`)
           : scenes.map((e) => {
           const look = LOOKS.find(([re]) => re.test(name(e)))?.[1] ?? DEFAULT_LOOK;
           const on = e === active;
@@ -184,7 +184,7 @@ export class GlassScenes extends GlassElement {
       button {
         all: unset;
         box-sizing: border-box;
-        height: 92px;
+        height: var(--glass-height-small-tile);
         padding: 12px;
         border-radius: var(--glass-radius-small-tile);
         display: flex;
@@ -210,6 +210,25 @@ export class GlassScenes extends GlassElement {
       .hint {
         font-size: var(--glass-text-small);
         opacity: 0.8;
+      }
+      /* Half width: one per row, 56 high. */
+      :host([narrow]) .grid {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 8px;
+      }
+      :host([narrow]) button {
+        height: 56px;
+        padding: 0 16px;
+        align-items: center;
+      }
+      :host([narrow]) .plain button {
+        flex-direction: row-reverse;
+        justify-content: space-between;
+        align-items: center;
+        gap: 8px;
+      }
+      :host([narrow]) .plain .name {
+        margin-top: 0;
       }
       button.current {
         box-shadow: inset 0 0 0 2px var(--glass-ink);

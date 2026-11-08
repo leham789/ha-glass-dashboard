@@ -169,7 +169,7 @@ export class GlassPrinter extends GlassElement {
             ${src && !isUnavailable(cam) ? html`<img src=${src} alt="" />` : nothing}
             <glass-live-badge class="badge" state=${cameraBadge(cam)}></glass-live-badge>
             <glass-camera-button class="expand" icon="maximize-2" label="Open live view" @click=${() => openMoreInfo(this, c.camera!)}></glass-camera-button>
-            ${light && !isUnavailable(cam) ? html`<glass-camera-light class="light" look="picture" name="Chamber light" .entity=${light} .hass=${hass}></glass-camera-light>` : nothing}
+            ${light && !isUnavailable(cam) ? html`<glass-camera-light class="light" look="picture" name=${this.narrow ? 'Light' : 'Chamber light'} .entity=${light} .hass=${hass}></glass-camera-light>` : nothing}
           </div>`
         : nothing}
       <div class="progress">
@@ -308,6 +308,34 @@ export class GlassPrinter extends GlassElement {
       button:focus-visible {
         outline: 2px solid var(--glass-ink);
         outline-offset: 2px;
+      }
+      /* Half width: the pill under the title, a shorter picture, the ring above its lines, the readings as a list. */
+      :host([narrow]) .head {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      :host([narrow]) .view {
+        height: 120px;
+      }
+      :host([narrow]) .progress {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+      }
+      :host([narrow]) .readings {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 0;
+      }
+      :host([narrow]) .readings > span {
+        height: auto;
+        padding: 8px 0;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: baseline;
+        background: none;
+        border: 0;
+        box-shadow: none;
+        border-radius: 0;
       }
     `,
   ];

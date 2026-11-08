@@ -21,6 +21,8 @@ export interface BrightnessConfig extends LovelaceCardConfig {
   name?: string;
   /** Show the group's own lights as small tiles underneath, for a room with a few lamps. */
   lamps?: boolean;
+  /** How the lamps sit: tiles, rows, or auto (default: tiles, rows when the card is narrow). */
+  lamps_style?: 'auto' | 'tiles' | 'rows';
 }
 
 interface Tone {
@@ -92,9 +94,11 @@ export class GlassBrightness extends GlassElement {
     const members = (groupMembers(states[this.config!.entity]) ?? []).map((id) => states[id]).filter(Boolean);
     if (!members.length) return nothing;
     const names = distinctNames(members.map((m) => shortName(m, '')));
-    return html`<div class="lamps">
+    const style = this.config!.lamps_style ?? 'auto';
+    const rows = style === 'rows' || (style === 'auto' && this.narrow);
+    return html`<div class="lamps ${rows ? 'rows' : ''}">
       ${members.map((m, i) => {
-        return html`<glass-tile .hass=${this.hass} entity=${m.entity_id} name=${names[i]} tile-style="small"></glass-tile>`;
+        return html`<glass-tile .hass=${this.hass} entity=${m.entity_id} name=${names[i]} tile-style=${rows ? 'row' : 'small'}></glass-tile>`;
       })}
     </div>`;
   }
@@ -185,6 +189,14 @@ export class GlassBrightness extends GlassElement {
         display: grid;
         grid-template-columns: repeat(4, minmax(0, 1fr));
         gap: 8px;
+      }
+      .lamps.rows {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 8px;
+      }
+      /* Half width: the presets two by two. */
+      :host([narrow]) .tones {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
       }
     `,
   ];

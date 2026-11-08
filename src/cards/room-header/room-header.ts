@@ -128,7 +128,7 @@ export class GlassRoomHeader extends GlassElement {
             ${room.name}<glass-icon name="chevron-down" size="14" stroke="1.8"></glass-icon>
           </button>
           ${room.lights.length
-            ? html`<glass-number size="hero" value=${room.onCount} unit="/${room.lights.length} on"></glass-number>`
+            ? html`<glass-number size=${this.narrow ? 'dial' : 'hero'} value=${room.onCount} unit="/${room.lights.length} on"></glass-number>`
             : html`<span class="none">No lights</span>`}
         </span>
         <span class="right">
@@ -198,6 +198,16 @@ export class GlassRoomHeader extends GlassElement {
         align-items: flex-end;
         justify-content: space-between;
         gap: 12px;
+      }
+      /* Half width: the summary stacks, all on the left. */
+      :host([narrow]) section {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      :host([narrow]) .right {
+        align-items: flex-start;
+        text-align: left;
+        padding-bottom: 0;
       }
       .left,
       .right {

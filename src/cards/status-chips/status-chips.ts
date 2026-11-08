@@ -254,6 +254,12 @@ export class GlassStatusChips extends GlassElement {
       nav::-webkit-scrollbar {
         display: none;
       }
+      /* Half width: one chip per line, so none hide off the side. */
+      :host([narrow]) nav {
+        flex-direction: column;
+        align-items: flex-start;
+        overflow: visible;
+      }
     `,
   ];
 }

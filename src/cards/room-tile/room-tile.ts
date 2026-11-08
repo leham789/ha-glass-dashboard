@@ -76,6 +76,7 @@ export class GlassRoomTile extends GlassElement {
       name: this.config.name,
       onOpen: this.config.navigation_path ? () => navigate(this.config!.navigation_path!) : undefined,
       onToggle: () => toggleRoomLights(this.hass!, room),
+      narrow: this.quarter,
     });
   }
 
@@ -93,13 +94,14 @@ export function toggleRoomLights(hass: HomeAssistant, room: RoomSummary): void {
 /** The tile itself, shared with the Rooms card. */
 export function renderRoomTile(
   room: RoomSummary,
-  opts: { name?: string; onOpen?: () => void; onToggle: () => void },
+  opts: { name?: string; onOpen?: () => void; onToggle: () => void; narrow?: boolean },
 ) {
   const name = opts.name ?? room.name;
   const total = room.lights.length;
   const lit = room.onCount > 0;
-  const onText = total === 0 ? '' : lit ? `${room.onCount} of ${total}` : 'Off';
-  const extra = total === 0 ? 'No lights yet' : lightList(room.lights.map((l) => l.name));
+  // At 4 of 12 (about 110) the light names go and the count shortens to "2/4".
+  const onText = total === 0 ? '' : lit ? (opts.narrow ? `${room.onCount}/${total}` : `${room.onCount} of ${total}`) : 'Off';
+  const extra = opts.narrow ? '' : total === 0 ? 'No lights yet' : lightList(room.lights.map((l) => l.name));
   const surface = room.alert ? 'alert' : lit ? 'lit' : 'off';
 
   return html`

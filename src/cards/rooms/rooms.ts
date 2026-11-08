@@ -151,7 +151,7 @@ export class GlassRooms extends GlassElement {
       .grid {
         display: grid;
         /* Two across in a phone-width section, as in the design; more only when there's real room. */
-        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
         gap: var(--glass-space-tile-gap);
       }
       .empty {

@@ -106,10 +106,25 @@ export class GlassTitle extends GlassElement {
         font-size: 28px;
         font-weight: 400;
         letter-spacing: -0.4px;
+        overflow-wrap: anywhere; /* a long title wraps rather than spilling out */
       }
+      /* Tabs that don't fit scroll sideways. */
       nav {
         display: flex;
         gap: 8px;
+        overflow-x: auto;
+        scrollbar-width: none;
+      }
+      nav::-webkit-scrollbar {
+        display: none;
+      }
+      nav > * {
+        flex: none;
+      }
+      /* A quarter: the title drops to the Heading style, so a long word still fits. */
+      :host([quarter]) h1 {
+        font-size: var(--glass-text-heading);
+        letter-spacing: 0;
       }
     `,
   ];

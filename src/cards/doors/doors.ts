@@ -113,6 +113,7 @@ export class GlassDoors extends GlassElement {
         : nothing}
       <section aria-labelledby="h">
         <h2 id="h">${this.config.heading ?? 'Doors'}</h2>
+        ${doors.length ? nothing : html`<p class="none">No door or window sensors yet.</p>`}
         <div class="grid">
           ${doors.map((d) => {
             const silent = isQuiet(d);
@@ -149,10 +150,13 @@ export class GlassDoors extends GlassElement {
         flex-direction: column;
         gap: var(--glass-space-edge);
       }
+      /* The title and pill stack when they don't fit on one line (half width). */
       header {
         display: flex;
+        flex-wrap: wrap;
         justify-content: space-between;
         align-items: center;
+        gap: 8px;
         min-height: 48px;
       }
       h1 {
@@ -168,6 +172,11 @@ export class GlassDoors extends GlassElement {
       }
       h2 {
         ${heading}
+      }
+      .none {
+        margin: 0;
+        font-size: var(--glass-text-body);
+        color: var(--glass-text-muted);
       }
       .grid {
         display: grid;
