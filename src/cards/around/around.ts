@@ -216,8 +216,8 @@ export class GlassAround extends GlassElement {
         grid-column: span 2;
       }
       .tile {
+        all: unset; /* first, or it wipes the surface */
         ${tileSurface}
-        all: unset;
         box-sizing: border-box;
         height: 132px;
         padding: var(--glass-space-tile);

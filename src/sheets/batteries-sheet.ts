@@ -80,8 +80,8 @@ export class GlassBatteriesSheet extends GlassSheet {
         gap: 12px;
       }
       .tile {
+        all: unset; /* first, or it wipes the surface */
         ${tileSurface}
-        all: unset;
         box-sizing: border-box;
         height: var(--glass-height-small-tile);
         padding: var(--glass-space-small-tile);

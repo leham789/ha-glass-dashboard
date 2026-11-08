@@ -109,8 +109,8 @@ export class GlassStatTiles extends GlassElement {
         gap: 12px;
       }
       button {
+        all: unset; /* first, or it wipes the surface */
         ${tileSurface}
-        all: unset;
         box-sizing: border-box;
         height: var(--glass-height-small-tile);
         padding: var(--glass-space-small-tile);
