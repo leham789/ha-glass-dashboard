@@ -10,7 +10,7 @@ import { tokens } from '../../tokens.js';
 import { ensureFonts } from '../../fonts.js';
 import { type HomeAssistant, type LovelaceCardConfig, openMoreInfo, registerCard } from '../../ha.js';
 import { areaEntityIds, roomSummary } from '../../rooms.js';
-import { QUIET_LOOK, bandStyle, tempBand } from '../../climate.js';
+import { QUIET_LOOK, bandStyle, tempBand, humidityBand, HUMIDITY_PILLS } from '../../climate.js';
 import { ago } from '../../time.js';
 import './room-climate-editor.js';
 
@@ -18,6 +18,10 @@ export interface RoomClimateConfig extends LovelaceCardConfig {
   /** Hours before a sensor counts as not reporting, by type or entity, e.g. { door: 24 }. Applies to the whole dashboard. */
   quiet_hours?: Record<string, number>;
   area: string;
+  /** Show the temperature's band pill (Cold, Comfy, Warm…). Default on. */
+  temperature_band?: boolean;
+  /** Show the humidity's band pill (Dry, Comfy, Damp). Default on. */
+  humidity_band?: boolean;
 }
 
 /**
@@ -84,6 +88,7 @@ export class GlassRoomClimate extends GlassElement {
     // A sensor that's gone quiet keeps its last readings, greyed, with no pill: the line under each says "Not reporting".
     const quiet = room.quiet;
     const band = quiet ? undefined : t !== undefined ? tempBand(t) : undefined;
+    const hBand = quiet || this.config.humidity_band === false || room.humidity === undefined ? undefined : humidityBand(room.humidity);
     const look = quiet ? QUIET_LOOK : band ? bandStyle(band as ReturnType<typeof tempBand>) : undefined;
     // A bedroom says whether it's right for sleeping (16–19°); elsewhere, how fresh the reading is.
     const bedroom = /bed/i.test(room.name);
@@ -107,14 +112,17 @@ export class GlassRoomClimate extends GlassElement {
         ? html`<button type="button" class="tile" style=${styleMap({ background: look!.background })} @click=${() => tempId && openMoreInfo(this, tempId)}>
             <span class="top"
               ><span class="label">Temperature</span
-              >${band ? html`<glass-tag bg=${look!.pillBg} fg=${look!.pillFg}>${band}</glass-tag>` : nothing}</span
+              >${band && this.config.temperature_band !== false ? html`<glass-tag bg=${look!.pillBg} fg=${look!.pillFg}>${band}</glass-tag>` : nothing}</span
             >
             <span class="bottom"><glass-number size="stat-m" value="${t.toFixed(1)}°" ?grey=${!!quiet}></glass-number>${note ? html`<span class="note">${note}</span>` : nothing}</span>
           </button>`
         : nothing}
       ${room.humidity !== undefined
         ? html`<button type="button" class="tile" @click=${() => humId && openMoreInfo(this, humId)}>
-            <span class="label">Humidity</span>
+            <span class="top"
+              ><span class="label">Humidity</span
+              >${hBand ? html`<glass-tag bg=${HUMIDITY_PILLS[hBand].pillBg} fg=${HUMIDITY_PILLS[hBand].pillFg}>${hBand}</glass-tag>` : nothing}</span
+            >
             <span class="bottom">
               <glass-number size="stat-m" value="${Math.round(room.humidity)}%" ?grey=${!!quiet}></glass-number>
               <glass-scale kind="humidity" .value=${room.humidity} ?quiet=${!!quiet} aria-hidden="true"></glass-scale>

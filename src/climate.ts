@@ -20,6 +20,17 @@ const BANDS: Record<Band, { pillBg: string; pillFg: string; tint?: string }> = {
   Hot: { pillBg: 'var(--glass-hot-tint)', pillFg: 'var(--glass-hot-ink)', tint: '229, 72, 77' },
 };
 
+/** Humidity's band: Dry under 40%, Comfy to 60%, Damp above. A pill only, never a tint. */
+export function humidityBand(h: number): 'Dry' | 'Comfy' | 'Damp' {
+  return h < 40 ? 'Dry' : h > 60 ? 'Damp' : 'Comfy';
+}
+
+export const HUMIDITY_PILLS = {
+  Dry: { pillBg: 'var(--glass-attention-tint)', pillFg: 'var(--glass-attention-ink)' },
+  Comfy: { pillBg: 'var(--glass-neutral-tint)', pillFg: 'var(--glass-text-secondary)' },
+  Damp: { pillBg: 'var(--glass-info-tint)', pillFg: 'var(--glass-info-ink)' },
+};
+
 /** A tile whose sensor has gone quiet: plain glass and a grey "Not reporting" pill. */
 export const QUIET_LOOK = { pillBg: 'var(--glass-neutral-tint)', pillFg: 'var(--glass-text-secondary)', background: 'var(--glass-surface)' };
 

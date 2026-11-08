@@ -28,6 +28,11 @@ export interface PrinterCardConfig extends LovelaceCardConfig, PrinterEntities {
   nozzle_temp?: string;
   bed_temp?: string;
   ams_humidity?: string;
+  /** For the third line, "Layer 16 of 37 · 2.23 g · 0.75 m" (all optional). */
+  current_layer?: string;
+  total_layers?: string;
+  print_weight?: string;
+  print_length?: string;
 }
 
 const PILL: Record<PrinterPhase, { text: string; tone: string }> = {
@@ -70,6 +75,10 @@ export class GlassPrinter extends GlassElement {
       nozzle_temp: find(/^sensor\..*nozzle_temperature$/),
       bed_temp: find(/^sensor\..*bed_temperature$/),
       ams_humidity: find(/^sensor\..*ams.*humidity$/),
+      current_layer: find(/^sensor\..*current_layer$/),
+      total_layers: find(/^sensor\..*total_layer_count$/),
+      print_weight: find(/^sensor\..*print_weight$/),
+      print_length: find(/^sensor\..*print_length$/),
     };
   }
 
@@ -106,7 +115,7 @@ export class GlassPrinter extends GlassElement {
     if (!changed.has('hass') || changed.size > 1 || !this.config) return true;
     const old = changed.get('hass') as HomeAssistant | undefined;
     const c = this.config;
-    const ids = [c.printer_status, c.printer_progress, c.printer_remaining, c.printer_task, c.camera, c.chamber_light, c.nozzle_temp, c.bed_temp, c.ams_humidity];
+    const ids = [c.printer_status, c.printer_progress, c.printer_remaining, c.printer_task, c.camera, c.chamber_light, c.nozzle_temp, c.bed_temp, c.ams_humidity, c.current_layer, c.total_layers, c.print_weight, c.print_length];
     return !old || ids.some((id) => id && old.states[id] !== this.hass!.states[id]);
   }
 
@@ -180,6 +189,7 @@ export class GlassPrinter extends GlassElement {
         <span class="lines">
           <span class="l1">${line1}</span>
           <span class="l2">${p.task || 'No print name'}</span>
+          ${this.thirdLine() ? html`<span class="l1">${this.thirdLine()}</span>` : nothing}
         </span>
       </div>
       <div class="readings">
@@ -188,6 +198,27 @@ export class GlassPrinter extends GlassElement {
         <span><span class="k">AMS humidity</span><span class="v">${reading(c.ams_humidity, '%')}</span></span>
       </div>
     </section>`;
+  }
+
+  /** "Layer 16 of 37 · 2.23 g · 0.75 m", from whichever of the four sensors it has. */
+  private thirdLine(): string {
+    const c = this.config!;
+    const num = (id?: string) => {
+      const e = id ? this.hass!.states[id] : undefined;
+      const n = Number(e?.state);
+      return e && !isUnavailable(e) && Number.isFinite(n) ? n : undefined;
+    };
+    const layer = num(c.current_layer);
+    const layers = num(c.total_layers);
+    const weight = num(c.print_weight);
+    const length = num(c.print_length);
+    return [
+      layers ? `Layer ${layer ?? 0} of ${layers}` : '',
+      weight !== undefined ? `${weight.toFixed(2)} g` : '',
+      length !== undefined ? `${length.toFixed(2)} m` : '',
+    ]
+      .filter(Boolean)
+      .join(' · ');
   }
 
   static styles = [

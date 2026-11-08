@@ -245,9 +245,12 @@ export class GlassStatusChips extends GlassElement {
       :host {
         display: block;
       }
+      /* Runs out to the screen's edges, so chips scroll off the edge rather than being cut at the card's. */
       nav {
         display: flex;
         gap: var(--glass-space-chip);
+        margin: 0 calc(-1 * var(--glass-space-edge));
+        padding: 0 var(--glass-space-edge);
         overflow-x: auto;
         scrollbar-width: none;
       }
@@ -258,6 +261,8 @@ export class GlassStatusChips extends GlassElement {
       :host([narrow]) nav {
         flex-direction: column;
         align-items: flex-start;
+        margin: 0;
+        padding: 0;
         overflow: visible;
       }
     `,

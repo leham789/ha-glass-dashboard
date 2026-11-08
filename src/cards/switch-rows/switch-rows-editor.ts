@@ -1,12 +1,20 @@
 import { customElement } from 'lit/decorators.js';
-import { GlassFormEditor } from '../../editor.js';
+import { GlassFormEditor, listField } from '../../editor.js';
 import type { SwitchRowsConfig } from './switch-rows.js';
 
 @customElement('glass-switch-rows-editor')
 export class GlassSwitchRowsEditor extends GlassFormEditor<SwitchRowsConfig> {
   protected fields() {
     return [
-      { name: 'entities', label: "Plugs and switches, in order (a plain switch's own line is set in YAML: { entity, secondary })", required: true, selector: { entity: { domain: ['switch', 'input_boolean', 'fan'], multiple: true } } },
+      listField(
+        'entities',
+        'Switches, in order',
+        {
+          entity: { label: 'Switch', required: true, selector: { entity: { domain: ['switch', 'input_boolean', 'fan'] } } },
+          secondary: { label: 'Line under the name, if it has no power sensors (optional)', selector: { text: {} } },
+        },
+        { labelField: 'entity', descriptionField: 'secondary', required: true, entityShorthand: true },
+      ),
       { name: 'title', label: 'Title (default: Power)', selector: { text: {} } },
     ];
   }

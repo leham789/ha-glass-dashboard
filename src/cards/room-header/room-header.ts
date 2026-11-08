@@ -4,7 +4,7 @@ import { GlassElement } from '../../glass-element.js';
 import { customElement, property, state } from 'lit/decorators.js';
 import { tokens } from '../../tokens.js';
 import { ensureFonts } from '../../fonts.js';
-import { type HomeAssistant, type LovelaceCardConfig, navigate, registerCard } from '../../ha.js';
+import { type HomeAssistant, type LovelaceCardConfig, isUnavailable, navigate, registerCard } from '../../ha.js';
 import { areaEntityIds, roomSummary, shortName } from '../../rooms.js';
 import { loadPrefs, onPrefsChange, prefs } from '../../prefs.js';
 import { clock } from '../../time.js';
@@ -25,6 +25,10 @@ export interface RoomHeaderConfig extends LovelaceCardConfig {
   /** Rooms first in the switcher, in this order; the rest follow in HA's order. */
   pinned?: string[];
   exclude_areas?: string[];
+  /** What the big number is: lights on (default), the room's temperature, its power use, one sensor, or nothing. */
+  show?: 'lights' | 'temperature' | 'power' | 'sensor' | 'none';
+  /** The sensor for show: sensor. */
+  sensor?: string;
 }
 
 /**
@@ -89,6 +93,35 @@ export class GlassRoomHeader extends GlassElement {
     return this.watched.some((id) => old.states[id] !== this.hass!.states[id]);
   }
 
+  /** The big number for `show`, with what it is (joining the room's name) and its unit; undefined for nothing to show. */
+  private bigNumber(show: string, room: ReturnType<typeof roomSummary>): { value: string; unit: string; what?: string; space?: boolean } | undefined {
+    const hass = this.hass!;
+    if (show === 'none') return undefined;
+    if (show === 'temperature') return room.temperature !== undefined ? { value: `${room.temperature.toFixed(1)}°`, unit: '' } : { value: '', unit: '' };
+    if (show === 'power') {
+      // Everything in the room that reports power, added up.
+      const ids = areaEntityIds(hass, this.config!.area).filter((id) => hass.states[id]?.attributes.device_class === 'power');
+      this.watched.push(...ids);
+      const watts = ids.map((id) => hass.states[id]).filter((e) => !isUnavailable(e)).reduce((t, e) => {
+        const n = Number(e.state);
+        return t + (Number.isFinite(n) ? (String(e.attributes.unit_of_measurement).toLowerCase() === 'kw' ? n * 1000 : n) : 0);
+      }, 0);
+      return { value: ids.length ? String(Math.round(watts)) : '', unit: 'W', what: 'Power use', space: true };
+    }
+    if (show === 'sensor') {
+      const e = this.config!.sensor ? hass.states[this.config!.sensor] : undefined;
+      if (e) this.watched.push(e.entity_id);
+      if (!e) return { value: '', unit: '' };
+      const n = Number(e.state);
+      return {
+        value: isUnavailable(e) ? '' : Number.isFinite(n) ? String(Math.abs(n) >= 100 || Number.isInteger(n) ? Math.round(n) : n.toFixed(1)) : e.state,
+        unit: isUnavailable(e) ? '' : String(e.attributes.unit_of_measurement ?? ''),
+        what: shortName(e, ''),
+      };
+    }
+    return room.lights.length ? { value: String(room.onCount), unit: `/${room.lights.length} on` } : undefined;
+  }
+
   private rooms() {
     const c = this.config!;
     const exclude = c.exclude_areas ?? [];
@@ -109,12 +142,17 @@ export class GlassRoomHeader extends GlassElement {
     const playing = room.quiet ? 'Climate sensor not reporting' : this.mediaLine() || extremes.line || this.remoteLine();
     this.watched = [...room.watch, ...extremes.watch];
 
-    const climate = [
-      room.temperature !== undefined ? `${room.temperature.toFixed(1)}°` : '',
-      room.humidity !== undefined ? `${Math.round(room.humidity)}%` : '',
-    ]
-      .filter(Boolean)
-      .join(' · ');
+    const show = this.config.show ?? 'lights';
+    const big = this.bigNumber(show, room);
+    // The temperature as the big number: the right side keeps just the humidity.
+    const climate =
+      show === 'temperature'
+        ? room.humidity !== undefined
+          ? `${Math.round(room.humidity)}% humidity`
+          : ''
+        : [room.temperature !== undefined ? `${room.temperature.toFixed(1)}°` : '', room.humidity !== undefined ? `${Math.round(room.humidity)}%` : '']
+            .filter(Boolean)
+            .join(' · ');
 
     return html`
       <glass-room-switcher
@@ -125,11 +163,13 @@ export class GlassRoomHeader extends GlassElement {
       <section aria-label="Room summary">
         <span class="left">
           <button type="button" class="name" aria-label="${room.name} options" @click=${() => this.openOptions()}>
-            ${room.name}<glass-icon name="chevron-down" size="14" stroke="1.8"></glass-icon>
+            ${room.name}${big?.what ? ` · ${big.what}` : ''}<glass-icon name="chevron-down" size="14" stroke="1.8"></glass-icon>
           </button>
-          ${room.lights.length
-            ? html`<glass-number size=${this.narrow ? 'dial' : 'hero'} value=${room.onCount} unit="/${room.lights.length} on"></glass-number>`
-            : html`<span class="none">No lights</span>`}
+          ${big
+            ? html`<glass-number ?spaced=${!!big.space} size=${this.narrow ? 'dial' : 'hero'} .value=${big.value} unit=${big.unit}></glass-number>`
+            : show === 'lights'
+              ? html`<span class="none">No lights</span>`
+              : nothing}
         </span>
         <span class="right">
           ${climate ? html`<span class="climate ${room.quiet ? 'quiet' : ''}">${climate}</span>` : nothing}

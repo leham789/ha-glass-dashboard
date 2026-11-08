@@ -25,6 +25,8 @@ export class GlassNumber extends LitElement {
   @property({ type: Boolean }) nil = false;
   @property({ type: Boolean, reflect: true }) grey = false;
   @property({ type: Number }) loading?: number;
+  /** A word unit after a hero number ("312 W") sits 8 after it, like the other sizes; "/3 on" doesn't. */
+  @property({ type: Boolean, reflect: true }) spaced = false;
 
   render() {
     if (this.loading) return html`<span class="skel" style="width: ${this.loading}px"></span>`;
@@ -103,6 +105,9 @@ export class GlassNumber extends LitElement {
     :host([size='hero']) .unit {
       font-weight: 200;
       margin-left: 0;
+    }
+    :host([size='hero'][spaced]) .unit {
+      margin-left: 8px;
     }
     :host([size^='stat']) .unit,
     :host([size='small']) .unit {

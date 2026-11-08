@@ -17,6 +17,10 @@ export class GlassPrinterEditor extends GlassFormEditor<PrinterCardConfig> {
       { name: 'nozzle_temp', label: 'Nozzle temperature (optional)', selector: sensor },
       { name: 'bed_temp', label: 'Bed temperature (optional)', selector: sensor },
       { name: 'ams_humidity', label: 'AMS humidity (optional)', selector: sensor },
+      { name: 'current_layer', label: 'Current layer (optional)', selector: sensor },
+      { name: 'total_layers', label: 'Total layers (optional)', selector: sensor },
+      { name: 'print_weight', label: 'Print weight, g (optional)', selector: sensor },
+      { name: 'print_length', label: 'Filament length, m (optional)', selector: sensor },
     ];
   }
 }

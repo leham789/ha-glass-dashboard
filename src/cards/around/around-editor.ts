@@ -6,7 +6,8 @@ import type { AroundConfig } from './around.js';
 export class GlassAroundEditor extends GlassFormEditor<AroundConfig> {
   protected fields() {
     return [
-      { name: 'bins', label: 'Bin sensors (e.g. Waste Collection Schedule)', selector: { entity: { domain: 'sensor', multiple: true } } },
+      // HA draws a multiple entity selector as a list: a picker per bin, + Add.
+      { name: 'bins', label: 'Bins (e.g. Waste Collection Schedule)', selector: { entity: { domain: 'sensor', multiple: true } } },
       { name: 'printer_status', label: "3D printer's status sensor", selector: { entity: { domain: 'sensor' } } },
       { name: 'printer_progress', label: 'Print progress sensor (%)', selector: { entity: { domain: 'sensor' } } },
       { name: 'printer_remaining', label: 'Time remaining sensor', selector: { entity: { domain: 'sensor' } } },

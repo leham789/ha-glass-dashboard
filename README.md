@@ -161,6 +161,8 @@ type: custom:glass-room-header
 area: living_room
 room_path: /glass/{area}
 pinned: [living_room, bedroom, office]   # optional
+show: lights      # optional: the big number is lights (default), temperature, power, sensor or none
+sensor: sensor.p1s_print_progress   # for show: sensor
 ```
 
 **Room options:** tap the room's name to open it. It has:
@@ -229,6 +231,19 @@ style: dark   # or light
 ### 3D printer · `custom:glass-printer`
 
 While printing, and for two hours after, it's the full card. It has the chamber camera with a Chamber light button, a progress ring, time left and when it'll end, the print's name, and nozzle / bed / AMS humidity. Otherwise it's one compact row ("Idle · last print 2 days ago") that opens the full card when tapped. Adding it pre-fills the usual Bambu Lab sensor names.
+
+Four optional sensors add a third line under the print's name, "Layer 16 of 37 · 2.23 g · 0.75 m": `current_layer`, `total_layers`, `print_weight` and `print_length`.
+
+### Room climate · `custom:glass-room-climate`
+
+The room's temperature and humidity as two tiles, each with its band pill (Cold, Cool, Comfy, Warm, Hot; Dry, Comfy, Damp). In a bedroom the temperature says whether it's right for sleep.
+
+```yaml
+type: custom:glass-room-climate
+area: bedroom
+temperature_band: true   # optional: hide the temperature pill with false
+humidity_band: true      # optional: hide the humidity pill with false
+```
 
 ### Power switches · `custom:glass-switch-rows`
 

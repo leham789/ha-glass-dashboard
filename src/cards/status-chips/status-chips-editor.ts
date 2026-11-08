@@ -1,5 +1,5 @@
 import { customElement } from 'lit/decorators.js';
-import { GlassFormEditor } from '../../editor.js';
+import { GlassFormEditor, quietHoursField } from '../../editor.js';
 import type { StatusChipsConfig } from './status-chips.js';
 
 @customElement('glass-status-chips-editor')
@@ -18,11 +18,7 @@ export class GlassStatusChipsEditor extends GlassFormEditor<StatusChipsConfig> {
       { name: 'printer_progress', label: 'Printer progress sensor (optional)', selector: { entity: { domain: 'sensor' } } },
       { name: 'printer_remaining', label: 'Printer time-left sensor (optional)', selector: { entity: { domain: 'sensor' } } },
       { name: 'printer_name', label: 'Printer name on the chip (default: 3D printer)', selector: { text: {} } },
-      {
-        name: 'quiet_hours',
-        label: 'Not reporting after (hours, optional): raise for a sensor that reports less often, e.g. door: 24 or binary_sensor.back_door: 48',
-        selector: { object: {} },
-      },
+      quietHoursField(),
     ];
   }
 }

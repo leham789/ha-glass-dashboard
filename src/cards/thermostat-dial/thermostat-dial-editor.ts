@@ -10,6 +10,7 @@ export class GlassThermostatDialEditor extends GlassFormEditor<ThermostatDialCon
     return [
       { name: 'entity', label: 'Thermostat', required: true, selector: { entity: { domain: 'climate' } } },
       { name: 'name', label: 'Name (optional)', selector: { text: {} } },
+      { name: 'show_presets', label: 'Show the thermostat’s presets (Comfort, Eco…) under the dial', selector: { boolean: {} } },
     ];
   }
 }
